@@ -1,14 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { AnnouncementBar } from "@/components/sections/AnnouncementBar";
+import { Navigation } from "@/components/sections/Navigation";
+import { HeroSection } from "@/components/sections/HeroSection";
+import { TrustBar } from "@/components/sections/TrustBar";
+import { ProblemSection } from "@/components/sections/ProblemSection";
+import { PlatformSection } from "@/components/sections/PlatformSection";
+import { ComparisonTable } from "@/components/sections/ComparisonTable";
+import { ROISection } from "@/components/sections/ROISection";
+import { FeatureDeepDives } from "@/components/sections/FeatureDeepDives";
+import { QuestionsSection } from "@/components/sections/QuestionsSection";
+import { HowItWorks } from "@/components/sections/HowItWorks";
+import { TestimonialBanner } from "@/components/sections/TestimonialBanner";
+import { ByTheNumbers } from "@/components/sections/ByTheNumbers";
+import { CTASection } from "@/components/sections/CTASection";
+import { Footer } from "@/components/sections/Footer";
 
-const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
-};
+const Index = () => (
+  <div className="min-h-screen">
+    <AnnouncementBar />
+    <Navigation />
+    <main>
+      <HeroSection />
+      <TrustBar />
+      <ProblemSection />
+      <PlatformSection />
+      <ComparisonTable />
+      <ROISection />
+      <FeatureDeepDives />
+      <QuestionsSection />
+      <HowItWorks />
+      <TestimonialBanner />
+      <ByTheNumbers />
+      <CTASection />
+    </main>
+    <Footer />
+  </div>
+);
 
 export default Index;
