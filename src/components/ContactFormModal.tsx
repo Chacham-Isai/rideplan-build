@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, Loader2 } from "lucide-react";
 import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -23,8 +24,10 @@ export const ContactFormModal = ({ open, onOpenChange }: ContactFormModalProps) 
   const [formData, setFormData] = useState<FormData>({ name: "", email: "", district: "", students: "" });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = formSchema.safeParse(formData);
     if (!result.success) {
@@ -37,6 +40,21 @@ export const ContactFormModal = ({ open, onOpenChange }: ContactFormModalProps) 
       return;
     }
     setErrors({});
+    setSubmitting(true);
+    setSubmitError(null);
+
+    const { error } = await supabase.from("audit_requests").insert({
+      name: result.data.name,
+      email: result.data.email,
+      district: result.data.district,
+      students: result.data.students,
+    });
+
+    setSubmitting(false);
+    if (error) {
+      setSubmitError("Something went wrong. Please try again.");
+      return;
+    }
     setSubmitted(true);
   };
 
@@ -132,11 +150,17 @@ export const ContactFormModal = ({ open, onOpenChange }: ContactFormModalProps) 
                 {errors.students && <p className="text-xs text-destructive">{errors.students}</p>}
               </div>
 
+              {submitError && <p className="text-xs text-destructive text-center">{submitError}</p>}
               <button
                 type="submit"
-                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-bold text-accent-foreground hover:bg-gold-light transition shadow-lg shadow-accent/20"
+                disabled={submitting}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-bold text-accent-foreground hover:bg-gold-light transition shadow-lg shadow-accent/20 disabled:opacity-60"
               >
-                Request My Free Audit <ArrowRight className="h-4 w-4" />
+                {submitting ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Submitting...</>
+                ) : (
+                  <>Request My Free Audit <ArrowRight className="h-4 w-4" /></>
+                )}
               </button>
             </form>
           </>
