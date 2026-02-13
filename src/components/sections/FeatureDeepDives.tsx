@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import routeOptImg from "@/assets/rideline-route-optimization.png";
 import costSavingsImg from "@/assets/rideline-cost-savings.png";
 import parentAppImg from "@/assets/rideline-parent-app.png";
+import dashboardImg from "@/assets/rideline-dashboard.png";
 
 const features = [
   {
@@ -16,7 +17,7 @@ const features = [
       "Special Ed & McKinney-Vento flagging with IEP compliance",
       "Mass import and bulk assignment for start-of-year",
     ],
-    image: parentAppImg,
+    image: dashboardImg,
     imageAlt: "Parent receiving real-time bus notification on their phone",
     reversed: false,
   },
@@ -49,6 +50,21 @@ const features = [
     image: costSavingsImg,
     imageAlt: "RideLine cost savings and contractor oversight dashboard",
     reversed: false,
+  },
+  {
+    eyebrow: "Parent Communication",
+    headline: "Parents Informed. Office Phone Silent.",
+    body: "RideLine gives every parent real-time visibility into their child's bus — GPS tracking, arrival notifications, digital bus passes, and schedule change alerts — all from their phone.",
+    checks: [
+      "Real-time GPS tracking with live ETA updates",
+      "Push notifications on bus arrival, delays, and cancellations",
+      "Digital bus passes replace paper assignment letters",
+      "Multilingual self-service portal for parents",
+      "60% reduction in office phone calls from day one",
+    ],
+    image: parentAppImg,
+    imageAlt: "Parent receiving real-time school bus notification on their phone",
+    reversed: true,
   },
 ];
 
