@@ -1,7 +1,7 @@
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ArrowRight } from "lucide-react";
 
-export const CTASection = () => (
+export const CTASection = ({ onGetAudit }: { onGetAudit?: () => void }) => (
   <section className="bg-secondary py-20 md:py-28" id="cta">
     <div className="mx-auto max-w-[1200px] px-4 md:px-6">
       <ScrollReveal>
@@ -18,6 +18,7 @@ export const CTASection = () => (
               We'll analyze your data and show you exactly where the savings are. Results delivered in two weeks. No cost. No obligation.
             </p>
             <button
+              onClick={onGetAudit}
               className="mt-8 inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-sm font-bold text-accent-foreground hover:bg-gold-light transition shadow-lg shadow-accent/25"
             >
               Schedule Your Free Route Audit <ArrowRight className="h-4 w-4" />
