@@ -9,7 +9,7 @@ const navLinks = [
   { label: "How It Works", href: "#how-it-works" },
 ];
 
-export const Navigation = () => {
+export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -52,7 +52,7 @@ export const Navigation = () => {
             </button>
           ))}
           <button
-            onClick={() => handleClick("#cta")}
+            onClick={onGetAudit}
             className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition"
           >
             Get Free Audit
@@ -82,7 +82,7 @@ export const Navigation = () => {
             </button>
           ))}
           <button
-            onClick={() => handleClick("#cta")}
+            onClick={() => { setMenuOpen(false); onGetAudit?.(); }}
             className="mt-2 w-full rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
           >
             Get Free Audit

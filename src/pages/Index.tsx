@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AnnouncementBar } from "@/components/sections/AnnouncementBar";
 import { Navigation } from "@/components/sections/Navigation";
 import { HeroSection } from "@/components/sections/HeroSection";
@@ -13,27 +14,34 @@ import { TestimonialBanner } from "@/components/sections/TestimonialBanner";
 import { ByTheNumbers } from "@/components/sections/ByTheNumbers";
 import { CTASection } from "@/components/sections/CTASection";
 import { Footer } from "@/components/sections/Footer";
+import { ContactFormModal } from "@/components/ContactFormModal";
 
-const Index = () => (
-  <div className="min-h-screen">
-    <AnnouncementBar />
-    <Navigation />
-    <main>
-      <HeroSection />
-      <TrustBar />
-      <ProblemSection />
-      <PlatformSection />
-      <ComparisonTable />
-      <ROISection />
-      <FeatureDeepDives />
-      <QuestionsSection />
-      <HowItWorks />
-      <TestimonialBanner />
-      <ByTheNumbers />
-      <CTASection />
-    </main>
-    <Footer />
-  </div>
-);
+const Index = () => {
+  const [contactOpen, setContactOpen] = useState(false);
+  const openContact = () => setContactOpen(true);
+
+  return (
+    <div className="min-h-screen">
+      <AnnouncementBar />
+      <Navigation onGetAudit={openContact} />
+      <main>
+        <HeroSection onGetAudit={openContact} />
+        <TrustBar />
+        <ProblemSection />
+        <PlatformSection />
+        <ComparisonTable />
+        <ROISection />
+        <FeatureDeepDives />
+        <QuestionsSection />
+        <HowItWorks />
+        <TestimonialBanner />
+        <ByTheNumbers />
+        <CTASection onGetAudit={openContact} />
+      </main>
+      <Footer />
+      <ContactFormModal open={contactOpen} onOpenChange={setContactOpen} />
+    </div>
+  );
+};
 
 export default Index;

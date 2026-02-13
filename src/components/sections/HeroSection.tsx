@@ -10,7 +10,7 @@ const stats = [
   { value: "12–25x", label: "Year 1 ROI" },
 ];
 
-export const HeroSection = () => {
+export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
   const handleScroll = (href: string) => {
     const el = document.querySelector(href);
     if (el) {
@@ -87,7 +87,7 @@ export const HeroSection = () => {
               className="mt-10 flex flex-col items-center gap-4 sm:flex-row lg:justify-start sm:justify-center"
             >
               <button
-                onClick={() => handleScroll("#cta")}
+                onClick={onGetAudit}
                 className="inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 text-sm font-bold text-accent-foreground hover:bg-gold-light transition shadow-lg shadow-accent/20"
               >
                 Start Your Free Route Audit <ArrowRight className="h-4 w-4" />
