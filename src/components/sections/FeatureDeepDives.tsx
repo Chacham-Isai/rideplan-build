@@ -2,7 +2,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { Check } from "lucide-react";
 import routeOptImg from "@/assets/rideline-route-optimization.png";
 import costSavingsImg from "@/assets/rideline-cost-savings.png";
-import dashboardImg from "@/assets/rideline-dashboard.png";
+import parentAppImg from "@/assets/rideline-parent-app.png";
 
 const features = [
   {
@@ -16,8 +16,8 @@ const features = [
       "Special Ed & McKinney-Vento flagging with IEP compliance",
       "Mass import and bulk assignment for start-of-year",
     ],
-    image: dashboardImg,
-    imageAlt: "RideLine Dashboard View",
+    image: parentAppImg,
+    imageAlt: "Parent receiving real-time bus notification on their phone",
     reversed: false,
   },
   {
@@ -32,7 +32,7 @@ const features = [
       "Dead mile reduction: optimized depot-to-first-stop routing",
     ],
     image: routeOptImg,
-    imageAlt: "RideLine Route Optimization",
+    imageAlt: "RideLine AI-powered route optimization map",
     reversed: true,
   },
   {
@@ -47,7 +47,7 @@ const features = [
       "Broker-ready safety data from telematics",
     ],
     image: costSavingsImg,
-    imageAlt: "RideLine Cost Savings",
+    imageAlt: "RideLine cost savings and contractor oversight dashboard",
     reversed: false,
   },
 ];
@@ -72,12 +72,15 @@ export const FeatureDeepDives = () => (
               </ul>
             </div>
             <div className={f.reversed ? "lg:[direction:ltr]" : ""}>
-              <img
-                src={f.image}
-                alt={f.imageAlt}
-                className="w-full rounded-2xl shadow-xl"
-                loading="lazy"
-              />
+              <div className="relative">
+                <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-accent/10 to-success/5 blur-xl opacity-60" />
+                <img
+                  src={f.image}
+                  alt={f.imageAlt}
+                  className="relative w-full rounded-2xl shadow-xl"
+                  loading="lazy"
+                />
+              </div>
             </div>
           </div>
         </ScrollReveal>

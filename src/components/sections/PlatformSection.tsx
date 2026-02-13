@@ -1,5 +1,6 @@
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Users, Route, ClipboardCheck, MessageSquare, Shield, Brain } from "lucide-react";
+import administratorImg from "@/assets/rideline-administrator.png";
 
 const modules = [
   {
@@ -44,14 +45,25 @@ export const PlatformSection = () => (
   <section className="bg-navy py-20 md:py-28" id="platform">
     <div className="mx-auto max-w-[1200px] px-4 md:px-6">
       <ScrollReveal>
-        <div className="text-center mb-14">
-          <p className="text-sm font-bold uppercase tracking-widest text-accent mb-3">The Platform</p>
-          <h2 className="font-display text-3xl font-bold text-primary-foreground md:text-4xl lg:text-5xl">
-            One command center for everything your office does.
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-primary-foreground/60">
-            RideLine is the first purpose-built operating system for K–12 school transportation. Five modules. One platform. Total control.
-          </p>
+        <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-widest text-accent mb-3">The Platform</p>
+            <h2 className="font-display text-3xl font-bold text-primary-foreground md:text-4xl lg:text-5xl">
+              One command center for everything your office does.
+            </h2>
+            <p className="mt-4 max-w-2xl text-primary-foreground/60">
+              RideLine is the first purpose-built operating system for K–12 school transportation. Five modules. One platform. Total control.
+            </p>
+          </div>
+          <div className="relative">
+            <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-accent/10 to-success/5 blur-xl" />
+            <img
+              src={administratorImg}
+              alt="District administrator using RideLine platform"
+              className="relative rounded-2xl shadow-xl border border-primary-foreground/10"
+              loading="lazy"
+            />
+          </div>
         </div>
       </ScrollReveal>
 
