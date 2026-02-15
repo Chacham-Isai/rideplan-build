@@ -16,6 +16,9 @@ const categoryColors: Record<string, string> = {
   Leadership: "bg-accent/15 text-accent",
   Operations: "bg-primary/15 text-primary",
   "Case Studies": "bg-success/15 text-success",
+  Technology: "bg-primary/15 text-primary",
+  Safety: "bg-destructive/15 text-destructive",
+  Policy: "bg-accent/15 text-accent",
 };
 
 const Blog = () => {
