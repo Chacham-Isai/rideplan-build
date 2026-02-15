@@ -3,12 +3,13 @@ import { ArrowRight, Play } from "lucide-react";
 import fleetImg from "@/assets/rideline-fleet-overview.png";
 import dashboardImg from "@/assets/rideline-dashboard.png";
 import parentSafetyImg from "@/assets/rideline-parent-safety.webp";
+import { AnimatedStat } from "@/components/AnimatedStat";
 
 const stats = [
-  { value: "$15B+", label: "Annual Transp. Spend in Region" },
-  { value: "120K+", label: "School Buses in Target Market" },
-  { value: "5.9M+", label: "Students Served" },
-  { value: "12–25x", label: "Year 1 ROI" },
+  { numericValue: 15, prefix: "$", suffix: "B+", label: "Annual Transp. Spend in Region" },
+  { numericValue: 120, prefix: "", suffix: "K+", label: "School Buses in Target Market" },
+  { numericValue: 5900, prefix: "", suffix: "K+", label: "Students Served", displayAs: "5.9M+" },
+  { numericValue: 25, prefix: "12–", suffix: "x", label: "Year 1 ROI" },
 ];
 
 export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
@@ -44,7 +45,6 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Text content */}
           <div className="text-center lg:text-left">
-            {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -58,7 +58,6 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
               The Operating System for School Transportation
             </motion.div>
 
-            {/* Headline */}
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -69,7 +68,6 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
               <span className="italic text-accent">Every Student.</span>
             </motion.h1>
 
-            {/* Sub */}
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -80,7 +78,6 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
               your transportation office. Save <strong className="text-success">$710K–$1.6M</strong> in Year 1.
             </motion.p>
 
-            {/* CTAs */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -125,7 +122,7 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
           </motion.div>
         </div>
 
-        {/* Stats */}
+        {/* Animated Stats */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -133,12 +130,14 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
           className="mt-16 grid grid-cols-2 gap-6 sm:grid-cols-4"
         >
           {stats.map((s, i) => (
-            <div key={i} className="text-center">
-              <div className="font-display text-3xl font-bold text-primary-foreground md:text-4xl">
-                {s.value}
-              </div>
-              <div className="mt-1 text-xs text-primary-foreground/50 md:text-sm">{s.label}</div>
-            </div>
+            <AnimatedStat
+              key={i}
+              value=""
+              numericValue={s.numericValue}
+              prefix={s.prefix}
+              suffix={s.suffix}
+              label={s.label}
+            />
           ))}
         </motion.div>
       </div>

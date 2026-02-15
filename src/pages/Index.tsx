@@ -5,9 +5,12 @@ import { HeroSection } from "@/components/sections/HeroSection";
 import { TrustBar } from "@/components/sections/TrustBar";
 import { ProblemSection } from "@/components/sections/ProblemSection";
 import { PlatformSection } from "@/components/sections/PlatformSection";
+import { WhoWeServeSection } from "@/components/sections/WhoWeServeSection";
 import { ComparisonTable } from "@/components/sections/ComparisonTable";
 import { ROISection } from "@/components/sections/ROISection";
+import { ROICalculator } from "@/components/sections/ROICalculator";
 import { FeatureDeepDives } from "@/components/sections/FeatureDeepDives";
+import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import { QuestionsSection } from "@/components/sections/QuestionsSection";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { TestimonialBanner } from "@/components/sections/TestimonialBanner";
@@ -30,9 +33,12 @@ const Index = () => {
         <TrustBar />
         <ProblemSection />
         <PlatformSection />
+        <WhoWeServeSection />
         <ComparisonTable />
         <ROISection />
+        <ROICalculator onGetAudit={openContact} />
         <FeatureDeepDives />
+        <TestimonialsSection />
         <QuestionsSection />
         <HowItWorks />
         <TestimonialBanner />
