@@ -15,6 +15,7 @@ import { ByTheNumbers } from "@/components/sections/ByTheNumbers";
 import { CTASection } from "@/components/sections/CTASection";
 import { Footer } from "@/components/sections/Footer";
 import { ContactFormModal } from "@/components/ContactFormModal";
+import { ChatWidget } from "@/components/ChatWidget";
 
 const Index = () => {
   const [contactOpen, setContactOpen] = useState(false);
@@ -40,6 +41,7 @@ const Index = () => {
       </main>
       <Footer />
       <ContactFormModal open={contactOpen} onOpenChange={setContactOpen} />
+      <ChatWidget />
     </div>
   );
 };
