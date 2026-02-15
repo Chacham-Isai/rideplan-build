@@ -11,6 +11,7 @@ const navLinks = [
   { label: "How It Works", href: "#how-it-works" },
   { label: "Demo", href: "/demo", isRoute: true },
   { label: "Resources", href: "/resources", isRoute: true },
+  { label: "About", href: "/about", isRoute: true },
   { label: "Blog", href: "/blog", isRoute: true },
 ];
 
