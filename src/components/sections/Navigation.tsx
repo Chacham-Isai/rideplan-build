@@ -37,7 +37,7 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
     >
       <div className="mx-auto flex max-w-[1200px] items-center justify-between px-4 py-3 md:px-6">
         <a href="#" className="flex-shrink-0">
-          <img src={logoHorizontal} alt="RideLine" className="h-9 md:h-10" />
+          <img src={logoHorizontal} alt="RideLine" className="h-12 md:h-14" />
         </a>
 
         {/* Desktop links */}

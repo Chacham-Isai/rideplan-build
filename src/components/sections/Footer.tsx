@@ -11,7 +11,7 @@ export const Footer = () => (
       <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 pb-12 border-b border-primary-foreground/10">
         {/* Brand */}
         <div>
-          <img src={logoDark} alt="RideLine" className="h-10 mb-4" />
+          <img src={logoDark} alt="RideLine" className="h-14 mb-4" />
           <p className="text-sm text-primary-foreground/50 leading-relaxed">
             The operating system for K–12 school transportation. Every route. Every dollar. Every student.
           </p>

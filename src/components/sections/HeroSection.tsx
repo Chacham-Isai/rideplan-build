@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Play } from "lucide-react";
 import fleetImg from "@/assets/rideline-fleet-overview.png";
 import dashboardImg from "@/assets/rideline-dashboard.png";
+import parentSafetyImg from "@/assets/rideline-parent-safety.webp";
 
 const stats = [
   { value: "$15B+", label: "Annual Transp. Spend in Region" },
@@ -108,12 +109,17 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="hidden lg:block"
           >
-            <div className="relative">
+            <div className="relative space-y-4">
               <div className="absolute -inset-4 rounded-2xl bg-gradient-to-br from-accent/20 to-success/10 blur-2xl" />
               <img
                 src={dashboardImg}
                 alt="RideLine Dashboard — route management command center"
                 className="relative rounded-2xl shadow-2xl shadow-black/40 border border-primary-foreground/10"
+              />
+              <img
+                src={parentSafetyImg}
+                alt="Parent waving goodbye to child boarding school bus, and RideLine safe arrival notification on phone"
+                className="relative rounded-2xl shadow-xl shadow-black/30 border border-primary-foreground/10"
               />
             </div>
           </motion.div>

@@ -1,11 +1,12 @@
 import { ScrollReveal } from "@/components/ScrollReveal";
 import happyStudentsImg from "@/assets/rideline-happy-students.png";
+import coverageMapImg from "@/assets/rideline-coverage-map.png";
 
 export const TestimonialBanner = () => (
   <section className="relative overflow-hidden bg-navy py-16 md:py-24">
     {/* Background image */}
     <div className="absolute inset-0">
-      <img src={happyStudentsImg} alt="" className="h-full w-full object-cover opacity-[0.1]" />
+      <img src={coverageMapImg} alt="" className="h-full w-full object-cover opacity-[0.15]" />
       <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/95 to-navy" />
     </div>
 
