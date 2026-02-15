@@ -8,7 +8,7 @@ import { AnimatedStat } from "@/components/AnimatedStat";
 const stats = [
   { numericValue: 42, prefix: "$", suffix: "B+", label: "Annual U.S. Transp. Spend" },
   { numericValue: 480, prefix: "", suffix: "K+", label: "School Buses Nationwide" },
-  { numericValue: 5900, prefix: "", suffix: "K+", label: "Students Served", displayAs: "5.9M+" },
+  { numericValue: 59, prefix: "", suffix: "M+", label: "Students Served", divisor: 10 },
   { numericValue: 25, prefix: "12–", suffix: "x", label: "Year 1 ROI" },
 ];
 
