@@ -69,7 +69,7 @@ export const CoverageMapSection = () => {
   const activeDistrict = selectedDistrict || hoveredDistrict;
   const activeCount = districts.filter(d => d.status === "active").length;
   const onboardingCount = districts.filter(d => d.status === "onboarding").length;
-  const totalStudents = "190K+";
+  const totalStudents = "5.9M+";
 
   return (
     <section className="bg-navy py-20 md:py-28 overflow-hidden" id="coverage">

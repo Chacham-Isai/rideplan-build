@@ -262,7 +262,7 @@ const Press = () => {
                 </p>
                 <p>
                   Founded in 2024, RideLine serves 47+ districts nationwide, managing transportation for
-                  890,000+ students and delivering over $47M in aggregate
+                  5.9M+ students and delivering over $47M in aggregate
                   savings. Districts typically achieve 12–25× ROI in their first
                   year, saving $710K–$1.6M annually.
                 </p>
