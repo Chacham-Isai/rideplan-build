@@ -6,6 +6,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const jsonResponse = (body: Record<string, unknown>, status: number) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 const SYSTEM_PROMPT = `You are RideLine's AI assistant — a friendly, knowledgeable expert on K–12 school transportation and the RideLine platform. You help school district administrators, transportation directors, and parents understand how RideLine can transform their operations.
 
 ## About RideLine
@@ -85,12 +91,50 @@ RideLine offers a free route audit: they analyze a district's data and show exac
 - Use bullet points and clear formatting when listing features or benefits
 - If someone asks about pricing, mention the $75K–$100K range and emphasize ROI`;
 
+const MAX_MESSAGES = 50;
+const MAX_MESSAGE_LENGTH = 10000;
+
 serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    // --- Authentication: require Authorization header ---
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+
+    // --- Parse and validate input ---
+    const body = await req.json();
+    const { messages } = body;
+
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return jsonResponse({ error: "Invalid messages format" }, 400);
+    }
+
+    if (messages.length > MAX_MESSAGES) {
+      return jsonResponse({ error: "Too many messages" }, 400);
+    }
+
+    for (const msg of messages) {
+      if (
+        !msg ||
+        typeof msg !== "object" ||
+        !msg.role ||
+        !msg.content ||
+        typeof msg.content !== "string"
+      ) {
+        return jsonResponse({ error: "Invalid message structure" }, 400);
+      }
+      if (!["user", "assistant", "system"].includes(msg.role)) {
+        return jsonResponse({ error: "Invalid message role" }, 400);
+      }
+      if (msg.content.length > MAX_MESSAGE_LENGTH) {
+        return jsonResponse({ error: "Message too long" }, 400);
+      }
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -115,23 +159,14 @@ serve(async (req) => {
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Too many requests. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "Too many requests. Please try again in a moment." }, 429);
       }
       if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI service temporarily unavailable." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "AI service temporarily unavailable." }, 402);
       }
       const t = await response.text();
       console.error("AI gateway error:", response.status, t);
-      return new Response(
-        JSON.stringify({ error: "AI service error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "AI service error" }, 500);
     }
 
     return new Response(response.body, {
@@ -139,9 +174,9 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("chat error:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    return jsonResponse(
+      { error: e instanceof Error ? e.message : "Unknown error" },
+      500
     );
   }
 });
