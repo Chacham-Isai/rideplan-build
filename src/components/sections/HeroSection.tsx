@@ -132,11 +132,11 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
           {stats.map((s, i) => (
             <AnimatedStat
               key={i}
-              value=""
               numericValue={s.numericValue}
               prefix={s.prefix}
               suffix={s.suffix}
               label={s.label}
+              divisor={(s as any).divisor}
             />
           ))}
         </motion.div>
