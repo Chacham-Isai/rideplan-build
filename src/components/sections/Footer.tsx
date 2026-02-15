@@ -34,7 +34,7 @@ export const Footer = () => (
           <h4 className="font-display text-sm font-bold text-primary-foreground mb-4">Company</h4>
           <ul className="space-y-2">
             {companyLinks.map((l) => {
-              const href = l === "About" ? "/about" : l === "Blog" ? "/blog" : l === "Press" ? "/press" : "#";
+              const href = l === "About" ? "/about" : l === "Blog" ? "/blog" : l === "Press" ? "/press" : l === "Careers" ? "/careers" : "#";
               return (
                 <li key={l}>
                   <a href={href} className="text-sm text-primary-foreground/50 hover:text-accent transition-colors">{l}</a>
