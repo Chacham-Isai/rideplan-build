@@ -59,7 +59,12 @@ export const Footer = () => (
 
       {/* Bottom */}
       <div className="flex flex-col items-center justify-between gap-4 pt-8 sm:flex-row">
-        <p className="text-xs text-primary-foreground/40">© 2026 RideLine. School Transportation, Solved.</p>
+        <div className="flex items-center gap-4">
+          <p className="text-xs text-primary-foreground/40">© 2026 RideLine. School Transportation, Solved.</p>
+          <span className="text-primary-foreground/20 hidden sm:inline">|</span>
+          <a href="/privacy" className="text-xs text-primary-foreground/40 hover:text-accent transition-colors">Privacy Policy</a>
+          <a href="/terms" className="text-xs text-primary-foreground/40 hover:text-accent transition-colors">Terms of Service</a>
+        </div>
         <div className="flex gap-4">
           <a href="#" className="text-primary-foreground/40 hover:text-accent transition-colors" aria-label="LinkedIn"><Linkedin className="h-5 w-5" /></a>
           <a href="#" className="text-primary-foreground/40 hover:text-accent transition-colors" aria-label="Twitter"><Twitter className="h-5 w-5" /></a>
