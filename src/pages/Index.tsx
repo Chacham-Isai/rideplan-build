@@ -22,6 +22,7 @@ import { CTASection } from "@/components/sections/CTASection";
 import { Footer } from "@/components/sections/Footer";
 import { ContactFormModal } from "@/components/ContactFormModal";
 import { ChatWidget } from "@/components/ChatWidget";
+import { BackToTop } from "@/components/BackToTop";
 
 const Index = () => {
   const [contactOpen, setContactOpen] = useState(false);
@@ -54,6 +55,7 @@ const Index = () => {
       <Footer />
       <ContactFormModal open={contactOpen} onOpenChange={setContactOpen} />
       <ChatWidget />
+      <BackToTop />
     </div>
   );
 };
