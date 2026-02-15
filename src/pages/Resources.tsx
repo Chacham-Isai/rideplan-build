@@ -73,8 +73,8 @@ const resources = [
       },
       {
         icon: FileText,
-        title: "The $15B Opportunity: Modernizing Northeast School Transportation",
-        description: "Market analysis of transportation inefficiencies across 1,543 districts with case studies from early adopters saving $710K–$1.6M annually.",
+        title: "The $42B Opportunity: Modernizing U.S. School Transportation",
+        description: "Market analysis of transportation inefficiencies across 13,000+ districts with case studies from early adopters saving $710K–$1.6M annually.",
         tag: "Research",
         tagColor: "bg-accent/20 text-accent",
       },

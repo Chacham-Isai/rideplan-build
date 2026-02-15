@@ -84,7 +84,7 @@ const team = [
 
 const openings = [
   { title: "Senior Full-Stack Engineer", location: "Remote (US)", department: "Engineering" },
-  { title: "District Success Manager", location: "Northeast US", department: "Partnerships" },
+  { title: "District Success Manager", location: "Remote (US)", department: "Partnerships" },
   { title: "Data Scientist — Route Optimization", location: "Remote (US)", department: "Engineering" },
   { title: "Product Designer", location: "Remote (US)", department: "Product" },
   { title: "Sales Development Representative", location: "New York, NY", department: "Growth" },
@@ -93,7 +93,7 @@ const openings = [
 const milestones = [
   { year: "2021", event: "Founded after Marcus optimized routes by hand for 3 districts and saved $2.4M" },
   { year: "2022", event: "Seed round. First 5 district partners onboarded in New York" },
-  { year: "2023", event: "Expanded to PA, NJ, CT. Crossed 30K students served" },
+  { year: "2023", event: "Expanded nationwide. Crossed 30K students served" },
   { year: "2024", event: "Series A. Launched AI analytics and parent communication modules" },
   { year: "2025", event: "58K+ students, 15 districts, $47M+ in cumulative savings delivered" },
 ];
