@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import logoHorizontal from "@/assets/rideline-logo-horizontal.png";
 
 const navLinks = [
@@ -8,11 +9,14 @@ const navLinks = [
   { label: "Savings", href: "#roi-calculator" },
   { label: "Testimonials", href: "#testimonials" },
   { label: "How It Works", href: "#how-it-works" },
+  { label: "Blog", href: "/blog", isRoute: true },
 ];
 
 export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -20,8 +24,16 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleClick = (href: string) => {
+  const handleClick = (href: string, isRoute?: boolean) => {
     setMenuOpen(false);
+    if (isRoute) {
+      navigate(href);
+      return;
+    }
+    if (location.pathname !== "/") {
+      navigate("/" + href);
+      return;
+    }
     const el = document.querySelector(href);
     if (el) {
       const offset = 80;
@@ -37,7 +49,7 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
       }`}
     >
       <div className="mx-auto flex max-w-[1200px] items-center justify-between px-4 py-3 md:px-6">
-        <a href="#" className="flex-shrink-0">
+        <a href="/" onClick={(e) => { e.preventDefault(); navigate("/"); }} className="flex-shrink-0">
           <img src={logoHorizontal} alt="RideLine" className="h-12 md:h-14" />
         </a>
 
@@ -46,7 +58,7 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
           {navLinks.map((l) => (
             <button
               key={l.href}
-              onClick={() => handleClick(l.href)}
+              onClick={() => handleClick(l.href, (l as any).isRoute)}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               {l.label}
@@ -76,7 +88,7 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
           {navLinks.map((l) => (
             <button
               key={l.href}
-              onClick={() => handleClick(l.href)}
+              onClick={() => handleClick(l.href, (l as any).isRoute)}
               className="block w-full py-3 text-left text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               {l.label}
