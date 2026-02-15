@@ -83,10 +83,10 @@ export const CoverageMapSection = () => {
           <div className="text-center mb-12">
             <p className="text-sm font-bold uppercase tracking-widest text-accent mb-3">Coverage & Expansion</p>
             <h2 className="font-display text-3xl font-bold text-primary-foreground md:text-4xl lg:text-5xl">
-              Growing Across the Northeast
+              Serving Districts Nationwide
             </h2>
             <p className="mt-4 max-w-2xl mx-auto text-primary-foreground/60">
-              RideLine is transforming school transportation across the Mid-Atlantic and Northeast — with rapid expansion planned.
+              RideLine is transforming school transportation across the country — with new districts onboarding every month.
             </p>
           </div>
         </ScrollReveal>
@@ -247,7 +247,7 @@ export const CoverageMapSection = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-primary-foreground/60">Target Market</span>
-                    <span className="font-bold text-primary-foreground">1,543 districts</span>
+                    <span className="font-bold text-primary-foreground">13,000+ districts</span>
                   </div>
                   <div className="h-px bg-primary-foreground/10" />
                   <div className="flex items-center gap-2 text-sm">

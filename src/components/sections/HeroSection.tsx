@@ -6,8 +6,8 @@ import parentSafetyImg from "@/assets/rideline-parent-safety.webp";
 import { AnimatedStat } from "@/components/AnimatedStat";
 
 const stats = [
-  { numericValue: 15, prefix: "$", suffix: "B+", label: "Annual Transp. Spend in Region" },
-  { numericValue: 120, prefix: "", suffix: "K+", label: "School Buses in Target Market" },
+  { numericValue: 42, prefix: "$", suffix: "B+", label: "Annual U.S. Transp. Spend" },
+  { numericValue: 480, prefix: "", suffix: "K+", label: "School Buses Nationwide" },
   { numericValue: 5900, prefix: "", suffix: "K+", label: "Students Served", displayAs: "5.9M+" },
   { numericValue: 25, prefix: "12–", suffix: "x", label: "Year 1 ROI" },
 ];

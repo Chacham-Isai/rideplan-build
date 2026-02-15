@@ -1,8 +1,8 @@
 import { ScrollReveal } from "@/components/ScrollReveal";
 
 const stats = [
-  { value: "1,543", accent: "+", label: "Target districts in the Mid-Atlantic & Northeast" },
-  { value: "$15", accent: "B", label: "Annual transportation spend in target region" },
+  { value: "13,000", accent: "+", label: "School districts nationwide" },
+  { value: "$42", accent: "B", label: "Annual U.S. school transportation spend" },
   { value: "91", accent: "%", label: "Of districts report driver shortages" },
   { value: "70", accent: "%", label: "Still plan routes on paper & spreadsheets" },
 ];

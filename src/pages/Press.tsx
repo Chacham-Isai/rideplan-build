@@ -29,7 +29,7 @@ const pressMentions = [
     outlet: "EdTech Magazine",
     logo: "ET",
     date: "January 2026",
-    title: "RideLine Raises $12M to Modernize School Bus Operations Across the Northeast",
+    title: "RideLine Raises $12M to Modernize School Bus Operations Nationwide",
     excerpt:
       "The startup's AI-powered routing platform has already saved partner districts over $47M in aggregate transportation costs, positioning it as the leading challenger to legacy routing systems.",
     url: "#",
@@ -261,8 +261,7 @@ const Press = () => {
                   into every bus.
                 </p>
                 <p>
-                  Founded in 2024, RideLine serves 47+ districts across the
-                  Mid-Atlantic and Northeast, managing transportation for
+                  Founded in 2024, RideLine serves 47+ districts nationwide, managing transportation for
                   890,000+ students and delivering over $47M in aggregate
                   savings. Districts typically achieve 12–25× ROI in their first
                   year, saving $710K–$1.6M annually.

@@ -9,7 +9,7 @@ export const AnnouncementBar = () => {
     <div className="bg-accent text-accent-foreground relative z-50">
       <div className="mx-auto flex max-w-[1200px] items-center justify-center px-4 py-2.5 text-sm font-medium">
         <a href="#cta" className="hover:underline">
-          Now serving 1,543+ districts across the Mid-Atlantic &amp; Northeast — Schedule your free route audit →
+          Now serving districts nationwide — Schedule your free route audit →
         </a>
         <button
           onClick={() => setVisible(false)}
