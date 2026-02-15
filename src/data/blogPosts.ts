@@ -10,7 +10,9 @@ export interface BlogPost {
   content: string;
 }
 
-export const blogPosts: BlogPost[] = [
+import { additionalBlogPosts } from "./additionalBlogPosts";
+
+const coreBlogPosts: BlogPost[] = [
   {
     slug: "hidden-cost-of-outdated-school-bus-routing",
     title: "The Hidden Cost of Outdated School Bus Routing: Why Your District Is Losing $200K–$900K Every Year",
