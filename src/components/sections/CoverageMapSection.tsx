@@ -15,22 +15,41 @@ interface District {
   status: "active" | "onboarding" | "expansion";
 }
 
+// Districts spread across the entire U.S. — coordinates mapped to a 0–100 viewBox
 const districts: District[] = [
-  { id: "1", name: "Northshore CSD", state: "NY", x: 72, y: 28, students: "4,200", buses: 62, savings: "$1.2M", status: "active" },
-  { id: "2", name: "Lakewood USD", state: "NJ", x: 68, y: 42, students: "3,800", buses: 54, savings: "$980K", status: "active" },
-  { id: "3", name: "Capital Region BOCES", state: "NY", x: 74, y: 22, students: "8,500", buses: 120, savings: "$1.6M", status: "active" },
-  { id: "4", name: "Fairfield County Schools", state: "CT", x: 76, y: 34, students: "5,100", buses: 72, savings: "$1.1M", status: "active" },
-  { id: "5", name: "Montgomery Township", state: "PA", x: 62, y: 44, students: "2,900", buses: 38, savings: "$710K", status: "active" },
-  { id: "6", name: "Suffolk BOCES", state: "NY", x: 82, y: 32, students: "6,200", buses: 88, savings: "$1.4M", status: "active" },
-  { id: "7", name: "Delaware Valley SD", state: "PA", x: 58, y: 48, students: "3,400", buses: 46, savings: "$850K", status: "onboarding" },
-  { id: "8", name: "Chesapeake Bay District", state: "MD", x: 60, y: 58, students: "4,600", buses: 64, savings: "$1.0M", status: "onboarding" },
-  { id: "9", name: "Pioneer Valley Regional", state: "MA", x: 78, y: 18, students: "3,100", buses: 42, savings: "$790K", status: "active" },
-  { id: "10", name: "Hudson Valley CSD", state: "NY", x: 70, y: 30, students: "5,800", buses: 80, savings: "$1.3M", status: "active" },
-  { id: "11", name: "Prince George's County", state: "MD", x: 56, y: 60, students: "7,200", buses: 98, savings: "$1.5M", status: "expansion" },
-  { id: "12", name: "Burlington County", state: "NJ", x: 64, y: 46, students: "2,600", buses: 34, savings: "$640K", status: "onboarding" },
-  { id: "13", name: "Allegheny IU", state: "PA", x: 38, y: 42, students: "9,100", buses: 130, savings: "$1.8M", status: "expansion" },
-  { id: "14", name: "Finger Lakes BOCES", state: "NY", x: 58, y: 22, students: "4,000", buses: 56, savings: "$920K", status: "expansion" },
-  { id: "15", name: "Providence Metro", state: "RI", x: 84, y: 22, students: "3,600", buses: 48, savings: "$830K", status: "expansion" },
+  // West Coast
+  { id: "1", name: "Seattle Metro SD", state: "WA", x: 14, y: 12, students: "6,800", buses: 94, savings: "$1.4M", status: "active" },
+  { id: "2", name: "Portland USD", state: "OR", x: 13, y: 22, students: "5,200", buses: 72, savings: "$1.1M", status: "active" },
+  { id: "3", name: "Bay Area Unified", state: "CA", x: 10, y: 42, students: "9,400", buses: 130, savings: "$1.9M", status: "active" },
+  { id: "4", name: "Los Angeles USD", state: "CA", x: 14, y: 56, students: "12,000", buses: 168, savings: "$2.4M", status: "active" },
+  { id: "5", name: "San Diego CSD", state: "CA", x: 16, y: 62, students: "7,100", buses: 96, savings: "$1.3M", status: "onboarding" },
+  // Mountain West
+  { id: "6", name: "Phoenix Metro", state: "AZ", x: 22, y: 58, students: "8,200", buses: 110, savings: "$1.6M", status: "active" },
+  { id: "7", name: "Denver Public Schools", state: "CO", x: 32, y: 40, students: "7,500", buses: 102, savings: "$1.5M", status: "active" },
+  { id: "8", name: "Salt Lake City SD", state: "UT", x: 24, y: 36, students: "4,600", buses: 62, savings: "$920K", status: "onboarding" },
+  { id: "9", name: "Boise ISD", state: "ID", x: 20, y: 22, students: "3,200", buses: 44, savings: "$710K", status: "expansion" },
+  { id: "10", name: "Las Vegas CSD", state: "NV", x: 18, y: 46, students: "6,100", buses: 84, savings: "$1.2M", status: "expansion" },
+  // Midwest
+  { id: "11", name: "Chicago Public Schools", state: "IL", x: 58, y: 32, students: "11,500", buses: 158, savings: "$2.2M", status: "active" },
+  { id: "12", name: "Minneapolis-St. Paul", state: "MN", x: 52, y: 18, students: "5,800", buses: 78, savings: "$1.1M", status: "active" },
+  { id: "13", name: "Detroit Metro ISD", state: "MI", x: 64, y: 28, students: "6,400", buses: 88, savings: "$1.3M", status: "onboarding" },
+  { id: "14", name: "Columbus City Schools", state: "OH", x: 68, y: 34, students: "4,900", buses: 66, savings: "$980K", status: "active" },
+  { id: "15", name: "Kansas City USD", state: "MO", x: 48, y: 40, students: "3,800", buses: 52, savings: "$830K", status: "expansion" },
+  // South
+  { id: "16", name: "Dallas-Fort Worth ISD", state: "TX", x: 42, y: 62, students: "10,200", buses: 140, savings: "$2.0M", status: "active" },
+  { id: "17", name: "Houston ISD", state: "TX", x: 46, y: 68, students: "8,900", buses: 122, savings: "$1.7M", status: "active" },
+  { id: "18", name: "Atlanta Public Schools", state: "GA", x: 68, y: 56, students: "7,200", buses: 98, savings: "$1.4M", status: "active" },
+  { id: "19", name: "Charlotte-Mecklenburg", state: "NC", x: 72, y: 50, students: "5,600", buses: 76, savings: "$1.1M", status: "onboarding" },
+  { id: "20", name: "Miami-Dade County", state: "FL", x: 74, y: 74, students: "9,800", buses: 134, savings: "$1.8M", status: "active" },
+  { id: "21", name: "Nashville Metro", state: "TN", x: 62, y: 48, students: "4,200", buses: 58, savings: "$890K", status: "onboarding" },
+  { id: "22", name: "New Orleans Parish", state: "LA", x: 54, y: 66, students: "3,600", buses: 48, savings: "$760K", status: "expansion" },
+  // Northeast
+  { id: "23", name: "New York City DOE", state: "NY", x: 82, y: 28, students: "14,500", buses: 200, savings: "$2.8M", status: "active" },
+  { id: "24", name: "Capital Region BOCES", state: "NY", x: 80, y: 22, students: "8,500", buses: 120, savings: "$1.6M", status: "active" },
+  { id: "25", name: "Boston Public Schools", state: "MA", x: 88, y: 22, students: "6,200", buses: 86, savings: "$1.2M", status: "active" },
+  { id: "26", name: "Philadelphia SD", state: "PA", x: 80, y: 34, students: "7,800", buses: 106, savings: "$1.5M", status: "active" },
+  { id: "27", name: "Montgomery Township", state: "NJ", x: 82, y: 32, students: "2,900", buses: 38, savings: "$710K", status: "onboarding" },
+  { id: "28", name: "Washington DC Schools", state: "DC", x: 78, y: 40, students: "5,400", buses: 74, savings: "$1.0M", status: "active" },
 ];
 
 const statusConfig = {
@@ -39,33 +58,9 @@ const statusConfig = {
   expansion: { label: "Planned", dotClass: "bg-primary-foreground/40", pulseClass: "bg-primary-foreground/30", ringClass: "ring-primary-foreground/10" },
 };
 
-const stateLabels = [
-  { abbr: "NY", x: 65, y: 20 },
-  { abbr: "PA", x: 48, y: 44 },
-  { abbr: "NJ", x: 70, y: 46 },
-  { abbr: "CT", x: 80, y: 30 },
-  { abbr: "MA", x: 82, y: 16 },
-  { abbr: "MD", x: 54, y: 62 },
-  { abbr: "RI", x: 87, y: 20 },
-];
-
-// Simplified NE/Mid-Atlantic outline paths
-const regionPaths = [
-  // NY
-  "M30,12 L44,10 L56,8 L68,10 L76,16 L80,24 L82,30 L78,36 L70,38 L64,36 L58,34 L50,32 L42,30 L36,26 L30,20 Z",
-  // PA
-  "M30,32 L50,32 L58,34 L64,36 L66,42 L68,50 L60,54 L50,54 L38,52 L30,48 Z",
-  // NJ
-  "M66,36 L72,38 L74,44 L72,50 L66,52 L64,46 L64,40 Z",
-  // CT
-  "M74,28 L82,26 L84,30 L82,34 L76,34 L74,32 Z",
-  // MA
-  "M74,14 L82,12 L90,14 L90,22 L84,24 L76,22 L74,18 Z",
-  // MD
-  "M38,54 L50,54 L60,54 L66,56 L68,62 L62,68 L50,66 L40,62 Z",
-  // RI
-  "M84,18 L90,16 L92,22 L88,24 L84,22 Z",
-];
+// Simplified U.S. continental outline
+const usOutlinePath =
+  "M8,18 L12,8 L18,6 L22,10 L28,8 L34,6 L40,8 L48,6 L54,8 L60,10 L66,12 L72,14 L78,16 L84,18 L90,20 L92,26 L90,30 L88,34 L86,38 L84,42 L82,46 L80,50 L78,54 L76,58 L74,62 L72,66 L70,70 L68,74 L66,76 L62,74 L58,72 L54,70 L50,72 L46,74 L42,72 L38,70 L34,68 L30,66 L26,64 L22,62 L18,60 L14,58 L12,54 L10,50 L8,46 L6,42 L6,36 L6,30 L8,24 Z";
 
 export const CoverageMapSection = () => {
   const [hoveredDistrict, setHoveredDistrict] = useState<District | null>(null);
@@ -74,7 +69,7 @@ export const CoverageMapSection = () => {
   const activeDistrict = selectedDistrict || hoveredDistrict;
   const activeCount = districts.filter(d => d.status === "active").length;
   const onboardingCount = districts.filter(d => d.status === "onboarding").length;
-  const totalStudents = "58K+";
+  const totalStudents = "190K+";
 
   return (
     <section className="bg-navy py-20 md:py-28 overflow-hidden" id="coverage">
@@ -95,36 +90,18 @@ export const CoverageMapSection = () => {
           {/* Map */}
           <ScrollReveal>
             <div className="relative rounded-2xl border border-primary-foreground/10 bg-primary-foreground/[0.03] p-4 md:p-8">
-              {/* SVG Map */}
               <svg
-                viewBox="20 4 80 72"
+                viewBox="0 0 100 82"
                 className="w-full h-auto"
                 style={{ maxHeight: "500px" }}
               >
-                {/* Region fills */}
-                {regionPaths.map((d, i) => (
-                  <path
-                    key={i}
-                    d={d}
-                    fill="hsl(var(--navy-mid))"
-                    stroke="hsl(var(--primary-foreground) / 0.1)"
-                    strokeWidth="0.3"
-                  />
-                ))}
-
-                {/* State labels */}
-                {stateLabels.map((s) => (
-                  <text
-                    key={s.abbr}
-                    x={s.x}
-                    y={s.y}
-                    textAnchor="middle"
-                    className="fill-primary-foreground/20 text-[3px] font-bold"
-                    style={{ fontFamily: "var(--font-body)" }}
-                  >
-                    {s.abbr}
-                  </text>
-                ))}
+                {/* U.S. outline */}
+                <path
+                  d={usOutlinePath}
+                  fill="hsl(var(--navy-mid))"
+                  stroke="hsl(var(--primary-foreground) / 0.1)"
+                  strokeWidth="0.4"
+                />
 
                 {/* District pins */}
                 {districts.map((d) => {
@@ -138,7 +115,7 @@ export const CoverageMapSection = () => {
                       onClick={() => setSelectedDistrict(selectedDistrict?.id === d.id ? null : d)}
                       className="cursor-pointer"
                     >
-                      {/* Pulse ring */}
+                      {/* Pulse ring for active districts */}
                       {d.status === "active" && (
                         <circle
                           cx={d.x}
@@ -165,7 +142,7 @@ export const CoverageMapSection = () => {
                       <circle
                         cx={d.x}
                         cy={d.y}
-                        r={isActive ? 2 : 1.4}
+                        r={isActive ? 2.2 : 1.5}
                         className={cfg.dotClass}
                         fill="currentColor"
                         stroke={isActive ? "hsl(var(--gold))" : "hsl(var(--navy))"}
@@ -252,7 +229,7 @@ export const CoverageMapSection = () => {
                   <div className="h-px bg-primary-foreground/10" />
                   <div className="flex items-center gap-2 text-sm">
                     <TrendingUp className="h-4 w-4 text-success" />
-                    <span className="text-success font-semibold">3 new districts</span>
+                    <span className="text-success font-semibold">8 new districts</span>
                     <span className="text-primary-foreground/40">this quarter</span>
                   </div>
                 </div>
