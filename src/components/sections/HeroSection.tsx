@@ -116,6 +116,7 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
               <img
                 src={parentSafetyImg}
                 alt="Parent waving goodbye to child boarding school bus, and RideLine safe arrival notification on phone"
+                loading="lazy"
                 className="relative rounded-2xl shadow-xl shadow-black/30 border border-primary-foreground/10"
               />
             </div>
