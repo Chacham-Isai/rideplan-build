@@ -556,6 +556,199 @@ From a transportation director in Bergen County, NJ:
 
 **If you're still surviving, it might be time to start managing.**`
   },
+  {
+    slug: "bell-time-changes-transportation-impact",
+    title: "How Bell Time Changes Can Save Your District $300K — Without Cutting a Single Route",
+    excerpt: "Adjusting school start and end times by just 15–20 minutes can unlock massive bus-sharing opportunities. Here's the math most districts never run.",
+    category: "Cost Savings",
+    readTime: "6 min read",
+    date: "2026-02-13",
+    author: "RideLine Research",
+    authorRole: "Transportation Analytics Team",
+    content: `## The Untapped Lever
+
+Most districts treat bell times as fixed. But a 15–20 minute stagger between elementary, middle, and high school start times can allow a single bus to run two or even three routes — cutting fleet needs by 20–30%.
+
+## The Math
+
+A typical district with 40 routes at $85K each spends $3.4M. If bell time optimization allows 15% route sharing:
+
+- **6 routes eliminated** = $510K saved
+- **Minus scheduling complexity costs** = ~$200K net implementation
+- **Net savings: $300K+ annually**
+
+## Why Districts Don't Do This
+
+The barrier isn't math — it's politics. Parents resist changes to school schedules. Athletic directors worry about practice times. Teachers' unions negotiate start times.
+
+But districts that frame it as a **cost avoidance measure** — "we can avoid cutting programs by optimizing transportation" — find much more receptive audiences.
+
+## The Data You Need
+
+To model bell time scenarios, you need:
+- Current route timing and capacity data
+- Student address distribution by school level
+- Walk zone analysis with actual walking distances
+- Contractor flexibility on route timing
+
+**RideLine's scenario modeling engine runs these calculations in minutes, not weeks.**`
+  },
+  {
+    slug: "walk-zone-audits-student-safety",
+    title: "Your Walk Zones Were Drawn 20 Years Ago. Are They Still Safe?",
+    excerpt: "Walk zone boundaries determine which students get bus service. But neighborhoods change — and zones drawn decades ago may be putting students at risk.",
+    category: "Safety & Compliance",
+    readTime: "5 min read",
+    date: "2026-02-12",
+    author: "RideLine Research",
+    authorRole: "Transportation Analytics Team",
+    content: `## The Problem With Legacy Walk Zones
+
+Walk zones are typically set using straight-line distances — 1 mile for elementary, 1.5 for middle, 2 for high school. But straight-line distance ignores:
+
+- **Missing sidewalks** on roads built after the zone was drawn
+- **New highway interchanges** that create dangerous crossings
+- **Construction zones** that block safe pedestrian paths
+- **Increased traffic volume** on formerly quiet streets
+
+## Real Walking Distance vs. Straight Line
+
+RideLine's walk zone engine uses actual walking paths, not crow-flies distance. In a recent audit of a Long Island district:
+
+- **23% of students** classified as "walkers" had no safe walking route
+- **14% of current bus riders** lived close enough to walk safely
+- The net result: **rebalanced service that was both safer and cheaper**
+
+## What a Modern Walk Zone Audit Looks Like
+
+1. Import all student addresses with geocoding
+2. Map actual walking routes using pedestrian infrastructure data
+3. Identify hazardous routes (no sidewalk, speed > 35mph, major crossings)
+4. Generate new zone boundaries based on real safety criteria
+5. Model transportation impact of zone changes
+
+**The entire process takes days, not months — and the results are defensible at any board meeting.**`
+  },
+  {
+    slug: "electric-school-bus-transition-planning",
+    title: "Electric School Buses Are Coming. Is Your District Ready for the Transition?",
+    excerpt: "Federal funding is accelerating electric bus adoption. But the transition requires route-level planning most districts aren't equipped to do. Here's what you need to know.",
+    category: "Fleet Management",
+    readTime: "8 min read",
+    date: "2026-02-11",
+    author: "RideLine Research",
+    authorRole: "Transportation Analytics Team",
+    content: `## The Electric Bus Opportunity
+
+The EPA's Clean School Bus Program has allocated $5 billion for electric school bus purchases. Districts can receive $250K–$375K per bus. But there's a catch: **you need route data to apply effectively.**
+
+## Why Route Data Matters
+
+Electric buses have range limitations (100–120 miles per charge). To plan the transition, you need to know:
+
+- **Exact route mileage** — not estimates, actual GPS-verified distances
+- **Route timing** — how long buses sit idle between runs (charging windows)
+- **Terrain and climate impact** — hills and cold weather reduce range by 20–30%
+- **Depot charging infrastructure** — which buses return to which depot, and when
+
+## The Planning Framework
+
+### Phase 1: Route Audit (Months 1–2)
+GPS-verify every route's actual mileage and timing. Identify routes under 60 miles that are ideal for electric conversion.
+
+### Phase 2: Infrastructure Assessment (Months 3–4)
+Map depot electrical capacity. Identify charging station placement. Estimate utility upgrade costs.
+
+### Phase 3: Grant Application (Months 5–6)
+Use route-level data to build a compelling application showing exactly which routes will be electrified and why.
+
+### Phase 4: Staged Rollout (Year 2+)
+Convert shortest, most predictable routes first. Use real-time monitoring to track battery performance and range.
+
+**Districts with detailed route data are winning grants at 3x the rate of those submitting estimates.**`
+  },
+  {
+    slug: "school-transportation-data-security",
+    title: "Your Student Transportation Data Is More Sensitive Than You Think. Here's How to Protect It.",
+    excerpt: "Student addresses, GPS locations, special needs status — transportation systems hold some of the most sensitive data in any district. Most aren't protecting it properly.",
+    category: "Safety & Compliance",
+    readTime: "6 min read",
+    date: "2026-02-09",
+    author: "RideLine Research",
+    authorRole: "Transportation Analytics Team",
+    content: `## What Transportation Data Includes
+
+Think about what a transportation system knows about every student:
+
+- **Home address** and pickup location
+- **Daily schedule** and expected arrival times
+- **Real-time GPS location** while on the bus
+- **Special education status** and accommodation needs
+- **Parent/guardian contact information**
+- **Custody arrangements** affecting pickup authorization
+
+This is among the most sensitive data any school district holds — and it's often stored in spreadsheets, shared via email, and accessible to anyone with a district login.
+
+## FERPA and Transportation
+
+Student transportation records are covered under FERPA. This means:
+
+- Data must be stored in systems with appropriate access controls
+- Sharing with contractors requires data processing agreements
+- Parents have the right to review and request corrections
+- Breaches must be reported to affected families
+
+## What Modern Security Looks Like
+
+- **Role-based access control** — drivers see only their route, not the full database
+- **Encrypted data at rest and in transit** — no plaintext spreadsheets
+- **Audit logging** — every access to student data is recorded
+- **Contractor data isolation** — bus companies see only what they need
+- **SOC 2 Type II compliance** — independently verified security controls
+
+**RideLine is built with enterprise-grade security from the ground up — because student safety isn't just about what happens on the bus.**`
+  },
+  {
+    slug: "summer-school-transportation-planning",
+    title: "Summer School Transportation: How to Run 6 Weeks of Service Without Blowing Your Budget",
+    excerpt: "Summer school routes serve different students, different locations, and different schedules. Most districts plan them from scratch every year. There's a better way.",
+    category: "Operations",
+    readTime: "5 min read",
+    date: "2026-02-08",
+    author: "RideLine Research",
+    authorRole: "Transportation Analytics Team",
+    content: `## The Summer Planning Problem
+
+Summer school transportation is uniquely challenging:
+
+- **Different student populations** — not the same kids as regular year
+- **Fewer locations** — programs consolidated at select schools
+- **Shorter duration** — 4–6 weeks doesn't justify permanent route planning
+- **Budget pressure** — summer transport comes from already-tight budgets
+- **Contractor availability** — many drivers take summer off
+
+## The Typical Approach (And Why It Fails)
+
+Most districts assign a coordinator to manually plan summer routes using last year's data and a lot of guesswork. The result:
+
+- **Over-provisioned routes** running half-empty buses "just in case"
+- **Under-served areas** where students can't access programs
+- **Late planning** — routes aren't finalized until days before programs start
+- **No optimization** — routes drawn by geography alone, not by actual demand
+
+## The Data-Driven Approach
+
+With student enrollment data and address information already in the system:
+
+1. **Import summer enrollments** as soon as registration closes
+2. **Auto-generate optimized routes** based on actual student addresses
+3. **Right-size the fleet** — match bus capacity to actual ridership
+4. **Share routes with families** immediately via the parent app
+
+Districts using RideLine for summer planning report **30–40% fewer routes** than their manual plans, with **better coverage** and **happier families**.
+
+**Summer school transportation doesn't have to be an afterthought. With the right data, it takes hours instead of weeks.**`
+  },
 ];
 
 export const getBlogPost = (slug: string): BlogPost | undefined =>

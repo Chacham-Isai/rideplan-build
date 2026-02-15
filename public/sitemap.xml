@@ -66,7 +66,37 @@
   </url>
   <url>
     <loc>https://rideplan-build.lovable.app/blog/why-districts-switch-transportation-technology</loc>
-    <lastmod>2026-01-09</lastmod>
+    <lastmod>2025-12-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rideplan-build.lovable.app/blog/bell-time-changes-transportation-impact</loc>
+    <lastmod>2026-02-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rideplan-build.lovable.app/blog/walk-zone-audits-student-safety</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rideplan-build.lovable.app/blog/electric-school-bus-transition-planning</loc>
+    <lastmod>2026-02-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rideplan-build.lovable.app/blog/school-transportation-data-security</loc>
+    <lastmod>2026-02-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rideplan-build.lovable.app/blog/summer-school-transportation-planning</loc>
+    <lastmod>2026-02-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
