@@ -9,6 +9,8 @@ const navLinks = [
   { label: "Savings", href: "#roi-calculator" },
   { label: "Testimonials", href: "#testimonials" },
   { label: "How It Works", href: "#how-it-works" },
+  { label: "Demo", href: "/demo", isRoute: true },
+  { label: "Resources", href: "/resources", isRoute: true },
   { label: "Blog", href: "/blog", isRoute: true },
 ];
 

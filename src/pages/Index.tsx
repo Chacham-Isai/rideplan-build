@@ -15,7 +15,7 @@ import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import { QuestionsSection } from "@/components/sections/QuestionsSection";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { TestimonialBanner } from "@/components/sections/TestimonialBanner";
-import { ByTheNumbers } from "@/components/sections/ByTheNumbers";
+import { LiveStatsDashboard } from "@/components/sections/LiveStatsDashboard";
 import { CTASection } from "@/components/sections/CTASection";
 import { Footer } from "@/components/sections/Footer";
 import { ContactFormModal } from "@/components/ContactFormModal";
@@ -44,7 +44,7 @@ const Index = () => {
         <QuestionsSection />
         <HowItWorks />
         <TestimonialBanner />
-        <ByTheNumbers />
+        <LiveStatsDashboard />
         <CTASection onGetAudit={openContact} />
       </main>
       <Footer />
