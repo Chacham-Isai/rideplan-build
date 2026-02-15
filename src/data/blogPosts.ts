@@ -12,7 +12,7 @@ export interface BlogPost {
 
 import { additionalBlogPosts } from "./additionalBlogPosts";
 
-const coreBlogPosts: BlogPost[] = [
+export const coreBlogPosts: BlogPost[] = [
   {
     slug: "hidden-cost-of-outdated-school-bus-routing",
     title: "The Hidden Cost of Outdated School Bus Routing: Why Your District Is Losing $200K–$900K Every Year",
@@ -752,6 +752,8 @@ Districts using RideLine for summer planning report **30–40% fewer routes** th
 **Summer school transportation doesn't have to be an afterthought. With the right data, it takes hours instead of weeks.**`
   },
 ];
+
+export const blogPosts: BlogPost[] = [...coreBlogPosts, ...additionalBlogPosts];
 
 export const getBlogPost = (slug: string): BlogPost | undefined =>
   blogPosts.find((p) => p.slug === slug);
