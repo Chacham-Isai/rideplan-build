@@ -11,6 +11,7 @@ interface SEOHeadProps {
     author?: string;
     section?: string;
   };
+  jsonLd?: Record<string, unknown>;
 }
 
 const SITE_NAME = "RideLine";
@@ -27,6 +28,7 @@ export const SEOHead = ({
   type = "website",
   image,
   article,
+  jsonLd,
 }: SEOHeadProps) => {
   const fullTitle = title ? `${title} | ${SITE_NAME}` : DEFAULT_TITLE;
   const canonicalUrl = `${BASE_URL}${path}`;
@@ -60,6 +62,11 @@ export const SEOHead = ({
       )}
       {article?.author && <meta property="article:author" content={article.author} />}
       {article?.section && <meta property="article:section" content={article.section} />}
+
+      {/* JSON-LD Structured Data */}
+      {jsonLd && (
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      )}
     </Helmet>
   );
 };

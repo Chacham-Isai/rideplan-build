@@ -36,6 +36,30 @@ const BlogPostPage = () => {
           author: post.author,
           section: post.category,
         }}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          headline: post.title,
+          description: post.excerpt,
+          datePublished: post.date,
+          author: {
+            "@type": "Person",
+            name: post.author,
+            jobTitle: post.authorRole,
+          },
+          publisher: {
+            "@type": "Organization",
+            name: "RideLine",
+            url: "https://rideplan-build.lovable.app",
+          },
+          mainEntityOfPage: {
+            "@type": "WebPage",
+            "@id": `https://rideplan-build.lovable.app/blog/${post.slug}`,
+          },
+          articleSection: post.category,
+          wordCount: post.content.split(/\s+/).length,
+          image: "https://rideplan-build.lovable.app/og-default.png",
+        }}
       />
       <Navigation onGetAudit={() => setContactOpen(true)} />
       <main>
