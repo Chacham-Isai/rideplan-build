@@ -17,6 +17,7 @@ import { HowItWorks } from "@/components/sections/HowItWorks";
 import { TestimonialBanner } from "@/components/sections/TestimonialBanner";
 import { LiveStatsDashboard } from "@/components/sections/LiveStatsDashboard";
 import { CoverageMapSection } from "@/components/sections/CoverageMapSection";
+import { PricingSection } from "@/components/sections/PricingSection";
 import { CTASection } from "@/components/sections/CTASection";
 import { Footer } from "@/components/sections/Footer";
 import { ContactFormModal } from "@/components/ContactFormModal";
@@ -40,6 +41,7 @@ const Index = () => {
         <ComparisonTable />
         <ROISection />
         <ROICalculator onGetAudit={openContact} />
+        <PricingSection onGetAudit={openContact} />
         <FeatureDeepDives />
         <TestimonialsSection />
         <QuestionsSection />

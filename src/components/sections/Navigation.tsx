@@ -6,7 +6,7 @@ import logoHorizontal from "@/assets/rideline-logo-horizontal.png";
 const navLinks = [
   { label: "Platform", href: "#platform" },
   { label: "Features", href: "#features" },
-  { label: "Savings", href: "#roi-calculator" },
+  { label: "Pricing", href: "#pricing" },
   { label: "Testimonials", href: "#testimonials" },
   { label: "How It Works", href: "#how-it-works" },
   { label: "Demo", href: "/demo", isRoute: true },
