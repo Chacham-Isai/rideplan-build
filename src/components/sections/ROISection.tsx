@@ -24,7 +24,7 @@ export const ROISection = () => (
                 The cost of doing nothing is too high.
               </h2>
               <p className="text-primary-foreground/60 leading-relaxed mb-6">
-                Based on a typical Long Island district with 5,000 transported students, 45 contracted routes, and a $12M annual transportation budget.
+                Based on a typical district with 5,000 transported students, 45 contracted routes, and your annual transportation budget.
               </p>
               <span className="inline-block rounded-full bg-accent/20 px-5 py-2 text-sm font-bold text-accent">
                 ROI: 12–25x in Year 1
