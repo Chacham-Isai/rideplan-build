@@ -16,6 +16,7 @@ import { QuestionsSection } from "@/components/sections/QuestionsSection";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { TestimonialBanner } from "@/components/sections/TestimonialBanner";
 import { LiveStatsDashboard } from "@/components/sections/LiveStatsDashboard";
+import { CoverageMapSection } from "@/components/sections/CoverageMapSection";
 import { CTASection } from "@/components/sections/CTASection";
 import { Footer } from "@/components/sections/Footer";
 import { ContactFormModal } from "@/components/ContactFormModal";
@@ -45,6 +46,7 @@ const Index = () => {
         <HowItWorks />
         <TestimonialBanner />
         <LiveStatsDashboard />
+        <CoverageMapSection />
         <CTASection onGetAudit={openContact} />
       </main>
       <Footer />
