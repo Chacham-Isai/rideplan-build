@@ -29,9 +29,9 @@ const metrics = [
   {
     icon: Users,
     label: "Students Served",
-    value: 890,
+    value: 5.9,
     prefix: "",
-    suffix: "K",
+    suffix: "M",
     change: "+34K this month",
     positive: true,
     color: "text-accent",

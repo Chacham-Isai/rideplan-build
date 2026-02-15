@@ -95,7 +95,7 @@ const milestones = [
   { year: "2022", event: "Seed round. First 5 district partners onboarded in New York" },
   { year: "2023", event: "Expanded nationwide. Crossed 30K students served" },
   { year: "2024", event: "Series A. Launched AI analytics and parent communication modules" },
-  { year: "2025", event: "58K+ students, 15 districts, $47M+ in cumulative savings delivered" },
+  { year: "2025", event: "5.9M+ students, 47+ districts, $47M+ in cumulative savings delivered" },
 ];
 
 const About = () => {
@@ -149,7 +149,7 @@ const About = () => {
                 className="hidden lg:grid grid-cols-2 gap-4"
               >
                 {[
-                  { icon: Bus, stat: "58K+", label: "Students served" },
+                  { icon: Bus, stat: "5.9M+", label: "Students served" },
                   { icon: Globe, stat: "15", label: "District partners" },
                   { icon: GraduationCap, stat: "$47M+", label: "Savings delivered" },
                   { icon: Users, stat: "32", label: "Team members" },
