@@ -1,6 +1,7 @@
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Users, Route, ClipboardCheck, MessageSquare, Shield, Brain } from "lucide-react";
 import administratorImg from "@/assets/rideline-administrator.png";
+import parentTrackingImg from "@/assets/rideline-parent-tracking.webp";
 
 const modules = [
   {
@@ -58,8 +59,8 @@ export const PlatformSection = () => (
           <div className="relative">
             <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-accent/10 to-success/5 blur-xl" />
             <img
-              src={administratorImg}
-              alt="District administrator using RideLine platform"
+              src={parentTrackingImg}
+              alt="Parent tracking child's school bus in real-time with RideLine app"
               className="relative rounded-2xl shadow-xl border border-primary-foreground/10"
               loading="lazy"
             />
