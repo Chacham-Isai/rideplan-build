@@ -2,6 +2,7 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import { ArrowLeft, Clock, ArrowRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { getBlogPost, formatBlogDate, blogPosts } from "@/data/blogPosts";
+import { SEOHead } from "@/components/SEOHead";
 import { Navigation } from "@/components/sections/Navigation";
 import { Footer } from "@/components/sections/Footer";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -25,6 +26,17 @@ const BlogPostPage = () => {
 
   return (
     <div className="min-h-screen">
+      <SEOHead
+        title={post.title}
+        description={post.excerpt}
+        path={`/blog/${post.slug}`}
+        type="article"
+        article={{
+          publishedTime: post.date,
+          author: post.author,
+          section: post.category,
+        }}
+      />
       <Navigation onGetAudit={() => setContactOpen(true)} />
       <main>
         {/* Header */}

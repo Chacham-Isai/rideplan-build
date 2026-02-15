@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SEOHead } from "@/components/SEOHead";
 import { AnnouncementBar } from "@/components/sections/AnnouncementBar";
 import { Navigation } from "@/components/sections/Navigation";
 import { HeroSection } from "@/components/sections/HeroSection";
@@ -26,6 +27,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      <SEOHead />
       <AnnouncementBar />
       <Navigation onGetAudit={openContact} />
       <main>

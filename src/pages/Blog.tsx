@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Clock, ArrowLeft } from "lucide-react";
 import { blogPosts, formatBlogDate } from "@/data/blogPosts";
+import { SEOHead } from "@/components/SEOHead";
 import { Navigation } from "@/components/sections/Navigation";
 import { Footer } from "@/components/sections/Footer";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -24,6 +25,11 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen">
+      <SEOHead
+        title="Blog — Insights on School Transportation"
+        description="Expert analysis on school transportation costs, operations, parent experience, and the technology transforming K–12 districts."
+        path="/blog"
+      />
       <Navigation onGetAudit={() => setContactOpen(true)} />
       <main>
         {/* Hero */}
