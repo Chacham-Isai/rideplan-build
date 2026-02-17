@@ -1,93 +1,101 @@
 
 
-# RideLine — Marketing Website Build Plan
+# Safety & Driver Engagement Module
 
-## Overview
-Build a premium, single-page scrolling marketing website for RideLine, a K–12 school transportation SaaS platform. The site targets school district administrators with an authoritative, data-driven, ROI-focused tone. Uses the provided brand assets (logos, illustrations) throughout.
+This plan adds both marketing sections on the homepage and working submission forms for three new capabilities: Parent Safety Reporting, Driver Portal, and Driver Tipping.
 
-## Brand & Design System
-- **Colors**: Navy (#151D33) primary, Gold (#F5A623) accent, Green (#22A06B) for savings, Red (#DE350B) for problems, Off-white (#F7F8FA) backgrounds
-- **Typography**: Playfair Display for headings (serif, editorial), DM Sans for body (clean sans-serif)
-- **Tone**: Professional, urgent, data-heavy with concrete dollar amounts
-- **Assets**: Embed the provided RideLine logos (horizontal for nav/footer, dark background version, icon) and illustrations (route optimization, cost savings, dashboard, parent app, administrator) in relevant sections
+## What You'll Get
 
-## Page Sections (Single Scrolling Page)
+### 1. New Homepage Section: "Safety & Driver Experience"
+A new section on the homepage (between existing sections) showcasing three pillars:
+- **Parent Safety Portal** -- Report bullying or driver safety concerns with automatic school/bus company alerts
+- **Driver Portal** -- Drivers can report incidents, request schedule changes, or flag maintenance issues
+- **Driver Tipping** -- Parents can tip drivers during holidays, bad weather, or just to say thanks
 
-### 1. Announcement Bar
-- Dismissable gold banner with district count and "Schedule your free route audit" CTA
+### 2. Working Parent Safety Report Form (/report)
+A standalone page with a simple form (no login required) where parents can:
+- Select report type (Bullying, Driver Safety Concern, Other)
+- Enter their child's school, bus number, date of incident
+- Describe what happened
+- Provide their name and contact info
+- Submit goes to the database and shows a confirmation
 
-### 2. Sticky Navigation
-- Logo (horizontal version) on left, section links (Platform, Features, Savings, How It Works), "Get Free Audit" CTA button, mobile hamburger menu, shadow on scroll
+### 3. Working Driver Portal Form (/driver-portal)
+A standalone page where drivers can:
+- Select type (Incident Report, Maintenance Request, Schedule Request, Other)
+- Enter their name, bus number, route info
+- Describe the issue
+- Submit goes to the database and shows a confirmation
 
-### 3. Hero Section
-- Dark navy background with subtle grid pattern and radial gradient blobs
-- Pulsing badge: "The Operating System for School Transportation"
-- Headline: "Every Route. Every Dollar. Every Student." with gold italic accent
-- Subheadline with $710K–$1.6M savings callout
-- Two CTAs: gold "Start Your Free Route Audit" + ghost "See the Platform"
-- Four stat counters: $15B+, 120K+, 5.9M+, 12–25x
-- Staggered fade-in animations
+### 4. AI Pattern Monitoring (Backend)
+An edge function that analyzes submitted reports to detect patterns:
+- Multiple reports against the same bus number trigger an alert flag
+- Bullying reports are auto-flagged as high priority
+- Results stored as a priority flag on each report
 
-### 4. Trust/Region Bar
-- Light gray strip showing target states: NY, NJ, CT, PA, MD, DE
+### 5. Driver Tipping Page (/tip-driver)
+A simple page where parents can:
+- Enter the bus number or driver name
+- Select a tip amount ($5, $10, $20, custom)
+- Leave an optional thank-you note
+- For now, this captures the intent and stores it (actual payment integration can be added later with Stripe)
 
-### 5. Problem Section (Red Accent)
-- 6 pain-point cards in responsive grid (3→2→1 columns)
-- Topics: legacy routes, unverified invoices, parent complaints, no cost visibility, driver shortages, SPED cost explosion
-- Red top accent on hover, lift effect, scroll-reveal animation
+### 6. Navigation & Footer Updates
+- Add "Safety" link in the main navigation
+- Add "Driver Portal" and "Tip a Driver" links in the footer
 
-### 6. Platform Section (Dark Navy)
-- 6 module cards: Student Assignment, Route Optimization, Contractor Oversight, Parent Communication, Compliance & Reporting, AI Analytics
-- Green pill tags with key metrics, gold border glow on hover
+---
 
-### 7. Before/After Comparison Table
-- Styled table with red "Today" vs green "With RideLine" columns
-- 7 operation rows showing transformation (e.g., "Check 4 spreadsheets" → "Auto-assigned in seconds")
+## Technical Details
 
-### 8. ROI / Savings Section
-- Navy gradient card, two-column layout
-- Left: context and ROI badge (12–25x)
-- Right: itemized savings totaling $710K–$1.6M with gold-accented total
+### Database Tables (4 new tables)
 
-### 9. Feature Deep-Dives (3 Alternating Rows)
-- Student Assignment Engine, Route Optimization, Contractor Oversight
-- Each with eyebrow, headline, body text, feature checklist, and visual card with icons/data
-- Embed relevant uploaded images (route optimization illustration, dashboard view, cost savings graphic) as visual elements in these sections
+**safety_reports**
+- id, created_at, report_type (enum: bullying, driver_safety, other), school_name, bus_number, incident_date, description, reporter_name, reporter_email, reporter_phone, status (enum: new, reviewing, resolved), ai_priority (enum: low, medium, high, critical)
+- RLS: public INSERT, no SELECT/UPDATE/DELETE (same pattern as audit_requests)
 
-### 10. Six Questions Section
-- 6 numbered question cards in 3×2 grid highlighting the data gap
-- Gold border hover effect
+**driver_reports**
+- id, created_at, report_type (enum: incident, maintenance, schedule, other), driver_name, bus_number, route_info, description, contact_info, status (enum: new, reviewing, resolved)
+- RLS: public INSERT only
 
-### 11. How It Works (3 Steps)
-- Connected step cards: Free Route Audit (Weeks 1–2) → Configure & Integrate (Weeks 3–8) → Launch & Optimize (Weeks 9–12)
-- Color-coded circles: gold, navy, green
+**driver_tips**
+- id, created_at, bus_number, driver_name, tip_amount (numeric), message, tipper_name, tipper_email
+- RLS: public INSERT only
 
-### 12. Testimonial/Quote Banner
-- Dark navy, centered italic quote about ROI vs. cost
+**report_alerts**
+- id, created_at, alert_type (text), bus_number, report_count (integer), details (text), acknowledged (boolean default false)
+- RLS: no public access (backend-only via service role)
 
-### 13. By the Numbers
-- 4 large stat cards with Playfair Display numbers and gold accent characters
+### Edge Function: analyze-reports
+- Triggered after each safety report submission
+- Queries recent reports for the same bus number
+- If 3+ reports exist for the same bus, creates an alert in report_alerts
+- All bullying reports auto-flagged as "high" priority
+- Uses Lovable AI to classify severity from the description text
 
-### 14. CTA Section
-- Navy gradient card with "Stop Guessing. Start Optimizing." headline
-- Gold CTA button, radial glow effects
+### New Pages & Components
+- `/report` -- SafetyReportPage with form + Zod validation
+- `/driver-portal` -- DriverPortalPage with form + Zod validation
+- `/tip-driver` -- TipDriverPage with amount selector + message
+- New homepage section: SafetyDriverSection showcasing all three features
+- All pages use existing Navigation + Footer layout
 
-### 15. Footer
-- Dark navy, 4 columns: Brand, Platform, Company, Resources
-- Bottom bar with copyright and social icons
+### Routes Added to App.tsx
+```text
+/report        -> SafetyReportPage
+/driver-portal -> DriverPortalPage
+/tip-driver    -> TipDriverPage
+```
 
-## Interactions & Animation
-- Framer Motion scroll-reveal animations (fade-in-up) on all sections
-- Smooth anchor scrolling with sticky nav offset
-- Card hover effects: lift, shadow, border color changes
-- Dismissable announcement bar with X button
-- Mobile-responsive hamburger menu
-
-## Technical Notes
-- Single-page React app with section-based smooth scrolling
-- Framer Motion for animations (new dependency)
-- Google Fonts: Playfair Display + DM Sans
-- All provided images embedded as assets in relevant sections
-- No backend needed — this is a static marketing site
-- Fully responsive across mobile, tablet, and desktop
+### File Summary
+- `src/pages/SafetyReport.tsx` (new)
+- `src/pages/DriverPortal.tsx` (new)
+- `src/pages/TipDriver.tsx` (new)
+- `src/components/sections/SafetyDriverSection.tsx` (new homepage section)
+- `supabase/functions/analyze-reports/index.ts` (new edge function)
+- `src/App.tsx` (add 3 routes)
+- `src/pages/Index.tsx` (add SafetyDriverSection)
+- `src/components/sections/Navigation.tsx` (add Safety link)
+- `src/components/sections/Footer.tsx` (add portal links)
+- Database migration for 4 new tables + enums
 
