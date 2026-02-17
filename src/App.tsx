@@ -14,6 +14,9 @@ import Press from "./pages/Press";
 import Careers from "./pages/Careers";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import SafetyReport from "./pages/SafetyReport";
+import DriverPortal from "./pages/DriverPortal";
+import TipDriver from "./pages/TipDriver";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +39,9 @@ const App = () => (
             <Route path="/careers" element={<Careers />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/report" element={<SafetyReport />} />
+            <Route path="/driver-portal" element={<DriverPortal />} />
+            <Route path="/tip-driver" element={<TipDriver />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

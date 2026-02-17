@@ -41,6 +41,150 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_reports: {
+        Row: {
+          bus_number: string
+          contact_info: string | null
+          created_at: string
+          description: string
+          driver_name: string
+          id: string
+          report_type: Database["public"]["Enums"]["driver_report_type"]
+          route_info: string | null
+          status: Database["public"]["Enums"]["report_status"]
+        }
+        Insert: {
+          bus_number: string
+          contact_info?: string | null
+          created_at?: string
+          description: string
+          driver_name: string
+          id?: string
+          report_type: Database["public"]["Enums"]["driver_report_type"]
+          route_info?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+        }
+        Update: {
+          bus_number?: string
+          contact_info?: string | null
+          created_at?: string
+          description?: string
+          driver_name?: string
+          id?: string
+          report_type?: Database["public"]["Enums"]["driver_report_type"]
+          route_info?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+        }
+        Relationships: []
+      }
+      driver_tips: {
+        Row: {
+          bus_number: string | null
+          created_at: string
+          driver_name: string | null
+          id: string
+          message: string | null
+          tip_amount: number
+          tipper_email: string
+          tipper_name: string
+        }
+        Insert: {
+          bus_number?: string | null
+          created_at?: string
+          driver_name?: string | null
+          id?: string
+          message?: string | null
+          tip_amount: number
+          tipper_email: string
+          tipper_name: string
+        }
+        Update: {
+          bus_number?: string | null
+          created_at?: string
+          driver_name?: string | null
+          id?: string
+          message?: string | null
+          tip_amount?: number
+          tipper_email?: string
+          tipper_name?: string
+        }
+        Relationships: []
+      }
+      report_alerts: {
+        Row: {
+          acknowledged: boolean
+          alert_type: string
+          bus_number: string
+          created_at: string
+          details: string | null
+          id: string
+          report_count: number
+        }
+        Insert: {
+          acknowledged?: boolean
+          alert_type: string
+          bus_number: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          report_count?: number
+        }
+        Update: {
+          acknowledged?: boolean
+          alert_type?: string
+          bus_number?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          report_count?: number
+        }
+        Relationships: []
+      }
+      safety_reports: {
+        Row: {
+          ai_priority: Database["public"]["Enums"]["ai_priority"]
+          bus_number: string
+          created_at: string
+          description: string
+          id: string
+          incident_date: string
+          report_type: Database["public"]["Enums"]["safety_report_type"]
+          reporter_email: string
+          reporter_name: string
+          reporter_phone: string | null
+          school_name: string
+          status: Database["public"]["Enums"]["report_status"]
+        }
+        Insert: {
+          ai_priority?: Database["public"]["Enums"]["ai_priority"]
+          bus_number: string
+          created_at?: string
+          description: string
+          id?: string
+          incident_date: string
+          report_type: Database["public"]["Enums"]["safety_report_type"]
+          reporter_email: string
+          reporter_name: string
+          reporter_phone?: string | null
+          school_name: string
+          status?: Database["public"]["Enums"]["report_status"]
+        }
+        Update: {
+          ai_priority?: Database["public"]["Enums"]["ai_priority"]
+          bus_number?: string
+          created_at?: string
+          description?: string
+          id?: string
+          incident_date?: string
+          report_type?: Database["public"]["Enums"]["safety_report_type"]
+          reporter_email?: string
+          reporter_name?: string
+          reporter_phone?: string | null
+          school_name?: string
+          status?: Database["public"]["Enums"]["report_status"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -49,7 +193,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      ai_priority: "low" | "medium" | "high" | "critical"
+      driver_report_type: "incident" | "maintenance" | "schedule" | "other"
+      report_status: "new" | "reviewing" | "resolved"
+      safety_report_type: "bullying" | "driver_safety" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -176,6 +323,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      ai_priority: ["low", "medium", "high", "critical"],
+      driver_report_type: ["incident", "maintenance", "schedule", "other"],
+      report_status: ["new", "reviewing", "resolved"],
+      safety_report_type: ["bullying", "driver_safety", "other"],
+    },
   },
 } as const

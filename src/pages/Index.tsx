@@ -23,6 +23,7 @@ const HowItWorks = lazy(() => import("@/components/sections/HowItWorks").then(m 
 const TestimonialBanner = lazy(() => import("@/components/sections/TestimonialBanner").then(m => ({ default: m.TestimonialBanner })));
 const LiveStatsDashboard = lazy(() => import("@/components/sections/LiveStatsDashboard").then(m => ({ default: m.LiveStatsDashboard })));
 const CoverageMapSection = lazy(() => import("@/components/sections/CoverageMapSection").then(m => ({ default: m.CoverageMapSection })));
+const SafetyDriverSection = lazy(() => import("@/components/sections/SafetyDriverSection").then(m => ({ default: m.SafetyDriverSection })));
 const CTASection = lazy(() => import("@/components/sections/CTASection").then(m => ({ default: m.CTASection })));
 
 const Footer = lazy(() => import("@/components/sections/Footer").then(m => ({ default: m.Footer })));
@@ -47,6 +48,7 @@ const Index = () => {
           <ROISection />
           <ROICalculator onGetAudit={openContact} />
           <PricingSection onGetAudit={openContact} />
+          <SafetyDriverSection />
           <FeatureDeepDives />
           <TestimonialsSection />
           <QuestionsSection />
