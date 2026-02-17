@@ -4,11 +4,16 @@ import { Linkedin, Twitter, Facebook } from "lucide-react";
 const platformLinks = ["Student Assignment", "Route Optimization", "Contractor Oversight", "Parent Communication", "Compliance & Reporting"];
 const companyLinks = ["About", "Careers", "Blog", "Press", "Contact"];
 const resourceLinks = ["Case Studies", "ROI Calculator", "Webinars", "Documentation", "Support"];
+const safetyLinks = [
+  { label: "Report a Concern", href: "/report" },
+  { label: "Driver Portal", href: "/driver-portal" },
+  { label: "Tip a Driver", href: "/tip-driver" },
+];
 
 export const Footer = () => (
   <footer className="bg-navy pt-16 pb-8">
     <div className="mx-auto max-w-[1200px] px-4 md:px-6">
-      <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 pb-12 border-b border-primary-foreground/10">
+      <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5 pb-12 border-b border-primary-foreground/10">
         {/* Brand */}
         <div>
           <img src={logoDark} alt="RideLine" className="h-14 mb-4" />
@@ -51,6 +56,18 @@ export const Footer = () => (
             {resourceLinks.map((l) => (
               <li key={l}>
                 <a href="#" className="text-sm text-primary-foreground/50 hover:text-accent transition-colors">{l}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Safety */}
+        <div>
+          <h4 className="font-display text-sm font-bold text-primary-foreground mb-4">Safety & Drivers</h4>
+          <ul className="space-y-2">
+            {safetyLinks.map((l) => (
+              <li key={l.label}>
+                <a href={l.href} className="text-sm text-primary-foreground/50 hover:text-accent transition-colors">{l.label}</a>
               </li>
             ))}
           </ul>
