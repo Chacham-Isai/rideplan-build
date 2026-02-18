@@ -1,9 +1,27 @@
 import logoDark from "@/assets/rideline-logo-dark.png";
 import { Linkedin, Twitter, Facebook } from "lucide-react";
 
-const platformLinks = ["Student Assignment", "Route Optimization", "Contractor Oversight", "Parent Communication", "Compliance & Reporting"];
-const companyLinks = ["About", "Careers", "Blog", "Press", "Contact"];
-const resourceLinks = ["Case Studies", "ROI Calculator", "Webinars", "Documentation", "Support"];
+const platformLinks = [
+  { label: "Student Assignment", href: "/demo" },
+  { label: "Route Optimization", href: "/demo" },
+  { label: "Contractor Oversight", href: "/demo" },
+  { label: "Parent Communication", href: "/demo" },
+  { label: "Compliance & Reporting", href: "/demo" },
+];
+
+const companyLinks = [
+  { label: "About", href: "/about" },
+  { label: "Careers", href: "/careers" },
+  { label: "Blog", href: "/blog" },
+  { label: "Press", href: "/press" },
+];
+
+const resourceLinks = [
+  { label: "Blog", href: "/blog" },
+  { label: "Resources", href: "/resources" },
+  { label: "Request a Demo", href: "/demo" },
+];
+
 const safetyLinks = [
   { label: "Report a Concern", href: "/report" },
   { label: "Driver Portal", href: "/driver-portal" },
@@ -27,8 +45,8 @@ export const Footer = () => (
           <h4 className="font-display text-sm font-bold text-primary-foreground mb-4">Platform</h4>
           <ul className="space-y-2">
             {platformLinks.map((l) => (
-              <li key={l}>
-                <a href="#platform" className="text-sm text-primary-foreground/50 hover:text-accent transition-colors">{l}</a>
+              <li key={l.label}>
+                <a href={l.href} className="text-sm text-primary-foreground/50 hover:text-accent transition-colors">{l.label}</a>
               </li>
             ))}
           </ul>
@@ -38,14 +56,11 @@ export const Footer = () => (
         <div>
           <h4 className="font-display text-sm font-bold text-primary-foreground mb-4">Company</h4>
           <ul className="space-y-2">
-            {companyLinks.map((l) => {
-              const href = l === "About" ? "/about" : l === "Blog" ? "/blog" : l === "Press" ? "/press" : l === "Careers" ? "/careers" : "#";
-              return (
-                <li key={l}>
-                  <a href={href} className="text-sm text-primary-foreground/50 hover:text-accent transition-colors">{l}</a>
-                </li>
-              );
-            })}
+            {companyLinks.map((l) => (
+              <li key={l.label}>
+                <a href={l.href} className="text-sm text-primary-foreground/50 hover:text-accent transition-colors">{l.label}</a>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -54,8 +69,8 @@ export const Footer = () => (
           <h4 className="font-display text-sm font-bold text-primary-foreground mb-4">Resources</h4>
           <ul className="space-y-2">
             {resourceLinks.map((l) => (
-              <li key={l}>
-                <a href="#" className="text-sm text-primary-foreground/50 hover:text-accent transition-colors">{l}</a>
+              <li key={l.label}>
+                <a href={l.href} className="text-sm text-primary-foreground/50 hover:text-accent transition-colors">{l.label}</a>
               </li>
             ))}
           </ul>
@@ -81,11 +96,6 @@ export const Footer = () => (
           <span className="text-primary-foreground/20 hidden sm:inline">|</span>
           <a href="/privacy" className="text-xs text-primary-foreground/40 hover:text-accent transition-colors">Privacy Policy</a>
           <a href="/terms" className="text-xs text-primary-foreground/40 hover:text-accent transition-colors">Terms of Service</a>
-        </div>
-        <div className="flex gap-4">
-          <a href="#" className="text-primary-foreground/40 hover:text-accent transition-colors" aria-label="LinkedIn"><Linkedin className="h-5 w-5" /></a>
-          <a href="#" className="text-primary-foreground/40 hover:text-accent transition-colors" aria-label="Twitter"><Twitter className="h-5 w-5" /></a>
-          <a href="#" className="text-primary-foreground/40 hover:text-accent transition-colors" aria-label="Facebook"><Facebook className="h-5 w-5" /></a>
         </div>
       </div>
     </div>
