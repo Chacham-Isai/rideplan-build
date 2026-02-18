@@ -19,7 +19,7 @@ export const CTASection = ({ onGetAudit }: { onGetAudit?: () => void }) => (
             </p>
             <button
               onClick={onGetAudit}
-              className="mt-8 inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-sm font-bold text-accent-foreground hover:bg-gold-light transition shadow-lg shadow-accent/25"
+              className="mt-8 inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-4 text-sm font-bold text-accent-foreground transition-all duration-200 hover:bg-gold-light hover:scale-105 hover:shadow-xl hover:shadow-accent/30 active:scale-[0.98] shadow-lg shadow-accent/25"
             >
               Schedule Your Free Route Audit <ArrowRight className="h-4 w-4" />
             </button>

@@ -100,10 +100,10 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
               <button
                 key={l.href}
                 onClick={() => handleClick(l.href, (l as any).isRoute)}
-                className={`text-sm font-medium transition-colors ${
+                className={`relative text-sm font-medium transition-colors duration-200 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:bg-accent after:transition-all after:duration-300 after:ease-out ${
                   isActive || isBlogActive
-                    ? "text-accent"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-accent after:w-full"
+                    : "text-muted-foreground hover:text-foreground after:w-0 hover:after:w-full"
                 }`}
               >
                 {l.label}
@@ -112,7 +112,7 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
           })}
           <button
             onClick={onGetAudit}
-            className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition"
+            className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90 hover:scale-105 hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98]"
           >
             Get Free Audit
           </button>

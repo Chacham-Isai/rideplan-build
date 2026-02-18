@@ -86,13 +86,13 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
             >
               <button
                 onClick={onGetAudit}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 text-sm font-bold text-accent-foreground hover:bg-gold-light transition shadow-lg shadow-accent/20"
+                className="inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 text-sm font-bold text-accent-foreground transition-all duration-200 hover:bg-gold-light hover:scale-105 hover:shadow-xl hover:shadow-accent/30 active:scale-[0.98] shadow-lg shadow-accent/20"
               >
-                Start Your Free Route Audit <ArrowRight className="h-4 w-4" />
+                Start Your Free Route Audit <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </button>
               <button
                 onClick={() => handleScroll("#platform")}
-                className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/20 px-7 py-3.5 text-sm font-semibold text-primary-foreground hover:border-primary-foreground/40 transition"
+                className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/20 px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:border-primary-foreground/40 hover:scale-105 hover:bg-primary-foreground/5 active:scale-[0.98]"
               >
                 <Play className="h-4 w-4" /> See the Platform
               </button>
