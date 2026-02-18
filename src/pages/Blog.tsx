@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Clock, ArrowLeft } from "lucide-react";
+import { ArrowRight, Clock, MapPin, DollarSign, Users, TrendingUp, Shield, Cpu, BookOpen, Briefcase, FileText, Heart } from "lucide-react";
 import { blogPosts, formatBlogDate } from "@/data/blogPosts";
 import { SEOHead } from "@/components/SEOHead";
 import { Navigation } from "@/components/sections/Navigation";
@@ -19,6 +19,42 @@ const categoryColors: Record<string, string> = {
   Technology: "bg-primary/15 text-primary",
   Safety: "bg-destructive/15 text-destructive",
   Policy: "bg-accent/15 text-accent",
+};
+
+const categoryThumbnails: Record<string, { gradient: string; icon: React.ElementType }> = {
+  "Cost Savings": { gradient: "from-emerald-600 to-teal-700", icon: DollarSign },
+  "Parent Experience": { gradient: "from-amber-500 to-orange-600", icon: Heart },
+  "Industry Trends": { gradient: "from-blue-600 to-indigo-700", icon: TrendingUp },
+  "Behind the Scenes": { gradient: "from-rose-500 to-pink-600", icon: Briefcase },
+  Leadership: { gradient: "from-amber-500 to-yellow-600", icon: Users },
+  Operations: { gradient: "from-slate-600 to-slate-800", icon: MapPin },
+  "Case Studies": { gradient: "from-emerald-500 to-green-700", icon: FileText },
+  Technology: { gradient: "from-violet-600 to-purple-700", icon: Cpu },
+  Safety: { gradient: "from-red-500 to-rose-700", icon: Shield },
+  Policy: { gradient: "from-sky-500 to-blue-600", icon: BookOpen },
+};
+
+const defaultThumbnail = { gradient: "from-primary to-primary/80", icon: BookOpen };
+
+const BlogThumbnail = ({ category, className = "", large = false }: { category: string; className?: string; large?: boolean }) => {
+  const { gradient, icon: Icon } = categoryThumbnails[category] || defaultThumbnail;
+  return (
+    <div className={`relative overflow-hidden rounded-lg bg-gradient-to-br ${gradient} ${className}`}>
+      {/* Decorative pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full border-4 border-white/30" />
+        <div className="absolute -left-2 -bottom-2 h-16 w-16 rounded-full border-4 border-white/20" />
+        <div className="absolute right-1/4 bottom-1/4 h-12 w-12 rounded-full bg-white/10" />
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <Icon className={`text-white/25 ${large ? "h-20 w-20" : "h-12 w-12"}`} strokeWidth={1.5} />
+      </div>
+      {/* Category label */}
+      <div className="absolute bottom-2 left-3">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">{category}</span>
+      </div>
+    </div>
+  );
 };
 
 const Blog = () => {
@@ -60,27 +96,30 @@ const Blog = () => {
             <ScrollReveal>
               <Link
                 to={`/blog/${featured.slug}`}
-                className="group block rounded-2xl border bg-card p-8 md:p-12 transition-all duration-300 hover:shadow-xl hover:border-accent/30"
+                className="group grid md:grid-cols-[1fr_1.2fr] gap-6 rounded-2xl border bg-card p-6 md:p-8 transition-all duration-300 hover:shadow-xl hover:border-accent/30"
               >
-                <div className="flex flex-wrap items-center gap-3 mb-4">
-                  <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${categoryColors[featured.category] || "bg-muted text-muted-foreground"}`}>
-                    {featured.category}
-                  </span>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" /> {featured.readTime}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatBlogDate(featured.date)}
-                  </span>
-                </div>
-                <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl lg:text-4xl group-hover:text-accent transition-colors">
-                  {featured.title}
-                </h2>
-                <p className="mt-4 text-muted-foreground leading-relaxed max-w-3xl">
-                  {featured.excerpt}
-                </p>
-                <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent group-hover:gap-3 transition-all">
-                  Read Article <ArrowRight className="h-4 w-4" />
+                <BlogThumbnail category={featured.category} className="aspect-[16/9] md:aspect-auto md:min-h-[260px]" large />
+                <div className="flex flex-col justify-center">
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${categoryColors[featured.category] || "bg-muted text-muted-foreground"}`}>
+                      {featured.category}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" /> {featured.readTime}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatBlogDate(featured.date)}
+                    </span>
+                  </div>
+                  <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl group-hover:text-accent transition-colors">
+                    {featured.title}
+                  </h2>
+                  <p className="mt-4 text-muted-foreground leading-relaxed">
+                    {featured.excerpt}
+                  </p>
+                  <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent group-hover:gap-3 transition-all">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </div>
                 </div>
               </Link>
             </ScrollReveal>
@@ -95,29 +134,32 @@ const Blog = () => {
                 <ScrollReveal key={post.slug} delay={i * 0.06}>
                   <Link
                     to={`/blog/${post.slug}`}
-                    className="group flex flex-col h-full rounded-xl border bg-card p-6 transition-all duration-300 hover:shadow-lg hover:border-accent/30 hover:-translate-y-1"
+                    className="group flex flex-col h-full rounded-xl border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-accent/30 hover:-translate-y-1"
                   >
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryColors[post.category] || "bg-muted text-muted-foreground"}`}>
-                        {post.category}
-                      </span>
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" /> {post.readTime}
-                      </span>
-                    </div>
-                    <h3 className="font-display text-lg font-bold text-foreground mb-2 group-hover:text-accent transition-colors line-clamp-3">
-                      {post.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-3 flex-grow">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
-                      <span className="text-xs text-muted-foreground">
-                        {formatBlogDate(post.date)}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent group-hover:gap-2 transition-all">
-                        Read <ArrowRight className="h-3 w-3" />
-                      </span>
+                    <BlogThumbnail category={post.category} className="aspect-[16/9] w-full" />
+                    <div className="flex flex-col flex-grow p-6">
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryColors[post.category] || "bg-muted text-muted-foreground"}`}>
+                          {post.category}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" /> {post.readTime}
+                        </span>
+                      </div>
+                      <h3 className="font-display text-lg font-bold text-foreground mb-2 group-hover:text-accent transition-colors line-clamp-3">
+                        {post.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-3 flex-grow">
+                        {post.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
+                        <span className="text-xs text-muted-foreground">
+                          {formatBlogDate(post.date)}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent group-hover:gap-2 transition-all">
+                          Read <ArrowRight className="h-3 w-3" />
+                        </span>
+                      </div>
                     </div>
                   </Link>
                 </ScrollReveal>
