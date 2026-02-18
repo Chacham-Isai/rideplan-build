@@ -99,7 +99,7 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
             </motion.div>
           </div>
 
-          {/* Right: Dashboard preview */}
+          {/* Right: Dashboard preview (desktop) */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
@@ -122,6 +122,29 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
             </div>
           </motion.div>
         </div>
+
+        {/* Mobile: Product preview */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.5 }}
+          className="mt-10 lg:hidden"
+        >
+          <div className="relative mx-auto max-w-md">
+            <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-accent/15 to-success/10 blur-xl" />
+            <img
+              src={dashboardImg}
+              alt="RideLine Dashboard — route management command center"
+              className="relative rounded-xl shadow-2xl shadow-black/40 border border-primary-foreground/10"
+            />
+            <img
+              src={parentSafetyImg}
+              alt="Parent safe arrival notification on phone"
+              loading="lazy"
+              className="relative -mt-6 mx-auto w-4/5 rounded-xl shadow-xl shadow-black/30 border border-primary-foreground/10"
+            />
+          </div>
+        </motion.div>
 
         {/* Animated Stats */}
         <motion.div
