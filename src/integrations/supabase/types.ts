@@ -185,15 +185,43 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       ai_priority: "low" | "medium" | "high" | "critical"
+      app_role: "admin" | "user"
       driver_report_type: "incident" | "maintenance" | "schedule" | "other"
       report_status: "new" | "reviewing" | "resolved"
       safety_report_type: "bullying" | "driver_safety" | "other"
@@ -325,6 +353,7 @@ export const Constants = {
   public: {
     Enums: {
       ai_priority: ["low", "medium", "high", "critical"],
+      app_role: ["admin", "user"],
       driver_report_type: ["incident", "maintenance", "schedule", "other"],
       report_status: ["new", "reviewing", "resolved"],
       safety_report_type: ["bullying", "driver_safety", "other"],
