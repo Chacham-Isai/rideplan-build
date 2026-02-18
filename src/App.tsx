@@ -24,6 +24,7 @@ import DriverReportsAdmin from "./pages/admin/DriverReportsAdmin";
 import TipsAdmin from "./pages/admin/TipsAdmin";
 import AlertsAdmin from "./pages/admin/AlertsAdmin";
 import AnalyticsAdmin from "./pages/admin/AnalyticsAdmin";
+import PitchDeck from "./pages/PitchDeck";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/driver-portal" element={<DriverPortal />} />
             <Route path="/tip-driver" element={<TipDriver />} />
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/pitch" element={<PitchDeck />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<SafetyReportsAdmin />} />
               <Route path="driver-reports" element={<DriverReportsAdmin />} />
