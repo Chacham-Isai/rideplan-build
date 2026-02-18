@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { Menu, X } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import logoHorizontal from "@/assets/rideline-logo-horizontal.png";
 
 const navLinks = [
@@ -118,44 +118,73 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
           </button>
         </div>
 
-        {/* Mobile hamburger */}
+        {/* Animated hamburger */}
         <button
-          className="md:hidden p-2"
+          className="md:hidden relative w-10 h-10 flex items-center justify-center"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
-          {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          <span className="sr-only">Menu</span>
+          <motion.span
+            className="absolute h-0.5 w-6 rounded-full bg-foreground"
+            animate={menuOpen ? { rotate: 45, y: 0 } : { rotate: 0, y: -6 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+          />
+          <motion.span
+            className="absolute h-0.5 w-6 rounded-full bg-foreground"
+            animate={menuOpen ? { opacity: 0, x: -8 } : { opacity: 1, x: 0 }}
+            transition={{ duration: 0.2 }}
+          />
+          <motion.span
+            className="absolute h-0.5 w-6 rounded-full bg-foreground"
+            animate={menuOpen ? { rotate: -45, y: 0 } : { rotate: 0, y: 6 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+          />
         </button>
       </div>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden border-t bg-card px-4 pb-4">
-          {navLinks.map((l) => {
-            const isActive = !l.isRoute && location.pathname === "/" && activeSection === l.href.slice(1);
-            const isBlogActive = l.isRoute && location.pathname.startsWith(l.href);
-            return (
-              <button
-                key={l.href}
-                onClick={() => handleClick(l.href, (l as any).isRoute)}
-                className={`block w-full py-3 text-left text-sm font-medium ${
-                  isActive || isBlogActive
-                    ? "text-accent"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {l.label}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => { setMenuOpen(false); onGetAudit?.(); }}
-            className="mt-2 w-full rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+      {/* Animated mobile menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="md:hidden border-t bg-card px-4 pb-4 overflow-hidden"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            Get Free Audit
-          </button>
-        </div>
-      )}
+            {navLinks.map((l, i) => {
+              const isActive = !l.isRoute && location.pathname === "/" && activeSection === l.href.slice(1);
+              const isBlogActive = l.isRoute && location.pathname.startsWith(l.href);
+              return (
+                <motion.button
+                  key={l.href}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.04, duration: 0.25 }}
+                  onClick={() => handleClick(l.href, (l as any).isRoute)}
+                  className={`block w-full py-3 text-left text-sm font-medium ${
+                    isActive || isBlogActive
+                      ? "text-accent"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {l.label}
+                </motion.button>
+              );
+            })}
+            <motion.button
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: navLinks.length * 0.04, duration: 0.25 }}
+              onClick={() => { setMenuOpen(false); onGetAudit?.(); }}
+              className="mt-2 w-full rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+            >
+              Get Free Audit
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
