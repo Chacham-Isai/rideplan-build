@@ -17,6 +17,12 @@ import Terms from "./pages/Terms";
 import SafetyReport from "./pages/SafetyReport";
 import DriverPortal from "./pages/DriverPortal";
 import TipDriver from "./pages/TipDriver";
+import AdminLogin from "./pages/AdminLogin";
+import AdminLayout from "./components/admin/AdminLayout";
+import SafetyReportsAdmin from "./pages/admin/SafetyReportsAdmin";
+import DriverReportsAdmin from "./pages/admin/DriverReportsAdmin";
+import TipsAdmin from "./pages/admin/TipsAdmin";
+import AlertsAdmin from "./pages/admin/AlertsAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +48,13 @@ const App = () => (
             <Route path="/report" element={<SafetyReport />} />
             <Route path="/driver-portal" element={<DriverPortal />} />
             <Route path="/tip-driver" element={<TipDriver />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<SafetyReportsAdmin />} />
+              <Route path="driver-reports" element={<DriverReportsAdmin />} />
+              <Route path="tips" element={<TipsAdmin />} />
+              <Route path="alerts" element={<AlertsAdmin />} />
+            </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
