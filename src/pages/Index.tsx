@@ -7,6 +7,7 @@ import { TrustBar } from "@/components/sections/TrustBar";
 import { ContactFormModal } from "@/components/ContactFormModal";
 import { ChatWidget } from "@/components/ChatWidget";
 import { BackToTop } from "@/components/BackToTop";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 // Lazy-load below-the-fold sections
 const ProblemSection = lazy(() => import("@/components/sections/ProblemSection").then(m => ({ default: m.ProblemSection })));
@@ -39,24 +40,58 @@ const Index = () => {
       <Navigation onGetAudit={openContact} />
       <main>
         <HeroSection onGetAudit={openContact} />
-        <TrustBar />
+        <ScrollReveal direction="fade" duration={0.5}>
+          <TrustBar />
+        </ScrollReveal>
         <Suspense fallback={null}>
-          <ProblemSection />
-          <PlatformSection />
-          <WhoWeServeSection />
-          <ComparisonTable />
-          <ROISection />
-          <ROICalculator onGetAudit={openContact} />
-          <PricingSection onGetAudit={openContact} />
-          <SafetyDriverSection />
-          <FeatureDeepDives />
-          <TestimonialsSection />
-          <QuestionsSection />
-          <HowItWorks />
-          <TestimonialBanner />
-          <LiveStatsDashboard />
-          <CoverageMapSection />
-          <CTASection onGetAudit={openContact} />
+          <ScrollReveal direction="up">
+            <ProblemSection />
+          </ScrollReveal>
+          <ScrollReveal direction="left" delay={0.1}>
+            <PlatformSection />
+          </ScrollReveal>
+          <ScrollReveal direction="right" delay={0.1}>
+            <WhoWeServeSection />
+          </ScrollReveal>
+          <ScrollReveal direction="scale">
+            <ComparisonTable />
+          </ScrollReveal>
+          <ScrollReveal direction="up">
+            <ROISection />
+          </ScrollReveal>
+          <ScrollReveal direction="left" delay={0.1}>
+            <ROICalculator onGetAudit={openContact} />
+          </ScrollReveal>
+          <ScrollReveal direction="up">
+            <PricingSection onGetAudit={openContact} />
+          </ScrollReveal>
+          <ScrollReveal direction="right" delay={0.1}>
+            <SafetyDriverSection />
+          </ScrollReveal>
+          <ScrollReveal direction="left" delay={0.1}>
+            <FeatureDeepDives />
+          </ScrollReveal>
+          <ScrollReveal direction="up">
+            <TestimonialsSection />
+          </ScrollReveal>
+          <ScrollReveal direction="fade">
+            <QuestionsSection />
+          </ScrollReveal>
+          <ScrollReveal direction="up">
+            <HowItWorks />
+          </ScrollReveal>
+          <ScrollReveal direction="scale">
+            <TestimonialBanner />
+          </ScrollReveal>
+          <ScrollReveal direction="left" delay={0.1}>
+            <LiveStatsDashboard />
+          </ScrollReveal>
+          <ScrollReveal direction="right" delay={0.1}>
+            <CoverageMapSection />
+          </ScrollReveal>
+          <ScrollReveal direction="scale">
+            <CTASection onGetAudit={openContact} />
+          </ScrollReveal>
         </Suspense>
       </main>
       <Suspense fallback={null}>
