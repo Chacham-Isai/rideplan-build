@@ -44,35 +44,35 @@ const Index = () => {
           <TrustBar />
         </ScrollReveal>
         <Suspense fallback={null}>
-          <ScrollReveal direction="up">
-            <ProblemSection />
+          <ScrollReveal direction="scale">
+            <LiveStatsDashboard />
           </ScrollReveal>
           <ScrollReveal direction="left" delay={0.1}>
             <PlatformSection />
           </ScrollReveal>
-          <ScrollReveal direction="right" delay={0.1}>
-            <WhoWeServeSection />
+          <ScrollReveal direction="up">
+            <ROISection />
+          </ScrollReveal>
+          <ScrollReveal direction="up">
+            <TestimonialsSection />
           </ScrollReveal>
           <ScrollReveal direction="scale">
             <ComparisonTable />
           </ScrollReveal>
-          <ScrollReveal direction="up">
-            <ROISection />
+          <ScrollReveal direction="right" delay={0.1}>
+            <FeatureDeepDives />
           </ScrollReveal>
-          <ScrollReveal direction="left" delay={0.1}>
-            <ROICalculator onGetAudit={openContact} />
-          </ScrollReveal>
-          <ScrollReveal direction="up">
-            <PricingSection onGetAudit={openContact} />
+          <ScrollReveal direction="right" delay={0.1}>
+            <WhoWeServeSection />
           </ScrollReveal>
           <ScrollReveal direction="right" delay={0.1}>
             <SafetyDriverSection />
           </ScrollReveal>
           <ScrollReveal direction="left" delay={0.1}>
-            <FeatureDeepDives />
+            <ROICalculator onGetAudit={openContact} />
           </ScrollReveal>
           <ScrollReveal direction="up">
-            <TestimonialsSection />
+            <ProblemSection />
           </ScrollReveal>
           <ScrollReveal direction="fade">
             <QuestionsSection />
@@ -83,8 +83,8 @@ const Index = () => {
           <ScrollReveal direction="scale">
             <TestimonialBanner />
           </ScrollReveal>
-          <ScrollReveal direction="left" delay={0.1}>
-            <LiveStatsDashboard />
+          <ScrollReveal direction="up">
+            <PricingSection onGetAudit={openContact} />
           </ScrollReveal>
           <ScrollReveal direction="right" delay={0.1}>
             <CoverageMapSection />

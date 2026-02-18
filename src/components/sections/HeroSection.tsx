@@ -64,8 +64,8 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
               transition={{ duration: 0.6, delay: 0.15 }}
               className="font-display text-4xl font-bold leading-tight text-primary-foreground md:text-5xl lg:text-6xl"
             >
-              Every Route. Every Dollar.{" "}
-              <span className="italic text-accent">Every Student.</span>
+              Every Student.{" "}
+              <span className="italic text-accent">Every Day.</span>
             </motion.h1>
 
             <motion.p
