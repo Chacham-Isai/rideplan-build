@@ -95,3 +95,41 @@
 .animate-scroll-logos:hover {
   animation-play-state: paused;
 }
+
+/* Smooth section transitions */
+main > section,
+main > .scroll-reveal-wrapper > section {
+  will-change: opacity;
+}
+
+/* Subtle gradient dividers between alternating sections */
+section + section {
+  position: relative;
+}
+
+section + section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(80%, 800px);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--border) / 0.5) 30%,
+    hsl(var(--border)) 50%,
+    hsl(var(--border) / 0.5) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Hide divider when bg color changes between sections (dark to light, etc.) */
+section.bg-navy + section::before,
+section + section.bg-navy::before,
+section.bg-secondary + section.bg-background::before,
+section.bg-background + section.bg-secondary::before {
+  display: none;
+}
