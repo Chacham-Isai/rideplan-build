@@ -35,7 +35,7 @@ const getVariants = (direction: RevealDirection, distance: number): Variants => 
       visible.x = 0;
       break;
     case "scale":
-      hidden.scale = 0.92;
+      hidden.scale = 0.96;
       visible.scale = 1;
       break;
     case "fade":
@@ -51,11 +51,11 @@ export const ScrollReveal = ({
   className = "",
   delay = 0,
   direction = "up",
-  duration = 0.7,
-  distance = 50,
+  duration = 0.6,
+  distance = 32,
 }: ScrollRevealProps) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-60px" });
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
   const variants = getVariants(direction, distance);
 
   return (
@@ -68,7 +68,7 @@ export const ScrollReveal = ({
       transition={{
         duration,
         delay,
-        ease: [0.25, 0.4, 0.25, 1],
+        ease: [0.16, 1, 0.3, 1],
       }}
     >
       {children}
