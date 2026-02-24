@@ -69,6 +69,7 @@ const ContractsAdmin = () => {
 
   const handleAdd = async () => {
     const { error } = await supabase.from("contracts").insert({
+      district_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       contractor_name: form.contractor_name,
       contact_email: form.contact_email || null,
       contact_phone: form.contact_phone || null,
