@@ -4,33 +4,33 @@ import { MapPin, FileText, Phone, DollarSign, Users, Accessibility } from "lucid
 const problems = [
   {
     icon: MapPin,
-    title: "Routes Planned on Legacy Knowledge",
-    body: "Coordinators manually plot routes using paper maps and local knowledge. Routes are inherited and rarely re-optimized, wasting $200K–$900K annually.",
+    title: "Routes Built on Guesswork",
+    body: "Coordinators inherit decades-old routes plotted on paper maps. Without optimization tools, districts run 10–15 redundant routes — burning through $300K–$900K every year on buses that shouldn't exist.",
   },
   {
     icon: FileText,
-    title: "Contractor Invoices Go Unverified",
-    body: "Bus companies bill based on contracted rates. No one audits actual miles, students transported, or route adherence — resulting in $100K–$400K in overbilling.",
+    title: "Contractor Invoices Go Unchecked",
+    body: "Bus companies invoice based on contracted rates with no GPS verification. Districts overpay $150K–$500K annually on routes never driven, miles never traveled, and students never picked up.",
   },
   {
     icon: Phone,
-    title: "Parents Overwhelm the Office",
-    body: "Paper assignment letters, phone trees for delays. Parents call dispatch for every bus issue, overwhelming 1–2 staff members with 15–30 complaints daily.",
+    title: "Parents Flood the Office",
+    body: "No tracking, no self-service portal, no automated alerts. Parents call dispatch 20–40 times daily for bus updates, overwhelming 1–2 staff members and creating a bottleneck every morning.",
   },
   {
     icon: DollarSign,
-    title: "No Cost-Per-Student Visibility",
-    body: "Districts can't tell the board what they pay per student, per route, or per contractor. Budgets are lump-sum line items — 85–90% of districts operate blind.",
+    title: "Zero Cost-Per-Student Visibility",
+    body: "88% of districts cannot tell their board what they pay per student, per route, or per contractor. Budgets are lump-sum line items with no accountability or benchmarking data.",
   },
   {
     icon: Users,
-    title: "91% Report Driver Shortages",
-    body: "Districts cancel routes, double-up runs, and extend walk zones. 40% have curtailed services entirely. Students miss school, absenteeism rises 15–20%.",
+    title: "86% Report Driver Shortages",
+    body: "Districts cancel routes, double-up runs, and extend walk zones. Over 40% have curtailed service entirely — leading to 12–18% higher chronic absenteeism in affected areas.",
   },
   {
     icon: Accessibility,
-    title: "SPED Costs Are Exploding",
-    body: "Special ed transport runs separate routes at 3–5x cost. Minimal ride-sharing or coordination means it consumes 25–40% of your entire transportation budget.",
+    title: "Special Ed Costs Are Spiraling",
+    body: "SPED transport runs isolated routes at 3–5× the cost per student. Without ride-sharing coordination, it consumes 30–45% of total transportation spend — and growing 8% year over year.",
   },
 ];
 
@@ -41,10 +41,10 @@ export const ProblemSection = () => (
         <div className="text-center mb-14">
           <p className="text-sm font-bold uppercase tracking-widest text-destructive mb-3">The Problem</p>
           <h2 className="font-display text-3xl font-bold md:text-4xl lg:text-5xl">
-            Your $12M+ budget is managed with spreadsheets.
+            Your $14M+ budget runs on inherited routes and zero data.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Transportation is your district's largest outsourced line item — yet it runs on paper maps, inherited routes, and zero data.
+            Transportation is your district's largest outsourced line item — yet most coordinators still manage it with spreadsheets, paper maps, and phone trees.
           </p>
         </div>
       </ScrollReveal>
