@@ -1,100 +1,88 @@
 
 
-# Priority 1: Multi-Tenant District Isolation
+# Current State: Residency Verification & Parent Registration/Reapply
 
-## Problem
+Here is exactly what exists today and what still needs to be built.
 
-Right now, **zero tables** in the `/app/*` system have a `district_id` column. The data tables (`routes`, `student_registrations`, `contracts`, `contract_invoices`, `contractor_insurance`, `contractor_performance`, `compliance_reports`, `compliance_training`, `mckinney_vento_students`, `ed_law_2d_contractors`, `safety_reports`, `route_stops`, `route_scenarios`) all use the old `has_role(auth.uid(), 'admin')` RLS — meaning any admin sees ALL data from ALL districts. If you onboard a second district, they see Lawrence's data. This is a blocker for selling to anyone.
+## What is Already Built
 
-The `districts` and `profiles` tables exist. The `district_user_roles` table exists. The helper functions `get_user_district_id()`, `get_user_role()`, and `has_app_role()` exist. The foundation is there — but nothing is wired to it.
+### Public Registration (`/register`) — Fully Functional
+A complete 6-step wizard exists at `/register` and works end-to-end:
+1. **Parent Info** — name, email, phone, language, password (creates auth account)
+2. **Student Info** — name, DOB, grade, school, IEP/504/McKinney-Vento/Foster Care flags; supports multiple students
+3. **Address** — street, city, state, ZIP (with "will be geocoded after submission" notice)
+4. **Documents** — upload 2+ residency documents (utility bill, lease, property tax, bank statement, vehicle registration, gov ID); stored in `residency-documents` storage bucket
+5. **Childcare** — optional childcare provider transportation request
+6. **Review & Sign** — summary, Parents' Bill of Rights acknowledgment, electronic signature (ESRA-compliant attestation under penalty of perjury)
 
-## What Changes
+On submit: creates auth account, inserts `student_registrations` (with `district_id`), uploads docs to `residency_documents`, creates `residency_attestations`, and optionally `childcare_requests`.
 
-### Phase A — Database Migration (single SQL migration)
+### Public Reapply (`/reapply`) — Fully Functional
+A returning-family flow that:
+- Requires login (email/password)
+- Loads previous registrations from `student_registrations`
+- Shows each student with auto-incremented grade (K→1, 1→2, etc.)
+- "Same address" checkbox — if address changed, redirects to full registration
+- Electronic signature + Bill of Rights acknowledgment
+- Creates new `student_registrations` for the new school year with `district_id` carried forward
 
-Add `district_id UUID NOT NULL REFERENCES districts(id)` to these 13 tables:
+### Database Tables — All in Place
+- `student_registrations` — has `district_id`, `parent_user_id`, all address/flag fields, status workflow (`pending`→`approved`/`denied`)
+- `residency_documents` — linked to registration, stores file URLs
+- `residency_attestations` — stores signature text, attestation text, timestamp
+- `residency_audit_log` — admin review trail (approve/deny actions)
+- `childcare_requests` — linked to registration
+- RLS policies enforce parent-only insert/view and district-scoped staff access
 
-```text
-routes
-student_registrations
-contracts
-contract_invoices       (via contract → district, or direct)
-contractor_insurance    (via contract → district, or direct)
-contractor_performance  (via contract → district, or direct)
-compliance_reports
-compliance_training
-mckinney_vento_students
-ed_law_2d_contractors
-safety_reports
-route_stops             (via route → district, or direct)
-route_scenarios
-```
+### Admin Review (`/admin/residency`) — Exists
+Staff can view pending registrations, approve/deny them, with audit logging.
 
-For the tables that already have FK relationships to `contracts` or `routes` (like `contract_invoices`, `contractor_insurance`, `contractor_performance`, `route_stops`), we add `district_id` directly rather than doing joins in RLS — direct column is faster and simpler for RLS.
+## What is NOT Built (the Gaps)
 
-**Strategy for existing data:** All existing seeded data belongs to Lawrence UFSD. The migration will:
-1. Add `district_id` as nullable
-2. UPDATE all rows to set `district_id` = the Lawrence district UUID
-3. ALTER to NOT NULL + add FK constraint
+### 1. In-App Parent Registration & Reapply — Placeholder Only
+The sidebar routes at `/app/parent/register` and `/app/parent/reapply` are **placeholder pages** (just show "Register Student" / "Reapply for Transportation" text). Parents who are already logged into the portal cannot register or reapply from inside the app — they'd have to go to the public `/register` or `/reapply` URLs.
 
-**New RLS policies** on each table (replacing old `has_role` ones):
+### 2. District Slug Lookup on Registration
+The registration wizard hardcodes `districtId = "a1b2c3d4-..."`. It reads `?district=` from the URL but doesn't actually look it up in the `districts` table. A second district onboarding would fail.
 
-- `SELECT`: `district_id = get_user_district_id()` (for staff+ via `has_app_role('staff')`)
-- `INSERT`: `district_id = get_user_district_id()` AND `has_app_role('staff')`
-- `UPDATE`: `district_id = get_user_district_id()` AND `has_app_role('staff')`
-- `DELETE`: `district_id = get_user_district_id()` AND `has_app_role('district_admin')`
+### 3. No Reapply Link in Parent Sidebar
+The sidebar has "Register" but no "Reapply" link for returning parents.
 
-For `student_registrations`, keep the existing parent policies (parents can view/insert/update their own) and add district-scoped staff policies.
+### 4. No Staff-Side Residency Review in `/app`
+The residency review is only on the old `/admin/residency` route, not in the new `/app` system with district-scoped RLS.
 
-For `safety_reports` and similar public-insert tables, keep the `INSERT WITH CHECK (true)` policy but scope `SELECT/UPDATE` to district.
+## Proposed Plan
 
-### Phase B — Frontend Changes
+### Phase 1: Wire In-App Parent Register
+Replace the placeholder `ParentRegister` page with the existing `RegisterWizard` component, but skip Step 1 (parent info / account creation) since the parent is already logged in. Pre-fill `parentName`, `email`, `phone` from the auth session and `district_id` from `useDistrict()`.
 
-**No page code changes needed.** Because RLS enforces district isolation at the database level, every `supabase.from("routes").select(...)` call automatically returns only the current user's district data. The existing Dashboard, Students, Routes, Reports, Contracts, Compliance, and Settings pages work unchanged.
+**Files:** `src/pages/app/parent/ParentRegister.tsx`
 
-The only frontend change: when inserting new records (future features like "Add Route", "Add Contract"), the code must include `district_id` from `useDistrict().district.id`. But none of the current pages do inserts except Settings (profile update, which is already scoped by `user.id`).
+### Phase 2: Wire In-App Parent Reapply
+Replace the placeholder `ParentReapply` page with the reapply logic from `/reapply`, but skip the login gate (user is already authenticated). Use `useAuth()` for user ID and `useDistrict()` for district context.
 
-### Phase C — Verify Parent Registration
+**Files:** `src/pages/app/parent/ParentReapply.tsx`
 
-The `student_registrations` table gets `district_id`. The `/register` flow currently doesn't set `district_id` — it will need updating:
-- Accept `?district=<slug>` query param or have user select district
-- Set `district_id` on the registration insert
-- This is Priority 2 work but the schema change goes in now
+### Phase 3: Add Reapply to Parent Sidebar
+Add a "Reapply" sidebar link for parent users, visible when they have at least one previous registration.
 
-## Files to Change
+**Files:** `src/components/app/AppLayout.tsx`
 
-| File | Change |
-|------|--------|
-| New SQL migration | Add `district_id` to 13 tables, backfill Lawrence data, drop old RLS, create new district-scoped RLS |
-| `src/integrations/supabase/types.ts` | Auto-regenerated after migration |
+### Phase 4: Dynamic District Lookup on Public Registration
+Change the public `/register` wizard to resolve `?district=lawrence-ufsd` (slug) to the actual `district_id` by querying the `districts` table. Add a `slug` column to `districts` if needed.
 
-**No `.tsx` files need modification** — RLS handles everything transparently.
+**Files:** `src/components/registration/RegisterWizard.tsx`, plus a database migration to add `slug` column to `districts`
 
-## Migration SQL Outline
+### Phase 5: Staff Residency Review in `/app`
+Create an `/app/registrations` page (or `/app/admin/residency`) that shows pending registrations for the staff's district, with approve/deny actions and audit logging — all scoped by the new district RLS.
 
-```sql
--- 1. Get Lawrence district ID
--- 2. For each of 13 tables:
---    ALTER TABLE ADD COLUMN district_id UUID;
---    UPDATE SET district_id = <lawrence_id>;
---    ALTER COLUMN SET NOT NULL, ADD FK
--- 3. Drop all old has_role() policies on these tables
--- 4. Create new policies using get_user_district_id() + has_app_role()
--- 5. Special handling for student_registrations (keep parent policies)
--- 6. Special handling for safety_reports (keep public insert)
-```
+**Files:** New page `src/pages/app/admin/AppResidencyReview.tsx`, route in `App.tsx`
 
-## What This Does NOT Touch
+## Technical Details
 
-- `profiles`, `districts`, `district_user_roles` — already correct
-- `user_roles` table — old admin system, stays
-- All public pages, `/admin/*` routes — untouched
-- All `/app/*` page components — unchanged (RLS is transparent)
-- Edge functions — unchanged
-
-## Risk Assessment
-
-- **Low risk**: All existing data is Lawrence-only; backfill is deterministic
-- **Breaking if wrong**: If `get_user_district_id()` returns NULL for the logged-in user, all queries return empty. The current user (A. Blumstein) already has a profile with `district_id` set, so this should work immediately.
-- **Rollback**: Drop the new columns (data loss acceptable in dev)
+- No new database tables needed — all tables exist with proper RLS
+- The `RegisterWizard` needs a `mode` prop or similar to skip Step 1 when used in-app
+- The `districts` table needs a `slug TEXT UNIQUE` column for URL-based lookup
+- Parent insert policies on `student_registrations` already check `auth.uid() = parent_user_id`, so in-app inserts will work immediately
+- Document uploads go to the existing `residency-documents` storage bucket
 
