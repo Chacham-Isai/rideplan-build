@@ -1,209 +1,100 @@
 
 
-# Complete Authentication & Multi-Tenant Architecture Plan
+# Priority 1: Multi-Tenant District Isolation
 
-This is a major architectural change that introduces multi-tenancy (district isolation), a new auth system with profiles, a full app shell, and new routing — while preserving all existing public pages untouched.
+## Problem
 
----
+Right now, **zero tables** in the `/app/*` system have a `district_id` column. The data tables (`routes`, `student_registrations`, `contracts`, `contract_invoices`, `contractor_insurance`, `contractor_performance`, `compliance_reports`, `compliance_training`, `mckinney_vento_students`, `ed_law_2d_contractors`, `safety_reports`, `route_stops`, `route_scenarios`) all use the old `has_role(auth.uid(), 'admin')` RLS — meaning any admin sees ALL data from ALL districts. If you onboard a second district, they see Lawrence's data. This is a blocker for selling to anyone.
 
-## Overview
+The `districts` and `profiles` tables exist. The `district_user_roles` table exists. The helper functions `get_user_district_id()`, `get_user_role()`, and `has_app_role()` exist. The foundation is there — but nothing is wired to it.
 
-The work breaks into 5 major areas executed in sequence:
+## What Changes
 
-1. **Database migration** — new tables, functions, RLS policies
-2. **Auth context & district provider** — React contexts for session/district/role
-3. **Login/Signup pages** — styled to match existing design system
-4. **App shell layout** — sidebar, top bar, breadcrumbs for `/app/*` routes
-5. **Routing & placeholder pages** — wire everything into `App.tsx`, nav update
+### Phase A — Database Migration (single SQL migration)
 
----
-
-## 1. Database Migration (single SQL migration)
-
-**New tables:**
-- `districts` — tenant table with subscription fields, BEDS code, contact info
-- `profiles` — extends `auth.users` with `district_id`, `role`, `full_name`, `email`, `phone`, `title`, `is_active`
-
-**New SQL functions (all `SECURITY DEFINER STABLE`):**
-- `get_user_district_id()` — returns the caller's district_id from profiles
-- `get_user_role()` — returns the caller's role text from profiles
-- `has_app_role(required_role TEXT)` — hierarchical role check (super_admin > district_admin > transport_director > staff > parent > viewer)
-
-**RLS policies:**
-- `districts`: SELECT only where `id = get_user_district_id()`
-- `profiles`: SELECT own row always; SELECT all in district for district_admin+; INSERT/UPDATE own row
-
-**Trigger:** `update_updated_at_column` on both new tables.
-
-**Note:** The existing `user_roles` table and `has_role(uuid, app_role)` function remain untouched — the old `/admin/*` routes continue to work. The new `has_app_role(text)` function is separate and serves the new `/app/*` multi-tenant system.
-
----
-
-## 2. Auth & District Context (new files)
-
-### `src/contexts/AuthContext.tsx`
-- Wraps `onAuthStateChange` listener (set up before `getSession()`)
-- Provides `session`, `user`, `loading`, `signOut` 
-- Used by ProtectedRoute
-
-### `src/contexts/DistrictContext.tsx`
-- Fetches profile + district from database after auth is confirmed
-- Provides: `district` object, `profile` object, convenience booleans (`isAdmin`, `isStaff`, `isParent`, `isSuperAdmin`, `isTransportDirector`)
-- `useDistrict()` hook for child components
-
-### `src/components/app/ProtectedRoute.tsx`
-- Checks AuthContext — no session → redirect `/login`
-- Checks if profile exists — no profile → redirect `/login` with error toast
-- If valid, renders `<Outlet />` wrapped in `DistrictContext`
-
-### `src/components/app/RoleGate.tsx`
-- Takes `requires` prop (role string)
-- Uses `useDistrict()` to check role hierarchy
-- Renders children or a styled "Access Denied" card
-
----
-
-## 3. Login & Signup Pages
-
-### `src/pages/Login.tsx` (`/login`)
-- Navy background with subtle grid pattern (CSS background-image)
-- Centered card with RideLine logo, Playfair Display heading
-- Email + password inputs (shadcn Input), gold "Sign In" button
-- "Forgot Password?" link (placeholder for now)
-- "Don't have an account? Contact us for a demo" → `/demo`
-- On success: fetch profile, redirect to `/app/dashboard` (staff/admin) or `/app/parent` (parent role)
-
-### `src/pages/Signup.tsx` (`/signup`)
-- Same navy card styling
-- "Ready to transform your district's transportation?" heading
-- Subtitle about RideLine working directly with districts
-- Gold CTA "Request Your Free Route Audit" → `/demo`
-- "Already have an account? Sign in" → `/login`
-
----
-
-## 4. App Shell Layout
-
-### `src/components/app/AppLayout.tsx`
-- Left sidebar: navy background (`#151D33`), RideLine logo, nav items with icons
-- Nav items filtered by role:
-  - **All roles:** Dashboard
-  - **staff+:** Students, Routes, Reports
-  - **district_admin+:** Contracts, Compliance, Settings
-  - **parent:** Dashboard, My Students, Register, Track Bus
-- Active item: gold left border + lighter navy background
-- Sidebar collapsible (icon-only on tablet, hamburger overlay on mobile)
-- Top bar: district name, notification bell, user avatar dropdown (Profile, Settings, Log Out)
-- Content area: off-white `#F7F8FA` background, breadcrumb navigation
-- Uses `<Outlet />` for child routes
-
----
-
-## 5. Routing & Navigation Updates
-
-### `App.tsx` changes
-All existing routes remain **completely untouched**. New routes added:
+Add `district_id UUID NOT NULL REFERENCES districts(id)` to these 13 tables:
 
 ```text
-/login → Login
-/signup → Signup
-/app → ProtectedRoute wrapper (with AppLayout)
-  /app (index) → redirect to /app/dashboard
-  /app/dashboard → DashboardPlaceholder
-  /app/students → StudentsPlaceholder
-  /app/routes → AppRoutesPlaceholder
-  /app/contracts → RoleGate(district_admin) → ContractsPlaceholder
-  /app/compliance → RoleGate(district_admin) → CompliancePlaceholder
-  /app/reports → ReportsPlaceholder
-  /app/settings → RoleGate(district_admin) → SettingsPlaceholder
-  /app/parent → ParentDashboardPlaceholder
-  /app/parent/register → ParentRegisterPlaceholder
-  /app/parent/reapply → ParentReapplyPlaceholder
-  /app/parent/tracking → ParentTrackingPlaceholder
-  /app/admin/users → RoleGate(district_admin) → UsersAdminPlaceholder
-  /app/admin/residency → RoleGate(district_admin) → ResidencyPlaceholder
-  /app/admin/invoices → RoleGate(district_admin) → InvoicesPlaceholder
-  /app/admin/bids → RoleGate(district_admin) → BidsPlaceholder
+routes
+student_registrations
+contracts
+contract_invoices       (via contract → district, or direct)
+contractor_insurance    (via contract → district, or direct)
+contractor_performance  (via contract → district, or direct)
+compliance_reports
+compliance_training
+mckinney_vento_students
+ed_law_2d_contractors
+safety_reports
+route_stops             (via route → district, or direct)
+route_scenarios
 ```
 
-### `Navigation.tsx` update
-- Add auth state check (lightweight — just check session existence)
-- Before the "Get Free Audit" button: show "Login" link (if not logged in) or "Dashboard" link (if logged in)
-- Same styling in mobile menu
+For the tables that already have FK relationships to `contracts` or `routes` (like `contract_invoices`, `contractor_insurance`, `contractor_performance`, `route_stops`), we add `district_id` directly rather than doing joins in RLS — direct column is faster and simpler for RLS.
 
-### Placeholder pages
-- One shared `PlaceholderPage` component that takes `title` and `breadcrumbs` props
-- Shows page title (Playfair Display), "Coming Soon" badge, breadcrumb path
-- Wrapped in AppLayout automatically via Outlet
+**Strategy for existing data:** All existing seeded data belongs to Lawrence UFSD. The migration will:
+1. Add `district_id` as nullable
+2. UPDATE all rows to set `district_id` = the Lawrence district UUID
+3. ALTER to NOT NULL + add FK constraint
 
----
+**New RLS policies** on each table (replacing old `has_role` ones):
 
-## Files to Create
+- `SELECT`: `district_id = get_user_district_id()` (for staff+ via `has_app_role('staff')`)
+- `INSERT`: `district_id = get_user_district_id()` AND `has_app_role('staff')`
+- `UPDATE`: `district_id = get_user_district_id()` AND `has_app_role('staff')`
+- `DELETE`: `district_id = get_user_district_id()` AND `has_app_role('district_admin')`
 
-| File | Purpose |
-|------|---------|
-| `src/contexts/AuthContext.tsx` | Auth session provider |
-| `src/contexts/DistrictContext.tsx` | District + profile provider with `useDistrict()` |
-| `src/components/app/ProtectedRoute.tsx` | Auth gate for `/app/*` |
-| `src/components/app/RoleGate.tsx` | Role-based access gate |
-| `src/components/app/AppLayout.tsx` | App shell with sidebar + top bar |
-| `src/components/app/AppBreadcrumb.tsx` | Breadcrumb navigation |
-| `src/components/app/PlaceholderPage.tsx` | Reusable "Coming Soon" page |
-| `src/pages/Login.tsx` | Login page |
-| `src/pages/Signup.tsx` | Signup page |
-| `src/pages/app/Dashboard.tsx` | Dashboard placeholder |
-| `src/pages/app/Students.tsx` | Students placeholder |
-| `src/pages/app/AppRoutes.tsx` | Routes placeholder |
-| `src/pages/app/Contracts.tsx` | Contracts placeholder |
-| `src/pages/app/Compliance.tsx` | Compliance placeholder |
-| `src/pages/app/Reports.tsx` | Reports placeholder |
-| `src/pages/app/Settings.tsx` | Settings placeholder |
-| `src/pages/app/parent/ParentDashboard.tsx` | Parent dashboard placeholder |
-| `src/pages/app/parent/ParentRegister.tsx` | Parent register placeholder |
-| `src/pages/app/parent/ParentReapply.tsx` | Parent reapply placeholder |
-| `src/pages/app/parent/ParentTracking.tsx` | Parent tracking placeholder |
-| `src/pages/app/admin/UsersAdmin.tsx` | Users admin placeholder |
-| `src/pages/app/admin/ResidencyAdmin.tsx` | Residency admin placeholder |
-| `src/pages/app/admin/InvoicesAdmin.tsx` | Invoices admin placeholder |
-| `src/pages/app/admin/BidsAdmin.tsx` | Bids admin placeholder |
-| Migration SQL file | districts, profiles, functions, RLS |
+For `student_registrations`, keep the existing parent policies (parents can view/insert/update their own) and add district-scoped staff policies.
 
-## Files to Modify
+For `safety_reports` and similar public-insert tables, keep the `INSERT WITH CHECK (true)` policy but scope `SELECT/UPDATE` to district.
+
+### Phase B — Frontend Changes
+
+**No page code changes needed.** Because RLS enforces district isolation at the database level, every `supabase.from("routes").select(...)` call automatically returns only the current user's district data. The existing Dashboard, Students, Routes, Reports, Contracts, Compliance, and Settings pages work unchanged.
+
+The only frontend change: when inserting new records (future features like "Add Route", "Add Contract"), the code must include `district_id` from `useDistrict().district.id`. But none of the current pages do inserts except Settings (profile update, which is already scoped by `user.id`).
+
+### Phase C — Verify Parent Registration
+
+The `student_registrations` table gets `district_id`. The `/register` flow currently doesn't set `district_id` — it will need updating:
+- Accept `?district=<slug>` query param or have user select district
+- Set `district_id` on the registration insert
+- This is Priority 2 work but the schema change goes in now
+
+## Files to Change
 
 | File | Change |
 |------|--------|
-| `src/App.tsx` | Add `/login`, `/signup`, `/app/*` routes; wrap app in AuthProvider |
-| `src/components/sections/Navigation.tsx` | Add Login/Dashboard link based on auth state |
-| `public/robots.txt` | Add `Disallow: /app/` |
-| `public/sitemap.xml` | Add `/login` route |
+| New SQL migration | Add `district_id` to 13 tables, backfill Lawrence data, drop old RLS, create new district-scoped RLS |
+| `src/integrations/supabase/types.ts` | Auto-regenerated after migration |
 
-## What is NOT Modified
+**No `.tsx` files need modification** — RLS handles everything transparently.
 
-All existing public pages, components, admin pages (`/admin/*`), the existing `user_roles` system, edge functions, and database tables remain completely untouched.
+## Migration SQL Outline
 
----
+```sql
+-- 1. Get Lawrence district ID
+-- 2. For each of 13 tables:
+--    ALTER TABLE ADD COLUMN district_id UUID;
+--    UPDATE SET district_id = <lawrence_id>;
+--    ALTER COLUMN SET NOT NULL, ADD FK
+-- 3. Drop all old has_role() policies on these tables
+-- 4. Create new policies using get_user_district_id() + has_app_role()
+-- 5. Special handling for student_registrations (keep parent policies)
+-- 6. Special handling for safety_reports (keep public insert)
+```
 
-## Technical Details
+## What This Does NOT Touch
 
-### Role Hierarchy
-`super_admin` > `district_admin` > `transport_director` > `staff` > `parent` > `viewer`
+- `profiles`, `districts`, `district_user_roles` — already correct
+- `user_roles` table — old admin system, stays
+- All public pages, `/admin/*` routes — untouched
+- All `/app/*` page components — unchanged (RLS is transparent)
+- Edge functions — unchanged
 
-The `has_app_role()` function implements cascading permissions so `super_admin` passes all checks, `district_admin` passes for `transport_director` and below, etc. The `parent` role is treated as a lateral role (not in the staff hierarchy).
+## Risk Assessment
 
-### Auth Flow
-1. User visits `/login`, enters credentials
-2. `supabase.auth.signInWithPassword()` called
-3. `onAuthStateChange` fires → AuthContext updates
-4. ProtectedRoute detects session → fetches profile from `profiles` table
-5. DistrictContext populated with district + profile data
-6. Redirect based on role: parent → `/app/parent`, others → `/app/dashboard`
-
-### District Isolation
-- Every future data table gets a `district_id UUID NOT NULL REFERENCES districts(id)` column
-- RLS policy pattern: `district_id = get_user_district_id()`
-- App code never manually filters by district — RLS enforces automatically
-- The `get_user_district_id()` function is `SECURITY DEFINER` to avoid RLS recursion on the profiles table
-
-### Seed Data
-The migration will include a commented-out INSERT for "Meadowbrook Central School District" that can be run manually. It won't auto-execute.
+- **Low risk**: All existing data is Lawrence-only; backfill is deterministic
+- **Breaking if wrong**: If `get_user_district_id()` returns NULL for the logged-in user, all queries return empty. The current user (A. Blumstein) already has a profile with `district_id` set, so this should work immediately.
+- **Rollback**: Drop the new columns (data loss acceptable in dev)
 
