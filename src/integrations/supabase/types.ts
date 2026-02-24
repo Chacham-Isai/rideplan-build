@@ -567,6 +567,184 @@ export type Database = {
           },
         ]
       }
+      route_scenarios: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          estimated_savings: number | null
+          id: string
+          name: string
+          parameters: Json | null
+          results: Json | null
+          routes_affected: number | null
+          scenario_type: string
+          status: string
+          students_affected: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          estimated_savings?: number | null
+          id?: string
+          name: string
+          parameters?: Json | null
+          results?: Json | null
+          routes_affected?: number | null
+          scenario_type?: string
+          status?: string
+          students_affected?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          estimated_savings?: number | null
+          id?: string
+          name?: string
+          parameters?: Json | null
+          results?: Json | null
+          routes_affected?: number | null
+          scenario_type?: string
+          status?: string
+          students_affected?: number | null
+        }
+        Relationships: []
+      }
+      route_stops: {
+        Row: {
+          address: string | null
+          avg_actual_time: string | null
+          created_at: string
+          dwell_seconds: number | null
+          id: string
+          lat: number | null
+          lng: number | null
+          route_id: string
+          scheduled_time: string | null
+          stop_name: string
+          stop_order: number
+          students_alighting: number | null
+          students_boarding: number | null
+        }
+        Insert: {
+          address?: string | null
+          avg_actual_time?: string | null
+          created_at?: string
+          dwell_seconds?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          route_id: string
+          scheduled_time?: string | null
+          stop_name: string
+          stop_order?: number
+          students_alighting?: number | null
+          students_boarding?: number | null
+        }
+        Update: {
+          address?: string | null
+          avg_actual_time?: string | null
+          created_at?: string
+          dwell_seconds?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          route_id?: string
+          scheduled_time?: string | null
+          stop_name?: string
+          stop_order?: number
+          students_alighting?: number | null
+          students_boarding?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_stops_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routes: {
+        Row: {
+          am_end: string | null
+          am_start: string | null
+          avg_ride_time_min: number | null
+          bus_number: string | null
+          capacity: number | null
+          contractor_id: string | null
+          cost_per_student: number | null
+          created_at: string
+          driver_name: string | null
+          id: string
+          notes: string | null
+          on_time_pct: number | null
+          pm_end: string | null
+          pm_start: string | null
+          route_number: string
+          school: string
+          status: string
+          tier: number
+          total_miles: number | null
+          total_students: number | null
+        }
+        Insert: {
+          am_end?: string | null
+          am_start?: string | null
+          avg_ride_time_min?: number | null
+          bus_number?: string | null
+          capacity?: number | null
+          contractor_id?: string | null
+          cost_per_student?: number | null
+          created_at?: string
+          driver_name?: string | null
+          id?: string
+          notes?: string | null
+          on_time_pct?: number | null
+          pm_end?: string | null
+          pm_start?: string | null
+          route_number: string
+          school: string
+          status?: string
+          tier?: number
+          total_miles?: number | null
+          total_students?: number | null
+        }
+        Update: {
+          am_end?: string | null
+          am_start?: string | null
+          avg_ride_time_min?: number | null
+          bus_number?: string | null
+          capacity?: number | null
+          contractor_id?: string | null
+          cost_per_student?: number | null
+          created_at?: string
+          driver_name?: string | null
+          id?: string
+          notes?: string | null
+          on_time_pct?: number | null
+          pm_end?: string | null
+          pm_start?: string | null
+          route_number?: string
+          school?: string
+          status?: string
+          tier?: number
+          total_miles?: number | null
+          total_students?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routes_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       safety_reports: {
         Row: {
           ai_priority: Database["public"]["Enums"]["ai_priority"]
