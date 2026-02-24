@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
 
 const questions = [
@@ -9,7 +10,10 @@ const questions = [
   "What is our precise cost per student per mile transported?",
 ];
 
-export const QuestionsSection = () => (
+export const QuestionsSection = () => {
+  const navigate = useNavigate();
+
+  return (
   <section className="bg-background py-20 md:py-28">
     <div className="mx-auto max-w-[1200px] px-4 md:px-6">
       <ScrollReveal>
@@ -27,7 +31,13 @@ export const QuestionsSection = () => (
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {questions.map((q, i) => (
           <ScrollReveal key={i} delay={i * 0.07}>
-            <div className="group rounded-xl border bg-card p-6 transition-all duration-300 hover:border-accent hover:shadow-lg">
+            <div
+              onClick={() => navigate("/demo")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") navigate("/demo"); }}
+              className="group cursor-pointer rounded-xl border bg-card p-6 transition-all duration-300 hover:border-accent hover:shadow-lg hover:-translate-y-1"
+            >
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 font-display text-lg font-bold text-accent">
                 {i + 1}
               </div>
@@ -38,4 +48,5 @@ export const QuestionsSection = () => (
       </div>
     </div>
   </section>
-);
+  );
+};

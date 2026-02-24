@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { User, PieChart, Briefcase, Heart } from "lucide-react";
 
@@ -52,7 +53,10 @@ const personas = [
   },
 ];
 
-export const WhoWeServeSection = () => (
+export const WhoWeServeSection = () => {
+  const navigate = useNavigate();
+
+  return (
   <section className="bg-navy py-20 md:py-28" id="who-we-serve">
     <div className="mx-auto max-w-[1200px] px-4 md:px-6">
       <ScrollReveal>
@@ -72,8 +76,13 @@ export const WhoWeServeSection = () => (
       <div className="grid gap-6 md:grid-cols-2">
         {personas.map((p, i) => (
           <ScrollReveal key={i} delay={i * 0.1}>
-            <div className="group rounded-2xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 md:p-8 transition-all duration-300 hover:border-accent/40 hover:shadow-[0_0_40px_-12px_hsl(var(--gold)/0.3)] h-full flex flex-col">
-              {/* Header */}
+            <div
+              onClick={() => navigate("/demo")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") navigate("/demo"); }}
+              className="group cursor-pointer rounded-2xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 md:p-8 transition-all duration-300 hover:border-accent/40 hover:shadow-[0_0_40px_-12px_hsl(var(--gold)/0.3)] hover:-translate-y-1 h-full flex flex-col"
+            >
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/20 text-accent">
                   <p.icon className="h-6 w-6" />
@@ -84,7 +93,6 @@ export const WhoWeServeSection = () => (
                 </div>
               </div>
 
-              {/* Pain points */}
               <div className="mb-4 space-y-2">
                 {p.painPoints.map((point, j) => (
                   <div key={j} className="flex items-start gap-2">
@@ -94,19 +102,18 @@ export const WhoWeServeSection = () => (
                 ))}
               </div>
 
-              {/* Solution */}
               <p className="text-sm text-primary-foreground/70 leading-relaxed mb-6 flex-1">
                 {p.solution}
               </p>
 
-              {/* CTA */}
-              <button className="inline-flex items-center text-sm font-semibold text-accent hover:text-gold-light transition-colors">
+              <span className="inline-flex items-center text-sm font-semibold text-accent group-hover:text-gold-light transition-colors">
                 {p.cta} →
-              </button>
+              </span>
             </div>
           </ScrollReveal>
         ))}
       </div>
     </div>
   </section>
-);
+  );
+};
