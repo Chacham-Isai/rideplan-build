@@ -1,6 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Users, Route, ClipboardCheck, MessageSquare, Shield, Brain } from "lucide-react";
-import administratorImg from "@/assets/rideline-administrator.png";
 import parentTrackingImg from "@/assets/rideline-parent-tracking.webp";
 
 const modules = [
@@ -42,46 +42,56 @@ const modules = [
   },
 ];
 
-export const PlatformSection = () => (
-  <section className="bg-navy py-20 md:py-28" id="platform">
-    <div className="mx-auto max-w-[1200px] px-4 md:px-6">
-      <ScrollReveal>
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-widest text-accent mb-3">The Platform</p>
-            <h2 className="font-display text-3xl font-bold text-primary-foreground md:text-4xl lg:text-5xl">
-              One command center for everything your office does.
-            </h2>
-            <p className="mt-4 max-w-2xl text-primary-foreground/60">
-              RideLine is the first purpose-built operating system for K–12 school transportation. Five modules. One platform. Total control.
-            </p>
-          </div>
-          <div className="relative">
-            <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-accent/10 to-success/5 blur-xl" />
-            <img
-              src={parentTrackingImg}
-              alt="Parent tracking child's school bus in real-time with RideLine app"
-              className="relative rounded-2xl shadow-xl border border-primary-foreground/10"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </ScrollReveal>
+export const PlatformSection = () => {
+  const navigate = useNavigate();
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {modules.map((m, i) => (
-          <ScrollReveal key={i} delay={i * 0.08}>
-            <div className="group rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 transition-all duration-300 hover:border-accent/50 hover:shadow-[0_0_30px_-10px_hsl(var(--gold)/0.3)]">
-              <m.icon className="h-8 w-8 text-accent mb-4" />
-              <h3 className="font-display text-lg font-bold text-primary-foreground mb-2">{m.title}</h3>
-              <p className="text-sm text-primary-foreground/60 leading-relaxed mb-4">{m.body}</p>
-              <span className="inline-block rounded-full bg-success/20 px-3 py-1 text-xs font-semibold text-success">
-                {m.tag}
-              </span>
+  return (
+    <section className="bg-navy py-20 md:py-28" id="platform">
+      <div className="mx-auto max-w-[1200px] px-4 md:px-6">
+        <ScrollReveal>
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-widest text-accent mb-3">The Platform</p>
+              <h2 className="font-display text-3xl font-bold text-primary-foreground md:text-4xl lg:text-5xl">
+                One command center for everything your office does.
+              </h2>
+              <p className="mt-4 max-w-2xl text-primary-foreground/60">
+                RideLine is the first purpose-built operating system for K–12 school transportation. Five modules. One platform. Total control.
+              </p>
             </div>
-          </ScrollReveal>
-        ))}
+            <div className="relative">
+              <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-accent/10 to-success/5 blur-xl" />
+              <img
+                src={parentTrackingImg}
+                alt="Parent tracking child's school bus in real-time with RideLine app"
+                className="relative rounded-2xl shadow-xl border border-primary-foreground/10"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {modules.map((m, i) => (
+            <ScrollReveal key={i} delay={i * 0.08}>
+              <div
+                onClick={() => navigate("/demo")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") navigate("/demo"); }}
+                className="group cursor-pointer rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 transition-all duration-300 hover:border-accent/50 hover:shadow-[0_0_30px_-10px_hsl(var(--gold)/0.3)] hover:-translate-y-1"
+              >
+                <m.icon className="h-8 w-8 text-accent mb-4" />
+                <h3 className="font-display text-lg font-bold text-primary-foreground mb-2">{m.title}</h3>
+                <p className="text-sm text-primary-foreground/60 leading-relaxed mb-4">{m.body}</p>
+                <span className="inline-block rounded-full bg-success/20 px-3 py-1 text-xs font-semibold text-success">
+                  {m.tag}
+                </span>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
