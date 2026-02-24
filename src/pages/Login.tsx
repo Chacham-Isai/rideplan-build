@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +15,27 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { session, loading: authLoading } = useAuth();
+
+  // Redirect authenticated users to the app
+  useEffect(() => {
+    if (session && !authLoading) {
+      const redirectUser = async () => {
+        const { data: roleData } = await supabase
+          .from("district_user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .single();
+
+        if (roleData?.role === "parent") {
+          navigate("/app/parent", { replace: true });
+        } else {
+          navigate("/app/dashboard", { replace: true });
+        }
+      };
+      redirectUser();
+    }
+  }, [session, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +91,7 @@ const Login = () => {
               type="button"
               onClick={async () => {
                 const { error } = await lovable.auth.signInWithOAuth("google", {
-                  redirect_uri: window.location.origin,
+                  redirect_uri: window.location.origin + "/login",
                 });
                 if (error) toast({ title: "Google sign in failed", description: String(error), variant: "destructive" });
               }}
@@ -82,7 +104,7 @@ const Login = () => {
               type="button"
               onClick={async () => {
                 const { error } = await lovable.auth.signInWithOAuth("apple", {
-                  redirect_uri: window.location.origin,
+                  redirect_uri: window.location.origin + "/login",
                 });
                 if (error) toast({ title: "Apple sign in failed", description: String(error), variant: "destructive" });
               }}
