@@ -18,6 +18,8 @@ import Terms from "./pages/Terms";
 import SafetyReport from "./pages/SafetyReport";
 import DriverPortal from "./pages/DriverPortal";
 import TipDriver from "./pages/TipDriver";
+import Register from "./pages/Register";
+import Reapply from "./pages/Reapply";
 import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./components/admin/AdminLayout";
 import SafetyReportsAdmin from "./pages/admin/SafetyReportsAdmin";
@@ -52,6 +54,8 @@ const App = () => (
             <Route path="/report" element={<SafetyReport />} />
             <Route path="/driver-portal" element={<DriverPortal />} />
             <Route path="/tip-driver" element={<TipDriver />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/reapply" element={<Reapply />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             
             <Route path="/admin" element={<AdminLayout />}>

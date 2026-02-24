@@ -41,6 +41,53 @@ export type Database = {
         }
         Relationships: []
       }
+      childcare_requests: {
+        Row: {
+          created_at: string
+          days_needed: string[]
+          id: string
+          provider_address: string
+          provider_name: string
+          registration_id: string
+          school_year: string
+          status: Database["public"]["Enums"]["registration_status"]
+          transport_type: Database["public"]["Enums"]["childcare_transport_type"]
+          within_district: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          days_needed?: string[]
+          id?: string
+          provider_address: string
+          provider_name: string
+          registration_id: string
+          school_year: string
+          status?: Database["public"]["Enums"]["registration_status"]
+          transport_type?: Database["public"]["Enums"]["childcare_transport_type"]
+          within_district?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          days_needed?: string[]
+          id?: string
+          provider_address?: string
+          provider_name?: string
+          registration_id?: string
+          school_year?: string
+          status?: Database["public"]["Enums"]["registration_status"]
+          transport_type?: Database["public"]["Enums"]["childcare_transport_type"]
+          within_district?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "childcare_requests_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "student_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_reports: {
         Row: {
           bus_number: string
@@ -140,6 +187,76 @@ export type Database = {
         }
         Relationships: []
       }
+      residency_attestations: {
+        Row: {
+          attestation_text: string
+          id: string
+          ip_address: string | null
+          parent_user_id: string
+          registration_id: string
+          signature_text: string
+          signed_at: string
+        }
+        Insert: {
+          attestation_text: string
+          id?: string
+          ip_address?: string | null
+          parent_user_id: string
+          registration_id: string
+          signature_text: string
+          signed_at?: string
+        }
+        Update: {
+          attestation_text?: string
+          id?: string
+          ip_address?: string | null
+          parent_user_id?: string
+          registration_id?: string
+          signature_text?: string
+          signed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "residency_attestations_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "student_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      residency_documents: {
+        Row: {
+          document_type: string
+          file_url: string
+          id: string
+          registration_id: string
+          uploaded_at: string
+        }
+        Insert: {
+          document_type: string
+          file_url: string
+          id?: string
+          registration_id: string
+          uploaded_at?: string
+        }
+        Update: {
+          document_type?: string
+          file_url?: string
+          id?: string
+          registration_id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "residency_documents_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "student_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       safety_reports: {
         Row: {
           ai_priority: Database["public"]["Enums"]["ai_priority"]
@@ -185,6 +302,81 @@ export type Database = {
         }
         Relationships: []
       }
+      student_registrations: {
+        Row: {
+          address_line: string
+          city: string
+          created_at: string
+          distance_to_school: number | null
+          district_boundary_check: boolean | null
+          dob: string
+          foster_care_flag: boolean | null
+          geocoded_lat: number | null
+          geocoded_lng: number | null
+          grade: string
+          id: string
+          iep_flag: boolean | null
+          mckinney_vento_flag: boolean | null
+          parent_user_id: string
+          school: string
+          school_year: string
+          section_504_flag: boolean | null
+          state: string
+          status: Database["public"]["Enums"]["registration_status"]
+          student_name: string
+          updated_at: string
+          zip: string
+        }
+        Insert: {
+          address_line: string
+          city: string
+          created_at?: string
+          distance_to_school?: number | null
+          district_boundary_check?: boolean | null
+          dob: string
+          foster_care_flag?: boolean | null
+          geocoded_lat?: number | null
+          geocoded_lng?: number | null
+          grade: string
+          id?: string
+          iep_flag?: boolean | null
+          mckinney_vento_flag?: boolean | null
+          parent_user_id: string
+          school: string
+          school_year: string
+          section_504_flag?: boolean | null
+          state?: string
+          status?: Database["public"]["Enums"]["registration_status"]
+          student_name: string
+          updated_at?: string
+          zip: string
+        }
+        Update: {
+          address_line?: string
+          city?: string
+          created_at?: string
+          distance_to_school?: number | null
+          district_boundary_check?: boolean | null
+          dob?: string
+          foster_care_flag?: boolean | null
+          geocoded_lat?: number | null
+          geocoded_lng?: number | null
+          grade?: string
+          id?: string
+          iep_flag?: boolean | null
+          mckinney_vento_flag?: boolean | null
+          parent_user_id?: string
+          school?: string
+          school_year?: string
+          section_504_flag?: boolean | null
+          state?: string
+          status?: Database["public"]["Enums"]["registration_status"]
+          student_name?: string
+          updated_at?: string
+          zip?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -222,7 +414,9 @@ export type Database = {
     Enums: {
       ai_priority: "low" | "medium" | "high" | "critical"
       app_role: "admin" | "user"
+      childcare_transport_type: "am" | "pm" | "both"
       driver_report_type: "incident" | "maintenance" | "schedule" | "other"
+      registration_status: "pending" | "approved" | "denied" | "under_review"
       report_status: "new" | "reviewing" | "resolved"
       safety_report_type: "bullying" | "driver_safety" | "other"
     }
@@ -354,7 +548,9 @@ export const Constants = {
     Enums: {
       ai_priority: ["low", "medium", "high", "critical"],
       app_role: ["admin", "user"],
+      childcare_transport_type: ["am", "pm", "both"],
       driver_report_type: ["incident", "maintenance", "schedule", "other"],
+      registration_status: ["pending", "approved", "denied", "under_review"],
       report_status: ["new", "reviewing", "resolved"],
       safety_report_type: ["bullying", "driver_safety", "other"],
     },
