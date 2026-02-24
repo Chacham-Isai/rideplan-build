@@ -512,6 +512,98 @@ export type Database = {
         }
         Relationships: []
       }
+      district_user_roles: {
+        Row: {
+          created_at: string | null
+          district_id: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          district_id: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          district_id?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "district_user_roles_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      districts: {
+        Row: {
+          address: string | null
+          beds_code: string | null
+          city: string | null
+          created_at: string | null
+          id: string
+          name: string
+          phone: string | null
+          state: string
+          student_count: number | null
+          subscription_status: string | null
+          subscription_tier: string | null
+          superintendent_email: string | null
+          superintendent_name: string | null
+          timezone: string | null
+          trial_ends_at: string | null
+          updated_at: string | null
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          beds_code?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          state?: string
+          student_count?: number | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          superintendent_email?: string | null
+          superintendent_name?: string | null
+          timezone?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          beds_code?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          state?: string
+          student_count?: number | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          superintendent_email?: string | null
+          superintendent_name?: string | null
+          timezone?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+          zip?: string | null
+        }
+        Relationships: []
+      }
       driver_reports: {
         Row: {
           bus_number: string
@@ -692,6 +784,53 @@ export type Database = {
             columns: ["route_id"]
             isOneToOne: false
             referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          district_id: string
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean | null
+          last_login_at: string | null
+          phone: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          district_id: string
+          email: string
+          full_name: string
+          id: string
+          is_active?: boolean | null
+          last_login_at?: string | null
+          phone?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          district_id?: string
+          email?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean | null
+          last_login_at?: string | null
+          phone?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
             referencedColumns: ["id"]
           },
         ]
@@ -1155,6 +1294,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_district_id: { Args: never; Returns: string }
+      get_user_role: { Args: never; Returns: string }
+      has_app_role: { Args: { required_role: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

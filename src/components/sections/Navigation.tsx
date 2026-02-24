@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 import logoHorizontal from "@/assets/rideline-logo-horizontal.png";
 
 const navLinks = [
@@ -23,6 +24,7 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
   const [activeSection, setActiveSection] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const { session } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -111,6 +113,12 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
             );
           })}
           <button
+            onClick={() => navigate(session ? "/app/dashboard" : "/login")}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {session ? "Dashboard" : "Login"}
+          </button>
+          <button
             onClick={onGetAudit}
             className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90 hover:scale-105 hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98]"
           >
@@ -177,6 +185,15 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: navLinks.length * 0.04, duration: 0.25 }}
+              onClick={() => { setMenuOpen(false); navigate(session ? "/app/dashboard" : "/login"); }}
+              className="mt-2 w-full text-left py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              {session ? "Dashboard" : "Login"}
+            </motion.button>
+            <motion.button
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: (navLinks.length + 1) * 0.04, duration: 0.25 }}
               onClick={() => { setMenuOpen(false); onGetAudit?.(); }}
               className="mt-2 w-full rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
             >
