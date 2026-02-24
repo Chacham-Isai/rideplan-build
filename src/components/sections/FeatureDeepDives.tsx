@@ -1,5 +1,6 @@
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Check } from "lucide-react";
+import { motion } from "framer-motion";
 import routeOptImg from "@/assets/rideline-route-optimization.png";
 import costSavingsImg from "@/assets/rideline-cost-savings.png";
 import parentAppImg from "@/assets/rideline-parent-app.png";
@@ -88,7 +89,17 @@ export const FeatureDeepDives = () => (
               </ul>
             </div>
             <div className={f.reversed ? "lg:[direction:ltr]" : ""}>
-              <div className="relative">
+              <motion.div
+                className="relative"
+                animate={{
+                  y: [0, -8, 0],
+                }}
+                transition={{
+                  duration: 4 + i * 0.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
                 <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-accent/10 to-success/5 blur-xl opacity-60" />
                 <img
                   src={f.image}
@@ -96,7 +107,13 @@ export const FeatureDeepDives = () => (
                   className="relative w-full rounded-2xl shadow-xl"
                   loading="lazy"
                 />
-              </div>
+                {/* Simulated UI overlay pulse */}
+                <motion.div
+                  className="absolute inset-0 rounded-2xl bg-gradient-to-t from-accent/5 to-transparent pointer-events-none"
+                  animate={{ opacity: [0, 0.4, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.8 }}
+                />
+              </motion.div>
             </div>
           </div>
         </ScrollReveal>
