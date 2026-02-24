@@ -73,6 +73,7 @@ const Reapply = () => {
           .from("student_registrations")
           .insert({
             parent_user_id: user.id,
+            district_id: reg.district_id,
             student_name: reg.student_name,
             dob: reg.dob,
             grade: nextGrade,

@@ -112,6 +112,7 @@ const RoutesAdmin = () => {
   // === HANDLERS ===
   const handleAddRoute = async () => {
     const { error } = await supabase.from("routes").insert({
+      district_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       route_number: form.route_number, school: form.school,
       bus_number: form.bus_number || null, driver_name: form.driver_name || null,
       tier: Number(form.tier) || 1,
@@ -156,6 +157,7 @@ const RoutesAdmin = () => {
 
     const { data: session } = await supabase.auth.getSession();
     const { error } = await supabase.from("route_scenarios").insert({
+      district_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       name: scenarioForm.name,
       scenario_type: scenarioForm.scenario_type,
       description: scenarioForm.description || null,

@@ -110,12 +110,19 @@ export const RegisterWizard = () => {
 
       const schoolYear = currentSchoolYear();
 
+      // Get district_id from URL param or default to Lawrence
+      const urlParams = new URLSearchParams(window.location.search);
+      const districtParam = urlParams.get("district");
+      // For now, resolve to Lawrence UFSD; Priority 2 will add proper district lookup
+      const districtId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+
       // 2. Create student registrations
       for (const student of data.students) {
         const { data: reg, error: regError } = await supabase
           .from("student_registrations")
           .insert({
             parent_user_id: userId,
+            district_id: districtId,
             student_name: student.name,
             dob: student.dob,
             grade: student.grade,

@@ -115,6 +115,7 @@ const ComplianceAdmin = () => {
   // === HANDLERS ===
   const addReport = async () => {
     const { error } = await supabase.from("compliance_reports").insert({
+      district_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       report_type: reportForm.report_type, title: reportForm.title,
       school_year: reportForm.school_year,
       filing_deadline: reportForm.filing_deadline || null,
@@ -130,6 +131,7 @@ const ComplianceAdmin = () => {
 
   const addMVStudent = async () => {
     const { error } = await supabase.from("mckinney_vento_students").insert({
+      district_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       student_name: mvForm.student_name, school: mvForm.school, grade: mvForm.grade,
       living_situation: mvForm.living_situation,
       school_of_origin: mvForm.school_of_origin || null,
@@ -145,6 +147,7 @@ const ComplianceAdmin = () => {
 
   const addEdLawContractor = async () => {
     const { error } = await supabase.from("ed_law_2d_contractors").insert({
+      district_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       contractor_name: edLawForm.contractor_name,
       data_access_level: edLawForm.data_access_level,
       agreement_signed: edLawForm.agreement_signed,

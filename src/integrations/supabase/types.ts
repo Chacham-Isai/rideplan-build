@@ -225,6 +225,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          district_id: string
           document_url: string | null
           filed_date: string | null
           filing_deadline: string | null
@@ -242,6 +243,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          district_id: string
           document_url?: string | null
           filed_date?: string | null
           filing_deadline?: string | null
@@ -259,6 +261,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          district_id?: string
           document_url?: string | null
           filed_date?: string | null
           filing_deadline?: string | null
@@ -273,12 +276,21 @@ export type Database = {
           title?: string
           total_expenditure?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "compliance_reports_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       compliance_training: {
         Row: {
           completed_count: number | null
           created_at: string
+          district_id: string
           due_date: string | null
           id: string
           notes: string | null
@@ -291,6 +303,7 @@ export type Database = {
         Insert: {
           completed_count?: number | null
           created_at?: string
+          district_id: string
           due_date?: string | null
           id?: string
           notes?: string | null
@@ -303,6 +316,7 @@ export type Database = {
         Update: {
           completed_count?: number | null
           created_at?: string
+          district_id?: string
           due_date?: string | null
           id?: string
           notes?: string | null
@@ -312,7 +326,15 @@ export type Database = {
           total_required?: number | null
           training_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "compliance_training_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contract_invoices: {
         Row: {
@@ -320,6 +342,7 @@ export type Database = {
           created_at: string
           discrepancy_amount: number | null
           discrepancy_notes: string | null
+          district_id: string
           gps_verified: boolean | null
           id: string
           invoice_date: string
@@ -335,6 +358,7 @@ export type Database = {
           created_at?: string
           discrepancy_amount?: number | null
           discrepancy_notes?: string | null
+          district_id: string
           gps_verified?: boolean | null
           id?: string
           invoice_date: string
@@ -350,6 +374,7 @@ export type Database = {
           created_at?: string
           discrepancy_amount?: number | null
           discrepancy_notes?: string | null
+          district_id?: string
           gps_verified?: boolean | null
           id?: string
           invoice_date?: string
@@ -368,6 +393,13 @@ export type Database = {
             referencedRelation: "contracts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contract_invoices_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contractor_insurance: {
@@ -376,6 +408,7 @@ export type Database = {
           contract_id: string
           coverage_amount: number
           created_at: string
+          district_id: string
           document_url: string | null
           expiration_date: string
           id: string
@@ -388,6 +421,7 @@ export type Database = {
           contract_id: string
           coverage_amount?: number
           created_at?: string
+          district_id: string
           document_url?: string | null
           expiration_date: string
           id?: string
@@ -400,6 +434,7 @@ export type Database = {
           contract_id?: string
           coverage_amount?: number
           created_at?: string
+          district_id?: string
           document_url?: string | null
           expiration_date?: string
           id?: string
@@ -415,6 +450,13 @@ export type Database = {
             referencedRelation: "contracts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contractor_insurance_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contractor_performance: {
@@ -422,6 +464,7 @@ export type Database = {
           complaints_count: number | null
           contract_id: string
           created_at: string
+          district_id: string
           id: string
           on_time_pct: number | null
           period_month: string
@@ -433,6 +476,7 @@ export type Database = {
           complaints_count?: number | null
           contract_id: string
           created_at?: string
+          district_id: string
           id?: string
           on_time_pct?: number | null
           period_month: string
@@ -444,6 +488,7 @@ export type Database = {
           complaints_count?: number | null
           contract_id?: string
           created_at?: string
+          district_id?: string
           id?: string
           on_time_pct?: number | null
           period_month?: string
@@ -459,6 +504,13 @@ export type Database = {
             referencedRelation: "contracts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contractor_performance_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contracts: {
@@ -470,6 +522,7 @@ export type Database = {
           contract_start: string
           contractor_name: string
           created_at: string
+          district_id: string
           id: string
           notes: string | null
           rate_per_mile: number | null
@@ -486,6 +539,7 @@ export type Database = {
           contract_start: string
           contractor_name: string
           created_at?: string
+          district_id: string
           id?: string
           notes?: string | null
           rate_per_mile?: number | null
@@ -502,6 +556,7 @@ export type Database = {
           contract_start?: string
           contractor_name?: string
           created_at?: string
+          district_id?: string
           id?: string
           notes?: string | null
           rate_per_mile?: number | null
@@ -510,7 +565,15 @@ export type Database = {
           routes_count?: number
           status?: Database["public"]["Enums"]["contract_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contracts_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       district_user_roles: {
         Row: {
@@ -683,6 +746,7 @@ export type Database = {
           contractor_name: string
           created_at: string
           data_access_level: string
+          district_id: string
           encryption_verified: boolean | null
           id: string
           notes: string | null
@@ -698,6 +762,7 @@ export type Database = {
           contractor_name: string
           created_at?: string
           data_access_level?: string
+          district_id: string
           encryption_verified?: boolean | null
           id?: string
           notes?: string | null
@@ -713,6 +778,7 @@ export type Database = {
           contractor_name?: string
           created_at?: string
           data_access_level?: string
+          district_id?: string
           encryption_verified?: boolean | null
           id?: string
           notes?: string | null
@@ -727,12 +793,20 @@ export type Database = {
             referencedRelation: "contracts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ed_law_2d_contractors_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       mckinney_vento_students: {
         Row: {
           created_at: string
           current_address: string | null
+          district_id: string
           enrollment_date: string | null
           grade: string
           id: string
@@ -749,6 +823,7 @@ export type Database = {
         Insert: {
           created_at?: string
           current_address?: string | null
+          district_id: string
           enrollment_date?: string | null
           grade: string
           id?: string
@@ -765,6 +840,7 @@ export type Database = {
         Update: {
           created_at?: string
           current_address?: string | null
+          district_id?: string
           enrollment_date?: string | null
           grade?: string
           id?: string
@@ -779,6 +855,13 @@ export type Database = {
           transportation_provided?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "mckinney_vento_students_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "mckinney_vento_students_route_id_fkey"
             columns: ["route_id"]
@@ -975,6 +1058,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          district_id: string
           estimated_savings: number | null
           id: string
           name: string
@@ -989,6 +1073,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          district_id: string
           estimated_savings?: number | null
           id?: string
           name: string
@@ -1003,6 +1088,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          district_id?: string
           estimated_savings?: number | null
           id?: string
           name?: string
@@ -1013,13 +1099,22 @@ export type Database = {
           status?: string
           students_affected?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "route_scenarios_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       route_stops: {
         Row: {
           address: string | null
           avg_actual_time: string | null
           created_at: string
+          district_id: string
           dwell_seconds: number | null
           id: string
           lat: number | null
@@ -1035,6 +1130,7 @@ export type Database = {
           address?: string | null
           avg_actual_time?: string | null
           created_at?: string
+          district_id: string
           dwell_seconds?: number | null
           id?: string
           lat?: number | null
@@ -1050,6 +1146,7 @@ export type Database = {
           address?: string | null
           avg_actual_time?: string | null
           created_at?: string
+          district_id?: string
           dwell_seconds?: number | null
           id?: string
           lat?: number | null
@@ -1062,6 +1159,13 @@ export type Database = {
           students_boarding?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "route_stops_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "route_stops_route_id_fkey"
             columns: ["route_id"]
@@ -1081,6 +1185,7 @@ export type Database = {
           contractor_id: string | null
           cost_per_student: number | null
           created_at: string
+          district_id: string
           driver_name: string | null
           id: string
           notes: string | null
@@ -1103,6 +1208,7 @@ export type Database = {
           contractor_id?: string | null
           cost_per_student?: number | null
           created_at?: string
+          district_id: string
           driver_name?: string | null
           id?: string
           notes?: string | null
@@ -1125,6 +1231,7 @@ export type Database = {
           contractor_id?: string | null
           cost_per_student?: number | null
           created_at?: string
+          district_id?: string
           driver_name?: string | null
           id?: string
           notes?: string | null
@@ -1146,6 +1253,13 @@ export type Database = {
             referencedRelation: "contracts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "routes_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       safety_reports: {
@@ -1154,6 +1268,7 @@ export type Database = {
           bus_number: string
           created_at: string
           description: string
+          district_id: string
           id: string
           incident_date: string
           report_type: Database["public"]["Enums"]["safety_report_type"]
@@ -1168,6 +1283,7 @@ export type Database = {
           bus_number: string
           created_at?: string
           description: string
+          district_id: string
           id?: string
           incident_date: string
           report_type: Database["public"]["Enums"]["safety_report_type"]
@@ -1182,6 +1298,7 @@ export type Database = {
           bus_number?: string
           created_at?: string
           description?: string
+          district_id?: string
           id?: string
           incident_date?: string
           report_type?: Database["public"]["Enums"]["safety_report_type"]
@@ -1191,7 +1308,15 @@ export type Database = {
           school_name?: string
           status?: Database["public"]["Enums"]["report_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "safety_reports_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       student_registrations: {
         Row: {
@@ -1200,6 +1325,7 @@ export type Database = {
           created_at: string
           distance_to_school: number | null
           district_boundary_check: boolean | null
+          district_id: string
           dob: string
           foster_care_flag: boolean | null
           geocoded_lat: number | null
@@ -1224,6 +1350,7 @@ export type Database = {
           created_at?: string
           distance_to_school?: number | null
           district_boundary_check?: boolean | null
+          district_id: string
           dob: string
           foster_care_flag?: boolean | null
           geocoded_lat?: number | null
@@ -1248,6 +1375,7 @@ export type Database = {
           created_at?: string
           distance_to_school?: number | null
           district_boundary_check?: boolean | null
+          district_id?: string
           dob?: string
           foster_care_flag?: boolean | null
           geocoded_lat?: number | null
@@ -1266,7 +1394,15 @@ export type Database = {
           updated_at?: string
           zip?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "student_registrations_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

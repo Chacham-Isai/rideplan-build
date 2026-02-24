@@ -58,6 +58,7 @@ const InvoicesAdmin = () => {
     const disc = invoiced - verified;
 
     const { error } = await supabase.from("contract_invoices").insert({
+      district_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       contract_id: form.contract_id,
       invoice_number: form.invoice_number,
       invoice_date: form.invoice_date,
