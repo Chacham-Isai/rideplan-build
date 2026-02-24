@@ -118,6 +118,62 @@ export type Database = {
         }
         Relationships: []
       }
+      breach_incidents: {
+        Row: {
+          contractor_id: string | null
+          created_at: string
+          data_types_affected: string | null
+          description: string
+          discovered_date: string
+          id: string
+          incident_date: string
+          notification_date: string | null
+          notification_sent: boolean | null
+          remediation_steps: string | null
+          severity: string
+          status: string
+          students_affected: number | null
+        }
+        Insert: {
+          contractor_id?: string | null
+          created_at?: string
+          data_types_affected?: string | null
+          description: string
+          discovered_date: string
+          id?: string
+          incident_date: string
+          notification_date?: string | null
+          notification_sent?: boolean | null
+          remediation_steps?: string | null
+          severity?: string
+          status?: string
+          students_affected?: number | null
+        }
+        Update: {
+          contractor_id?: string | null
+          created_at?: string
+          data_types_affected?: string | null
+          description?: string
+          discovered_date?: string
+          id?: string
+          incident_date?: string
+          notification_date?: string | null
+          notification_sent?: boolean | null
+          remediation_steps?: string | null
+          severity?: string
+          status?: string
+          students_affected?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "breach_incidents_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "ed_law_2d_contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       childcare_requests: {
         Row: {
           created_at: string
@@ -164,6 +220,99 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      compliance_reports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          document_url: string | null
+          filed_date: string | null
+          filing_deadline: string | null
+          id: string
+          notes: string | null
+          report_type: string
+          route_count: number | null
+          school_year: string
+          state_aid_claimed: number | null
+          status: string
+          student_count: number | null
+          title: string
+          total_expenditure: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          document_url?: string | null
+          filed_date?: string | null
+          filing_deadline?: string | null
+          id?: string
+          notes?: string | null
+          report_type: string
+          route_count?: number | null
+          school_year: string
+          state_aid_claimed?: number | null
+          status?: string
+          student_count?: number | null
+          title: string
+          total_expenditure?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          document_url?: string | null
+          filed_date?: string | null
+          filing_deadline?: string | null
+          id?: string
+          notes?: string | null
+          report_type?: string
+          route_count?: number | null
+          school_year?: string
+          state_aid_claimed?: number | null
+          status?: string
+          student_count?: number | null
+          title?: string
+          total_expenditure?: number | null
+        }
+        Relationships: []
+      }
+      compliance_training: {
+        Row: {
+          completed_count: number | null
+          created_at: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          required_for: string
+          status: string
+          title: string
+          total_required: number | null
+          training_type: string
+        }
+        Insert: {
+          completed_count?: number | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          required_for?: string
+          status?: string
+          title: string
+          total_required?: number | null
+          training_type: string
+        }
+        Update: {
+          completed_count?: number | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          required_for?: string
+          status?: string
+          title?: string
+          total_required?: number | null
+          training_type?: string
+        }
+        Relationships: []
       }
       contract_invoices: {
         Row: {
@@ -431,6 +580,121 @@ export type Database = {
           tipper_name?: string
         }
         Relationships: []
+      }
+      ed_law_2d_contractors: {
+        Row: {
+          agreement_date: string | null
+          agreement_signed: boolean | null
+          annual_review_date: string | null
+          breach_plan_filed: boolean | null
+          contract_id: string | null
+          contractor_name: string
+          created_at: string
+          data_access_level: string
+          encryption_verified: boolean | null
+          id: string
+          notes: string | null
+          parents_notified: boolean | null
+          status: string
+        }
+        Insert: {
+          agreement_date?: string | null
+          agreement_signed?: boolean | null
+          annual_review_date?: string | null
+          breach_plan_filed?: boolean | null
+          contract_id?: string | null
+          contractor_name: string
+          created_at?: string
+          data_access_level?: string
+          encryption_verified?: boolean | null
+          id?: string
+          notes?: string | null
+          parents_notified?: boolean | null
+          status?: string
+        }
+        Update: {
+          agreement_date?: string | null
+          agreement_signed?: boolean | null
+          annual_review_date?: string | null
+          breach_plan_filed?: boolean | null
+          contract_id?: string | null
+          contractor_name?: string
+          created_at?: string
+          data_access_level?: string
+          encryption_verified?: boolean | null
+          id?: string
+          notes?: string | null
+          parents_notified?: boolean | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ed_law_2d_contractors_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mckinney_vento_students: {
+        Row: {
+          created_at: string
+          current_address: string | null
+          enrollment_date: string | null
+          grade: string
+          id: string
+          liaison_contact: string | null
+          living_situation: string
+          notes: string | null
+          route_id: string | null
+          school: string
+          school_of_origin: string | null
+          status: string
+          student_name: string
+          transportation_provided: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          current_address?: string | null
+          enrollment_date?: string | null
+          grade: string
+          id?: string
+          liaison_contact?: string | null
+          living_situation?: string
+          notes?: string | null
+          route_id?: string | null
+          school: string
+          school_of_origin?: string | null
+          status?: string
+          student_name: string
+          transportation_provided?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          current_address?: string | null
+          enrollment_date?: string | null
+          grade?: string
+          id?: string
+          liaison_contact?: string | null
+          living_situation?: string
+          notes?: string | null
+          route_id?: string | null
+          school?: string
+          school_of_origin?: string | null
+          status?: string
+          student_name?: string
+          transportation_provided?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mckinney_vento_students_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       report_alerts: {
         Row: {
