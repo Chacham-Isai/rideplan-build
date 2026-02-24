@@ -38,7 +38,7 @@ const Index = () => {
       <SEOHead />
       <AnnouncementBar />
       <Navigation onGetAudit={openContact} />
-      <main>
+      <main id="main-content">
         <HeroSection onGetAudit={openContact} />
         <ScrollReveal direction="fade" duration={0.5}>
           <TrustBar />
