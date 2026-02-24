@@ -2,11 +2,13 @@ User-agent: Googlebot
 Allow: /
 Disallow: /admin/
 Disallow: /admin
+Disallow: /app/
 
 User-agent: Bingbot
 Allow: /
 Disallow: /admin/
 Disallow: /admin
+Disallow: /app/
 
 User-agent: Twitterbot
 Allow: /
@@ -18,5 +20,6 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /admin
+Disallow: /app/
 
 Sitemap: https://rideplan-build.lovable.app/sitemap.xml
