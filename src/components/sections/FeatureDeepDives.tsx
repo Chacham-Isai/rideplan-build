@@ -41,17 +41,19 @@ const features = [
   {
     eyebrow: "Contractor Oversight",
     headline: "You Still Carry the Liability. We Help You Manage It.",
-    body: "Your contractors run the buses. You run everything else. RideLine gives you the data to verify every invoice, benchmark every rate, and track every route.",
+    body: "Your contractors run the buses. You run everything else. RideLine gives you the data to verify every invoice, benchmark every rate, manage bids and RFPs, and track contract performance — all in one place.",
     checks: [
       "Invoice verification: cross-reference against actual GPS data",
       "Rate benchmarking against neighboring districts",
-      "Insurance compliance tracking with automated lapse alerts",
+      "Bid & RFP management: publish, score, and award competitively",
+      "Contract lifecycle: renewals, terms, and compliance tracking",
+      "Insurance & safety compliance with automated lapse alerts",
       "Performance scorecards: on-time rates & contract adherence",
-      "Broker-ready safety data from telematics",
     ],
     image: costSavingsImg,
     imageAlt: "RideLine cost savings and contractor oversight dashboard",
     reversed: false,
+    static: true,
   },
   {
     eyebrow: "Parent Communication",
@@ -92,6 +94,11 @@ export const FeatureDeepDives = () => (
             <div className={f.reversed ? "lg:[direction:ltr]" : ""}>
               {(f as any).customComponent ? (
                 <AnimatedRouteMap />
+              ) : (f as any).static ? (
+                <div className="relative">
+                  <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-accent/10 to-success/5 blur-xl opacity-60" />
+                  <img src={f.image} alt={f.imageAlt} className="relative w-full rounded-2xl shadow-xl" loading="lazy" />
+                </div>
               ) : (
                 <motion.div
                   className="relative"
