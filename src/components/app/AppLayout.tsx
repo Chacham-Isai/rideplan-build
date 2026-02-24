@@ -70,7 +70,7 @@ export const AppLayout = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/login");
+    navigate("/");
   };
 
   const SidebarContent = () => (
