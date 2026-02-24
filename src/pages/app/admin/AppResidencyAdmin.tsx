@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, CheckCircle, XCircle, Eye, FileText, Loader2 } from "lucide-react";
+import { Search, CheckCircle, XCircle, Eye, FileText, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+
+const PAGE_SIZE = 25;
 
 type Registration = {
   id: string;
@@ -49,23 +51,33 @@ const AppResidencyAdmin = () => {
   const [attestation, setAttestation] = useState<any>(null);
   const [actionNotes, setActionNotes] = useState("");
   const [acting, setActing] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = useCallback(async () => {
     setLoading(true);
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
     let query = supabase
       .from("student_registrations")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(from, to);
 
     if (statusFilter !== "all") query = query.eq("status", statusFilter as "pending" | "approved" | "denied" | "under_review");
     if (search) query = query.ilike("student_name", `%${search}%`);
 
-    const { data } = await query;
+    const { data, count } = await query;
     setRegistrations((data as Registration[]) ?? []);
+    setTotalCount(count ?? 0);
     setLoading(false);
-  };
+  }, [page, statusFilter, search]);
 
-  useEffect(() => { fetchRegistrations(); }, [statusFilter, search]);
+  useEffect(() => { fetchRegistrations(); }, [fetchRegistrations]);
+
+  // Reset to first page when filters change
+  useEffect(() => { setPage(0); }, [statusFilter, search]);
 
   const openDetail = async (reg: Registration) => {
     setSelected(reg);
@@ -106,14 +118,14 @@ const AppResidencyAdmin = () => {
     }
   };
 
-  const pendingCount = registrations.filter(r => r.status === "pending").length;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Residency Review</h1>
         <p className="text-sm text-muted-foreground">
-          {statusFilter === "pending" ? `${pendingCount} pending` : registrations.length} registration{registrations.length !== 1 ? "s" : ""}
+          {totalCount} registration{totalCount !== 1 ? "s" : ""}
         </p>
       </div>
 
@@ -175,6 +187,24 @@ const AppResidencyAdmin = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+              <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+            </Button>
+            <span className="text-sm text-muted-foreground">Page {page + 1} of {totalPages}</span>
+            <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+              Next <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Detail / Review dialog */}
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
