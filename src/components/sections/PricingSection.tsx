@@ -47,7 +47,13 @@ export const PricingSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
         <div className="grid gap-6 sm:grid-cols-2 mb-12">
           {auditBenefits.map((b, i) => (
             <ScrollReveal key={b.title} delay={i * 0.08}>
-              <div className="rounded-xl border border-border bg-card p-6 h-full hover:border-accent/30 hover:shadow-md transition-all">
+              <div
+                onClick={onGetAudit}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onGetAudit?.(); }}
+                className="cursor-pointer rounded-xl border border-border bg-card p-6 h-full hover:border-accent/30 hover:shadow-md hover:-translate-y-1 transition-all"
+              >
                 <div className="flex items-start gap-4">
                   <div className="rounded-lg bg-accent/10 p-2.5 flex-shrink-0">
                     <b.icon className="h-5 w-5 text-accent" />
