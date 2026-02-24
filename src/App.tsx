@@ -28,6 +28,9 @@ import TipsAdmin from "./pages/admin/TipsAdmin";
 import AlertsAdmin from "./pages/admin/AlertsAdmin";
 import AnalyticsAdmin from "./pages/admin/AnalyticsAdmin";
 import ResidencyAdmin from "./pages/admin/ResidencyAdmin";
+import ContractsAdmin from "./pages/admin/ContractsAdmin";
+import InvoicesAdmin from "./pages/admin/InvoicesAdmin";
+import BidsAdmin from "./pages/admin/BidsAdmin";
 
 import NotFound from "./pages/NotFound";
 
@@ -66,6 +69,9 @@ const App = () => (
               <Route path="tips" element={<TipsAdmin />} />
               <Route path="alerts" element={<AlertsAdmin />} />
               <Route path="analytics" element={<AnalyticsAdmin />} />
+              <Route path="contracts" element={<ContractsAdmin />} />
+              <Route path="invoices" element={<InvoicesAdmin />} />
+              <Route path="bids" element={<BidsAdmin />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
