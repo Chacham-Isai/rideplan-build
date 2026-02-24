@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
-import { ShieldAlert, Truck, Heart, Bell, BarChart3, LogOut, ClipboardCheck, FileText, Receipt, Gavel } from "lucide-react";
+import { ShieldAlert, Truck, Heart, Bell, BarChart3, LogOut, ClipboardCheck, FileText, Receipt, Gavel, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -24,6 +24,7 @@ const navItems = [
   { title: "Contracts", url: "/admin/contracts", icon: FileText },
   { title: "Invoices", url: "/admin/invoices", icon: Receipt },
   { title: "Bids", url: "/admin/bids", icon: Gavel },
+  { title: "Routes", url: "/admin/routes", icon: Route },
   { title: "Driver Tips", url: "/admin/tips", icon: Heart },
   { title: "Alerts", url: "/admin/alerts", icon: Bell },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
