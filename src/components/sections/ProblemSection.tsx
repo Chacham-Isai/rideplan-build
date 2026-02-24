@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { MapPin, FileText, Phone, DollarSign, Users, Accessibility } from "lucide-react";
 
@@ -34,7 +35,10 @@ const problems = [
   },
 ];
 
-export const ProblemSection = () => (
+export const ProblemSection = () => {
+  const navigate = useNavigate();
+
+  return (
   <section className="bg-background py-20 md:py-28" id="problems">
     <div className="mx-auto max-w-[1200px] px-4 md:px-6">
       <ScrollReveal>
@@ -52,7 +56,13 @@ export const ProblemSection = () => (
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {problems.map((p, i) => (
           <ScrollReveal key={i} delay={i * 0.08}>
-            <div className="group rounded-xl border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-t-destructive hover:border-t-2">
+            <div
+              onClick={() => navigate("/demo")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") navigate("/demo"); }}
+              className="group cursor-pointer rounded-xl border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-t-destructive hover:border-t-2"
+            >
               <p.icon className="h-8 w-8 text-destructive mb-4" />
               <h3 className="font-display text-lg font-bold mb-2">{p.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{p.body}</p>
@@ -62,4 +72,5 @@ export const ProblemSection = () => (
       </div>
     </div>
   </section>
-);
+  );
+};

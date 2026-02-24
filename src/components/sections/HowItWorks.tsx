@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Search, Settings, Rocket } from "lucide-react";
 
@@ -25,7 +26,10 @@ const steps = [
   },
 ];
 
-export const HowItWorks = () => (
+export const HowItWorks = () => {
+  const navigate = useNavigate();
+
+  return (
   <section className="bg-secondary py-20 md:py-28" id="how-it-works">
     <div className="mx-auto max-w-[1200px] px-4 md:px-6">
       <ScrollReveal>
@@ -41,12 +45,17 @@ export const HowItWorks = () => (
       </ScrollReveal>
 
       <div className="relative grid gap-8 md:grid-cols-3">
-        {/* Connector line */}
         <div className="absolute top-14 left-[16.66%] right-[16.66%] hidden md:block h-0.5 bg-border" />
 
         {steps.map((s, i) => (
           <ScrollReveal key={i} delay={i * 0.12}>
-            <div className="text-center relative">
+            <div
+              onClick={() => navigate("/demo")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") navigate("/demo"); }}
+              className="text-center relative cursor-pointer transition-transform duration-300 hover:-translate-y-1"
+            >
               <div className={`mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full ${s.color} shadow-lg relative z-10`}>
                 <s.icon className="h-6 w-6" />
               </div>
@@ -59,4 +68,5 @@ export const HowItWorks = () => (
       </div>
     </div>
   </section>
-);
+  );
+};
