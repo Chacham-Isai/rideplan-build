@@ -225,6 +225,41 @@ export type Database = {
           },
         ]
       }
+      residency_audit_log: {
+        Row: {
+          action: Database["public"]["Enums"]["audit_action"]
+          admin_user_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          registration_id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["audit_action"]
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          registration_id: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["audit_action"]
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          registration_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "residency_audit_log_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "student_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       residency_documents: {
         Row: {
           document_type: string
@@ -414,6 +449,12 @@ export type Database = {
     Enums: {
       ai_priority: "low" | "medium" | "high" | "critical"
       app_role: "admin" | "user"
+      audit_action:
+        | "approved"
+        | "denied"
+        | "flagged"
+        | "requested_info"
+        | "unflagged"
       childcare_transport_type: "am" | "pm" | "both"
       driver_report_type: "incident" | "maintenance" | "schedule" | "other"
       registration_status: "pending" | "approved" | "denied" | "under_review"
@@ -548,6 +589,13 @@ export const Constants = {
     Enums: {
       ai_priority: ["low", "medium", "high", "critical"],
       app_role: ["admin", "user"],
+      audit_action: [
+        "approved",
+        "denied",
+        "flagged",
+        "requested_info",
+        "unflagged",
+      ],
       childcare_transport_type: ["am", "pm", "both"],
       driver_report_type: ["incident", "maintenance", "schedule", "other"],
       registration_status: ["pending", "approved", "denied", "under_review"],

@@ -27,6 +27,7 @@ import DriverReportsAdmin from "./pages/admin/DriverReportsAdmin";
 import TipsAdmin from "./pages/admin/TipsAdmin";
 import AlertsAdmin from "./pages/admin/AlertsAdmin";
 import AnalyticsAdmin from "./pages/admin/AnalyticsAdmin";
+import ResidencyAdmin from "./pages/admin/ResidencyAdmin";
 
 import NotFound from "./pages/NotFound";
 
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<SafetyReportsAdmin />} />
               <Route path="driver-reports" element={<DriverReportsAdmin />} />
+              <Route path="residency" element={<ResidencyAdmin />} />
               <Route path="tips" element={<TipsAdmin />} />
               <Route path="alerts" element={<AlertsAdmin />} />
               <Route path="analytics" element={<AnalyticsAdmin />} />
