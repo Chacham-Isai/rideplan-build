@@ -12,9 +12,12 @@ RideLine is a **B2B SaaS marketing website** for a school-bus transportation man
 - Route optimization → saves districts $710K–$1.6M in Year 1
 - Real-time GPS tracking for parents
 - AI-powered safety reporting & driver management
+- Digital student registration & residency verification
+- Contract management, invoicing & bid solicitation
+- Compliance center (BEDS/STAC, McKinney-Vento, Ed Law 2-d)
 - Coverage across the U.S. Northeast (expanding)
 
-The website is a **high-conversion landing page** plus specialized sub-pages (blog, demo, resources, driver portal, tipping, admin dashboard, etc.).
+The website is a **high-conversion landing page** plus specialized sub-pages (blog, demo, resources, driver portal, tipping, parent registration, admin dashboard, etc.).
 
 ---
 
@@ -36,20 +39,6 @@ The website is a **high-conversion landing page** plus specialized sub-pages (bl
 | **Edge Functions** | Deno (Supabase Edge Functions) |
 | **Markdown** | react-markdown (blog content) |
 
-### Key Packages
-
-```
-framer-motion ^12.34.0    # scroll reveals, page transitions
-lucide-react ^0.462.0     # icon library
-react-router-dom ^6.30.1  # client-side routing
-@tanstack/react-query ^5  # async state management
-zod ^3.25.76              # schema validation
-react-helmet-async ^2     # SEO meta tags
-recharts ^2.15.4          # data visualization
-sonner ^1.7.4             # toast notifications
-react-markdown ^10        # blog content rendering
-```
-
 ---
 
 ## 3. Project Structure
@@ -57,83 +46,84 @@ react-markdown ^10        # blog content rendering
 ```
 ├── public/
 │   ├── favicon.ico
-│   ├── og-default.png          # Open Graph image
-│   ├── robots.txt
-│   └── sitemap.xml
+│   ├── og-default.png
+│   ├── robots.txt              # Disallows /admin/*
+│   └── sitemap.xml             # All public routes
 ├── scripts/
-│   └── generate-sitemap.ts     # Auto-generates sitemap on build
+│   └── generate-sitemap.ts
 ├── src/
 │   ├── assets/                 # Static images (imported as ES6 modules)
-│   │   ├── rideline-logo-*.png
-│   │   ├── rideline-dashboard.png
-│   │   ├── rideline-fleet-overview.png
-│   │   ├── rideline-parent-safety.webp
-│   │   ├── rideline-coverage-map.png
-│   │   └── ... (13 total asset images)
 │   ├── components/
 │   │   ├── sections/           # 22 landing-page section components
-│   │   ├── admin/              # Admin layout
+│   │   ├── admin/              # AdminLayout with sidebar navigation
+│   │   ├── registration/       # RegisterWizard + 6 step components
 │   │   ├── ui/                 # 50+ shadcn/ui primitives
-│   │   ├── AnimatedStat.tsx    # Counter animation component
-│   │   ├── BackToTop.tsx       # Scroll-to-top button
-│   │   ├── ChatWidget.tsx      # AI chat floating widget
-│   │   ├── ContactFormModal.tsx # Lead capture modal (Zod + Supabase)
+│   │   ├── AnimatedStat.tsx
+│   │   ├── BackToTop.tsx
+│   │   ├── ChatWidget.tsx
+│   │   ├── ContactFormModal.tsx
 │   │   ├── NavLink.tsx
-│   │   ├── ScrollReveal.tsx    # Framer Motion scroll-triggered animations
-│   │   └── SEOHead.tsx         # Helmet-based SEO component
+│   │   ├── ScrollReveal.tsx
+│   │   └── SEOHead.tsx
 │   ├── data/
-│   │   ├── blogPosts.ts        # Core blog post content (~764 lines)
-│   │   └── additionalBlogPosts.ts  # Extended blog posts (66 total)
+│   │   ├── blogPosts.ts
+│   │   └── additionalBlogPosts.ts
 │   ├── hooks/
-│   │   ├── use-mobile.tsx      # Mobile breakpoint detection
+│   │   ├── use-mobile.tsx
 │   │   ├── use-toast.ts
-│   │   ├── useCountUp.ts       # Number counter animation
-│   │   └── useScrollReveal.ts  # InView hook for scroll animations
+│   │   ├── useCountUp.ts
+│   │   └── useScrollReveal.ts
 │   ├── integrations/supabase/
-│   │   ├── client.ts           # Auto-generated Supabase client
-│   │   └── types.ts            # Auto-generated DB types
-│   ├── lib/utils.ts            # cn() helper (clsx + tailwind-merge)
-│   ├── pages/                  # 17 page components
+│   │   ├── client.ts           # Auto-generated
+│   │   └── types.ts            # Auto-generated
+│   ├── lib/utils.ts
+│   ├── pages/
 │   │   ├── Index.tsx           # Homepage (lazy-loaded sections)
 │   │   ├── About.tsx
-│   │   ├── Blog.tsx
-│   │   ├── BlogPost.tsx
+│   │   ├── Blog.tsx / BlogPost.tsx
 │   │   ├── Careers.tsx
 │   │   ├── Contact.tsx
 │   │   ├── Demo.tsx
 │   │   ├── DriverPortal.tsx
-│   │   ├── NotFound.tsx
+│   │   ├── NotFound.tsx        # Enhanced 404 with navigation links
 │   │   ├── Press.tsx
-│   │   ├── Privacy.tsx
+│   │   ├── Privacy.tsx / Terms.tsx
+│   │   ├── Register.tsx        # Parent registration (6-step wizard)
+│   │   ├── Reapply.tsx         # Returning-family flow
 │   │   ├── Resources.tsx
 │   │   ├── SafetyReport.tsx
-│   │   ├── Terms.tsx
 │   │   ├── TipDriver.tsx
 │   │   ├── AdminLogin.tsx
-│   │   └── admin/              # 5 admin sub-pages
+│   │   └── admin/              # 11 admin sub-pages
 │   │       ├── SafetyReportsAdmin.tsx
 │   │       ├── DriverReportsAdmin.tsx
+│   │       ├── ResidencyAdmin.tsx
 │   │       ├── TipsAdmin.tsx
 │   │       ├── AlertsAdmin.tsx
-│   │       └── AnalyticsAdmin.tsx
-│   ├── App.tsx                 # Router + providers
-│   ├── App.css
-│   ├── index.css               # Design system tokens + global styles
-│   └── main.tsx                # Entry point
+│   │       ├── AnalyticsAdmin.tsx
+│   │       ├── ContractsAdmin.tsx
+│   │       ├── InvoicesAdmin.tsx
+│   │       ├── BidsAdmin.tsx
+│   │       ├── RoutesAdmin.tsx
+│   │       └── ComplianceAdmin.tsx
+│   ├── App.tsx
+│   ├── index.css               # Design system tokens
+│   └── main.tsx
 ├── supabase/
-│   ├── config.toml             # Supabase project config (auto-managed)
+│   ├── config.toml
 │   └── functions/
-│       ├── chat/index.ts       # AI chatbot edge function
-│       └── analyze-reports/index.ts  # Report analysis edge function
+│       ├── chat/index.ts
+│       └── analyze-reports/index.ts
+├── index.html                  # Includes skip-to-content link
 ├── tailwind.config.ts
-├── vite.config.ts
-├── tsconfig.json / tsconfig.app.json / tsconfig.node.json
-└── vitest.config.ts
+└── vite.config.ts
 ```
 
 ---
 
 ## 4. Routing Map
+
+### Public Routes
 
 | Path | Component | Description |
 |---|---|---|
@@ -151,30 +141,43 @@ react-markdown ^10        # blog content rendering
 | `/report` | `SafetyReport` | Public safety report form |
 | `/driver-portal` | `DriverPortal` | Driver-facing portal |
 | `/tip-driver` | `TipDriver` | Driver tipping page |
+| `/register` | `Register` | Parent registration (6-step wizard) |
+| `/reapply` | `Reapply` | Returning-family re-registration |
+| `*` | `NotFound` | 404 page with links to home, contact, blog |
+
+### Admin Routes (protected, disallowed in robots.txt)
+
+| Path | Component | Description |
+|---|---|---|
 | `/admin/login` | `AdminLogin` | Admin authentication |
-| `/admin` | `AdminLayout` → `SafetyReportsAdmin` | Admin: safety reports |
-| `/admin/driver-reports` | `DriverReportsAdmin` | Admin: driver reports |
-| `/admin/tips` | `TipsAdmin` | Admin: tips management |
-| `/admin/alerts` | `AlertsAdmin` | Admin: alert management |
-| `/admin/analytics` | `AnalyticsAdmin` | Admin: analytics dashboard |
-| `*` | `NotFound` | 404 page |
+| `/admin` | `SafetyReportsAdmin` | Safety reports dashboard |
+| `/admin/driver-reports` | `DriverReportsAdmin` | Driver reports |
+| `/admin/residency` | `ResidencyAdmin` | Residency audit dashboard |
+| `/admin/tips` | `TipsAdmin` | Tips management |
+| `/admin/alerts` | `AlertsAdmin` | Alert management |
+| `/admin/analytics` | `AnalyticsAdmin` | Analytics dashboard |
+| `/admin/contracts` | `ContractsAdmin` | Contract management |
+| `/admin/invoices` | `InvoicesAdmin` | Invoice verification |
+| `/admin/bids` | `BidsAdmin` | Bid solicitation & scoring |
+| `/admin/routes` | `RoutesAdmin` | Route analysis & optimization |
+| `/admin/compliance` | `ComplianceAdmin` | Compliance center (4 tabs) |
 
 ---
 
-## 5. Homepage Section Flow (Current Order)
+## 5. Homepage Section Flow
 
-The homepage uses lazy-loading (`React.lazy`) and `ScrollReveal` wrappers for all below-the-fold sections:
+Lazy-loaded with `React.lazy()` and `ScrollReveal` wrappers:
 
 ```
 1.  AnnouncementBar        — top sticky bar
-2.  Navigation             — sticky nav with section scroll-spy
+2.  Navigation             — sticky nav with scroll-spy
 3.  HeroSection            — "Every Student. Every Day." + stats + CTAs
 4.  TrustBar               — partner/client logos
 5.  LiveStatsDashboard     — real-time animated metrics
 6.  PlatformSection        — module cards overview
 7.  ROISection             — ROI value proposition
 8.  TestimonialsSection    — customer quotes
-9.  ComparisonTable        — Before vs. After comparison
+9.  ComparisonTable        — Before vs. After
 10. FeatureDeepDives       — detailed feature breakdowns
 11. WhoWeServeSection      — audience segments
 12. SafetyDriverSection    — safety & driver features
@@ -189,200 +192,147 @@ The homepage uses lazy-loading (`React.lazy`) and `ScrollReveal` wrappers for al
 21. Footer                 — site footer
 ```
 
-Each section wrapped in `<ScrollReveal>` with direction variants: `up`, `down`, `left`, `right`, `scale`, `fade`.
-
 ---
 
 ## 6. Design System
 
-### 6.1 Color Tokens (HSL in index.css `:root`)
+### Color Tokens (HSL in index.css `:root`)
 
 | Token | HSL Value | Usage |
 |---|---|---|
-| `--background` | `225 14% 97%` | Page background (off-white) |
+| `--background` | `225 14% 97%` | Page background |
 | `--foreground` | `224 40% 14%` | Body text (dark navy) |
 | `--primary` | `226 42% 14%` | Primary navy |
-| `--primary-foreground` | `210 40% 98%` | White text on navy |
-| `--secondary` | `210 40% 96.1%` | Light gray sections |
 | `--accent` | `37 91% 55%` | Gold/amber CTAs |
-| `--accent-foreground` | `226 42% 14%` | Text on gold |
 | `--success` | `155 66% 40%` | Green highlights |
 | `--destructive` | `7 93% 46%` | Error/danger red |
 | `--muted` | `225 14% 97%` | Muted backgrounds |
 | `--muted-foreground` | `217 18% 34%` | Secondary text |
-| `--navy` | `226 42% 14%` | Brand navy (alias) |
-| `--navy-mid` | `224 40% 20%` | Mid navy |
-| `--gold` | `37 91% 55%` | Brand gold (alias) |
-| `--gold-light` | `43 96% 67%` | Light gold hover |
-| `--green` | `155 66% 40%` | Success green |
-| `--red` | `7 93% 46%` | Danger red |
+| `--navy` | `226 42% 14%` | Brand navy alias |
+| `--gold` | `37 91% 55%` | Brand gold alias |
 
-### 6.2 Typography
+### Typography
 
-| Role | Font | Config |
-|---|---|---|
-| Display / Headings | **Playfair Display** (serif) | `font-display` class |
-| Body / UI | **DM Sans** (sans-serif) | `font-body` class |
+| Role | Font |
+|---|---|
+| Display / Headings | **Playfair Display** (serif) → `font-display` |
+| Body / UI | **DM Sans** (sans-serif) → `font-body` |
 
-### 6.3 Animation System
+### Animation
 
-- **ScrollReveal component** wraps sections with Framer Motion
-  - Directions: `up`, `down`, `left`, `right`, `scale`, `fade`
-  - Default: 32px travel, 0.6s duration, cubic-bezier `[0.16, 1, 0.3, 1]`
-  - Triggers once when element enters viewport (`margin: -40px`)
-- **AnimatedStat** — count-up number animation on scroll
-- **Section dividers** — CSS `::before` gradient hairlines between sections
-- **`will-change: opacity`** on main sections for GPU compositing
-
-### 6.4 Tailwind Extensions
-
-Custom colors in `tailwind.config.ts` map to CSS variables: `navy`, `gold`, `green`, `red`, `success`, `sidebar-*`.
-
-Border radius: `--radius: 0.5rem` with `lg`, `md`, `sm` variants.
+- `ScrollReveal` — Framer Motion wrapper, 6 directions, 32px travel, 0.6s duration, triggers once
+- `AnimatedStat` — count-up number animation on scroll
+- Section dividers — CSS gradient hairlines
 
 ---
 
-## 7. Database Schema (Supabase / Lovable Cloud)
+## 7. Database Schema
 
-### Tables
+### Tables (25 total)
 
-| Table | Purpose |
-|---|---|
-| `audit_requests` | Lead capture form submissions (name, email, district, students) |
-| `safety_reports` | Parent/community safety incident reports |
-| `driver_reports` | Driver-submitted reports (incident, maintenance, schedule) |
-| `driver_tips` | Tips from parents to drivers |
-| `report_alerts` | Auto-generated alerts from report patterns |
-| `user_roles` | Role-based access control (admin/user) |
+| Table | Purpose | RLS |
+|---|---|---|
+| `audit_requests` | Lead capture form submissions | Public insert |
+| `safety_reports` | Safety incident reports | Public insert, admin read |
+| `driver_reports` | Driver-submitted reports | Public insert, admin read |
+| `driver_tips` | Tips from parents to drivers | Public insert |
+| `report_alerts` | Auto-generated alerts | Admin only |
+| `user_roles` | RBAC (admin/user) | Admin only |
+| `student_registrations` | Parent registration data | Parent-owned + admin |
+| `residency_documents` | Uploaded residency docs | Parent-owned + admin |
+| `residency_attestations` | E-signed attestations | Parent-owned + admin |
+| `childcare_requests` | Childcare transport requests | Parent-owned + admin |
+| `residency_audit_log` | Admin audit trail | Admin only |
+| `contracts` | Contractor contracts | Admin only |
+| `contractor_insurance` | Insurance tracking | Admin only |
+| `contract_invoices` | Invoice verification | Admin only |
+| `contractor_performance` | Performance scorecards | Admin only |
+| `bids` | Bid solicitations | Admin only |
+| `bid_responses` | Contractor bid responses | Admin only |
+| `routes` | Route data & metrics | Admin only |
+| `route_stops` | Stop-level data with geocoding | Admin only |
+| `route_scenarios` | Simulation scenarios | Admin only |
+| `compliance_reports` | BEDS/STAC filings | Admin only |
+| `mckinney_vento_students` | Homeless student tracking | Admin only |
+| `ed_law_2d_contractors` | Data privacy agreements | Admin only |
+| `compliance_training` | Staff training tracking | Admin only |
+| `breach_incidents` | Data breach logs | Admin only |
 
-### Enums
+### Key Enums
 
-| Enum | Values |
-|---|---|
-| `ai_priority` | `low`, `medium`, `high`, `critical` |
-| `app_role` | `admin`, `user` |
-| `driver_report_type` | `incident`, `maintenance`, `schedule`, `other` |
-| `report_status` | `new`, `reviewing`, `resolved` |
-| `safety_report_type` | `bullying`, `driver_safety`, `other` |
+`ai_priority`, `app_role`, `audit_action`, `bid_status`, `bid_response_status`, `childcare_transport_type`, `contract_status`, `driver_report_type`, `insurance_status`, `invoice_status`, `registration_status`, `report_status`, `safety_report_type`
 
 ### Database Function
 
-- `has_role(_role, _user_id)` → boolean — checks if user has a specific role
+- `has_role(_role, _user_id)` → boolean — RBAC check used in RLS policies
 
 ### Edge Functions
 
 | Function | Purpose |
 |---|---|
-| `chat` | AI chatbot — answers visitor questions about RideLine |
-| `analyze-reports` | AI-powered analysis of safety/driver reports |
+| `chat` | AI chatbot for visitor questions |
+| `analyze-reports` | AI-powered report analysis |
 
 ---
 
-## 8. Key Components Deep Dive
+## 8. Key Features
 
-### Navigation (`sections/Navigation.tsx`)
-- Sticky nav with scroll-spy using `IntersectionObserver`
-- 9 links: 5 section anchors (`#platform`, `#features`, `#safety`, `#pricing`, `#how-it-works`) + 4 routes (`/demo`, `/resources`, `/about`, `/blog`)
-- Animated hamburger menu (Framer Motion) for mobile
-- "Get Free Audit" CTA button opens `ContactFormModal`
+### Parent Registration System (`/register`)
+- 6-step wizard: Parent Info → Student Info → Address/Residency → Document Upload → Childcare Transport → Review & E-sign
+- Supabase Auth for parent accounts
+- Document upload to Supabase Storage
+- Returning-family flow at `/reapply`
 
-### ContactFormModal
-- Zod-validated form: name, email, district, students
-- Submits to `audit_requests` table via Supabase client
-- Success state with checkmark animation
+### Admin Dashboard (`/admin/*`)
+- Protected by Supabase Auth + `has_role()` RBAC
+- 11 sub-pages covering: safety reports, driver reports, residency audits, tips, alerts, analytics, contracts, invoices, bids, routes, compliance
+- `AdminLayout` wraps all admin pages with sidebar navigation
 
-### ChatWidget
-- Floating chat bubble (bottom-right)
-- Calls `/functions/v1/chat` edge function
-- Markdown rendering for AI responses
-- Suggested questions for quick interaction
+### Route Analysis (`/admin/routes`)
+- 4-tab interface: Routes table, Inefficiency detection, Consolidation simulator, Analytics charts
+- Flags low utilization (<50%), excessive ride times (>60 min), high-cost routes
 
-### ScrollReveal
-- Reusable Framer Motion wrapper
-- `useInView` hook triggers once
-- 6 animation directions with configurable distance/duration/delay
+### Compliance Center (`/admin/compliance`)
+- 4-tab interface: BEDS/STAC filings, McKinney-Vento tracker, Ed Law 2-d dashboard, Audit Readiness score
+- Composite 0-100% audit readiness score
 
-### SEOHead
-- `react-helmet-async` for meta tags
-- Open Graph + Twitter Card support
-- Canonical URLs
+### Blog System
+- 66 posts across categories: Cost Savings, Safety, Technology, Operations, Community
+- Static content in TypeScript files, rendered with react-markdown
 
 ---
 
-## 9. Blog System
+## 9. SEO & Accessibility
 
-- **66 total blog posts** across categories: Cost Savings, Safety, Technology, Operations, Community
-- Content stored as TypeScript string literals in `src/data/blogPosts.ts` and `additionalBlogPosts.ts`
-- Rendered with `react-markdown`
-- Each post has: `slug`, `title`, `excerpt`, `category`, `readTime`, `date`, `author`, `authorRole`, `content`
-
----
-
-## 10. Admin System
-
-- Protected by `AdminLogin` page (Supabase Auth)
-- `AdminLayout` wraps admin sub-pages with sidebar navigation
-- 5 admin views: Safety Reports, Driver Reports, Tips, Alerts, Analytics
-- Role-based access via `user_roles` table + `has_role()` function
+- `SEOHead` component (react-helmet-async) on all public pages
+- Open Graph + Twitter Card meta tags
+- `robots.txt` disallows `/admin/*`
+- `sitemap.xml` covers all public routes + blog posts
+- Skip-to-content link in `index.html` targeting `#main-content`
+- Semantic HTML with proper heading hierarchy
 
 ---
 
-## 11. Build & Config
+## 10. Build & Config
 
-### Vite Config
-- SWC React plugin for fast HMR
-- Auto-sitemap generation on build via custom plugin
+- Vite with SWC React plugin, dev server on port 8080
 - Path alias: `@/` → `src/`
-- Dev server on port 8080
-
-### TypeScript
-- Strict mode off (`noImplicitAny: false`, `strictNullChecks: false`)
-- Path aliases configured in both `tsconfig.json` and Vite
-
-### Testing
-- Vitest configured (`vitest.config.ts`)
-- Test setup in `src/test/setup.ts`
+- TypeScript strict mode off
+- Vitest configured for testing
+- Auto-sitemap generation on build
 
 ---
 
-## 12. Environment Variables
+## 11. Current State
 
-| Variable | Source | Usage |
-|---|---|---|
-| `VITE_SUPABASE_URL` | Auto-configured | Backend API URL |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Auto-configured | Anon/public key |
-| `VITE_SUPABASE_PROJECT_ID` | Auto-configured | Project identifier |
-
----
-
-## 13. Performance Optimizations
-
-1. **Lazy loading** — All below-the-fold homepage sections use `React.lazy()`
-2. **Image optimization** — WebP format for key images, `loading="lazy"` attributes
-3. **GPU compositing** — `will-change: opacity` on animated sections
-4. **Scroll animation** — `useInView` with `once: true` prevents re-triggering
-5. **Code splitting** — Route-based splitting via React Router
+- All 10 build prompts are **implemented**
+- Homepage uses "impact-first" section order
+- Hero tagline: **"Every Student. Every Day."**
+- Primary CTA: **"Get Free Audit"** / **"Start Your Free Route Audit"**
+- Light theme only (no dark mode) — navy sections provide contrast
+- Blog content is static (no CMS)
+- Admin pages blocked from search engines via robots.txt
 
 ---
 
-## 14. URLs
-
-| Environment | URL |
-|---|---|
-| Preview | `https://id-preview--049f4c21-1133-4b2a-93e7-cdef6ca8fca0.lovable.app` |
-| Published | `https://rideplan-build.lovable.app` |
-
----
-
-## 15. Current State & Notes
-
-- The homepage section order was recently reorganized for an "impact-first" flow (stats → platform → ROI → testimonials → comparison → features → safety → pricing)
-- Scroll animations were refined: softer travel (32px), smoother easing, gradient hairline dividers between sections
-- The hero tagline is: **"Every Student. Every Day."**
-- The primary CTA across the site is **"Get Free Audit"** / **"Start Your Free Route Audit"**
-- No dark mode implemented (light theme only with navy sections for contrast)
-- Blog content is static (no CMS), stored in TypeScript files
-
----
-
-*End of blueprint. This document provides complete context for any AI assistant to understand and continue development on the RideLine project.*
+*End of blueprint.*
