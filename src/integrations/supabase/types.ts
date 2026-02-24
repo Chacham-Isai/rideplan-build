@@ -41,6 +41,83 @@ export type Database = {
         }
         Relationships: []
       }
+      bid_responses: {
+        Row: {
+          bid_id: string
+          contractor_name: string
+          created_at: string
+          fleet_details: string | null
+          id: string
+          proposed_rate: number
+          safety_record: string | null
+          status: Database["public"]["Enums"]["bid_response_status"]
+          total_score: number | null
+        }
+        Insert: {
+          bid_id: string
+          contractor_name: string
+          created_at?: string
+          fleet_details?: string | null
+          id?: string
+          proposed_rate?: number
+          safety_record?: string | null
+          status?: Database["public"]["Enums"]["bid_response_status"]
+          total_score?: number | null
+        }
+        Update: {
+          bid_id?: string
+          contractor_name?: string
+          created_at?: string
+          fleet_details?: string | null
+          id?: string
+          proposed_rate?: number
+          safety_record?: string | null
+          status?: Database["public"]["Enums"]["bid_response_status"]
+          total_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bid_responses_bid_id_fkey"
+            columns: ["bid_id"]
+            isOneToOne: false
+            referencedRelation: "bids"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bids: {
+        Row: {
+          close_date: string | null
+          created_at: string
+          description: string | null
+          id: string
+          open_date: string | null
+          routes_spec: string | null
+          status: Database["public"]["Enums"]["bid_status"]
+          title: string
+        }
+        Insert: {
+          close_date?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          open_date?: string | null
+          routes_spec?: string | null
+          status?: Database["public"]["Enums"]["bid_status"]
+          title: string
+        }
+        Update: {
+          close_date?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          open_date?: string | null
+          routes_spec?: string | null
+          status?: Database["public"]["Enums"]["bid_status"]
+          title?: string
+        }
+        Relationships: []
+      }
       childcare_requests: {
         Row: {
           created_at: string
@@ -87,6 +164,204 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      contract_invoices: {
+        Row: {
+          contract_id: string
+          created_at: string
+          discrepancy_amount: number | null
+          discrepancy_notes: string | null
+          gps_verified: boolean | null
+          id: string
+          invoice_date: string
+          invoice_number: string
+          invoiced_amount: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          verified_amount: number | null
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          discrepancy_amount?: number | null
+          discrepancy_notes?: string | null
+          gps_verified?: boolean | null
+          id?: string
+          invoice_date: string
+          invoice_number: string
+          invoiced_amount?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          verified_amount?: number | null
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          discrepancy_amount?: number | null
+          discrepancy_notes?: string | null
+          gps_verified?: boolean | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          invoiced_amount?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          verified_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_invoices_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_insurance: {
+        Row: {
+          additional_insured: boolean | null
+          contract_id: string
+          coverage_amount: number
+          created_at: string
+          document_url: string | null
+          expiration_date: string
+          id: string
+          policy_number: string
+          provider: string
+          status: Database["public"]["Enums"]["insurance_status"]
+        }
+        Insert: {
+          additional_insured?: boolean | null
+          contract_id: string
+          coverage_amount?: number
+          created_at?: string
+          document_url?: string | null
+          expiration_date: string
+          id?: string
+          policy_number: string
+          provider: string
+          status?: Database["public"]["Enums"]["insurance_status"]
+        }
+        Update: {
+          additional_insured?: boolean | null
+          contract_id?: string
+          coverage_amount?: number
+          created_at?: string
+          document_url?: string | null
+          expiration_date?: string
+          id?: string
+          policy_number?: string
+          provider?: string
+          status?: Database["public"]["Enums"]["insurance_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_insurance_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_performance: {
+        Row: {
+          complaints_count: number | null
+          contract_id: string
+          created_at: string
+          id: string
+          on_time_pct: number | null
+          period_month: string
+          routes_completed: number | null
+          routes_missed: number | null
+          safety_incidents: number | null
+        }
+        Insert: {
+          complaints_count?: number | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          on_time_pct?: number | null
+          period_month: string
+          routes_completed?: number | null
+          routes_missed?: number | null
+          safety_incidents?: number | null
+        }
+        Update: {
+          complaints_count?: number | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          on_time_pct?: number | null
+          period_month?: string
+          routes_completed?: number | null
+          routes_missed?: number | null
+          safety_incidents?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_performance_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          annual_value: number
+          contact_email: string | null
+          contact_phone: string | null
+          contract_end: string
+          contract_start: string
+          contractor_name: string
+          created_at: string
+          id: string
+          notes: string | null
+          rate_per_mile: number | null
+          rate_per_route: number | null
+          renewal_terms: string | null
+          routes_count: number
+          status: Database["public"]["Enums"]["contract_status"]
+        }
+        Insert: {
+          annual_value?: number
+          contact_email?: string | null
+          contact_phone?: string | null
+          contract_end: string
+          contract_start: string
+          contractor_name: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          rate_per_mile?: number | null
+          rate_per_route?: number | null
+          renewal_terms?: string | null
+          routes_count?: number
+          status?: Database["public"]["Enums"]["contract_status"]
+        }
+        Update: {
+          annual_value?: number
+          contact_email?: string | null
+          contact_phone?: string | null
+          contract_end?: string
+          contract_start?: string
+          contractor_name?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          rate_per_mile?: number | null
+          rate_per_route?: number | null
+          renewal_terms?: string | null
+          routes_count?: number
+          status?: Database["public"]["Enums"]["contract_status"]
+        }
+        Relationships: []
       }
       driver_reports: {
         Row: {
@@ -455,8 +730,13 @@ export type Database = {
         | "flagged"
         | "requested_info"
         | "unflagged"
+      bid_response_status: "submitted" | "shortlisted" | "awarded" | "rejected"
+      bid_status: "draft" | "open" | "closed" | "awarded"
       childcare_transport_type: "am" | "pm" | "both"
+      contract_status: "active" | "expired" | "pending"
       driver_report_type: "incident" | "maintenance" | "schedule" | "other"
+      insurance_status: "active" | "expiring" | "expired"
+      invoice_status: "pending" | "approved" | "disputed"
       registration_status: "pending" | "approved" | "denied" | "under_review"
       report_status: "new" | "reviewing" | "resolved"
       safety_report_type: "bullying" | "driver_safety" | "other"
@@ -596,8 +876,13 @@ export const Constants = {
         "requested_info",
         "unflagged",
       ],
+      bid_response_status: ["submitted", "shortlisted", "awarded", "rejected"],
+      bid_status: ["draft", "open", "closed", "awarded"],
       childcare_transport_type: ["am", "pm", "both"],
+      contract_status: ["active", "expired", "pending"],
       driver_report_type: ["incident", "maintenance", "schedule", "other"],
+      insurance_status: ["active", "expiring", "expired"],
+      invoice_status: ["pending", "approved", "disputed"],
       registration_status: ["pending", "approved", "denied", "under_review"],
       report_status: ["new", "reviewing", "resolved"],
       safety_report_type: ["bullying", "driver_safety", "other"],
