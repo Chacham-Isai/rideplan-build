@@ -14,12 +14,13 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
-import { ShieldAlert, Truck, Heart, Bell, BarChart3, LogOut } from "lucide-react";
+import { ShieldAlert, Truck, Heart, Bell, BarChart3, LogOut, ClipboardCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
   { title: "Safety Reports", url: "/admin", icon: ShieldAlert },
   { title: "Driver Reports", url: "/admin/driver-reports", icon: Truck },
+  { title: "Residency Audit", url: "/admin/residency", icon: ClipboardCheck },
   { title: "Driver Tips", url: "/admin/tips", icon: Heart },
   { title: "Alerts", url: "/admin/alerts", icon: Bell },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
