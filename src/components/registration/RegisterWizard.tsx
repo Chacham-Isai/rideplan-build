@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
@@ -51,8 +51,16 @@ export type RegistrationData = {
   billOfRightsAcknowledged: boolean;
 };
 
-const STEP_LABELS = [
+const STEP_LABELS_FULL = [
   "Parent Info",
+  "Student Info",
+  "Address",
+  "Documents",
+  "Childcare",
+  "Review & Sign",
+];
+
+const STEP_LABELS_INAPP = [
   "Student Info",
   "Address",
   "Documents",
@@ -66,15 +74,30 @@ const currentSchoolYear = () => {
   return `${year}-${year + 1}`;
 };
 
-export const RegisterWizard = () => {
+type WizardProps = {
+  mode?: "public" | "in-app";
+  prefill?: {
+    parentName?: string;
+    email?: string;
+    phone?: string;
+    districtId?: string;
+  };
+};
+
+export const RegisterWizard = ({ mode = "public", prefill }: WizardProps) => {
   const navigate = useNavigate();
+  const isInApp = mode === "in-app";
+  const STEP_LABELS = isInApp ? STEP_LABELS_INAPP : STEP_LABELS_FULL;
+  const maxStep = STEP_LABELS.length - 1;
+
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [resolvedDistrictId, setResolvedDistrictId] = useState<string | null>(prefill?.districtId ?? null);
   const [data, setData] = useState<RegistrationData>({
-    parentName: "",
-    email: "",
-    phone: "",
+    parentName: prefill?.parentName ?? "",
+    email: prefill?.email ?? "",
+    phone: prefill?.phone ?? "",
     language: "English",
     password: "",
     students: [{ name: "", dob: "", grade: "", school: "", iep: false, section504: false, mckinneyVento: false, fosterCare: false }],
@@ -88,35 +111,54 @@ export const RegisterWizard = () => {
     billOfRightsAcknowledged: false,
   });
 
+  // Resolve district slug from URL for public mode
+  useEffect(() => {
+    if (isInApp) return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const slug = urlParams.get("district");
+    if (slug) {
+      supabase.from("districts").select("id").eq("slug", slug).maybeSingle().then(({ data: d }) => {
+        if (d) setResolvedDistrictId(d.id);
+      });
+    }
+    if (!resolvedDistrictId) {
+      setResolvedDistrictId("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    }
+  }, [isInApp]);
+
   const updateData = (partial: Partial<RegistrationData>) => setData(prev => ({ ...prev, ...partial }));
-  const next = () => setStep(s => Math.min(s + 1, 5));
+  const next = () => setStep(s => Math.min(s + 1, maxStep));
   const back = () => setStep(s => Math.max(s - 1, 0));
 
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      // 1. Create auth account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: { full_name: data.parentName, phone: data.phone, language: data.language },
-          emailRedirectTo: window.location.origin,
-        },
-      });
-      if (authError) throw authError;
-      const userId = authData.user?.id;
-      if (!userId) throw new Error("Account creation failed");
+      let userId: string;
+
+      if (isInApp) {
+        // In-app: user already authenticated
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser) throw new Error("You must be logged in");
+        userId = currentUser.id;
+      } else {
+        // Public: create auth account
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+          options: {
+            data: { full_name: data.parentName, phone: data.phone, language: data.language },
+            emailRedirectTo: window.location.origin,
+          },
+        });
+        if (authError) throw authError;
+        userId = authData.user?.id ?? "";
+        if (!userId) throw new Error("Account creation failed");
+      }
 
       const schoolYear = currentSchoolYear();
+      const districtId = resolvedDistrictId ?? "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
 
-      // Get district_id from URL param or default to Lawrence
-      const urlParams = new URLSearchParams(window.location.search);
-      const districtParam = urlParams.get("district");
-      // For now, resolve to Lawrence UFSD; Priority 2 will add proper district lookup
-      const districtId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
-
-      // 2. Create student registrations
+      // Create student registrations
       for (const student of data.students) {
         const { data: reg, error: regError } = await supabase
           .from("student_registrations")
@@ -141,7 +183,7 @@ export const RegisterWizard = () => {
           .single();
         if (regError) throw regError;
 
-        // 3. Upload documents for first student (shared across siblings)
+        // Upload documents for first student (shared across siblings)
         if (data.students.indexOf(student) === 0) {
           for (const doc of data.documents) {
             const filePath = `${userId}/${reg.id}/${Date.now()}-${doc.file.name}`;
@@ -162,7 +204,7 @@ export const RegisterWizard = () => {
           }
         }
 
-        // 4. Create attestation
+        // Create attestation
         await supabase.from("residency_attestations").insert({
           registration_id: reg.id,
           parent_user_id: userId,
@@ -170,7 +212,7 @@ export const RegisterWizard = () => {
           signature_text: data.signatureText,
         });
 
-        // 5. Create childcare request if needed
+        // Create childcare request if needed
         if (data.needsChildcare && data.childcare) {
           await supabase.from("childcare_requests").insert({
             registration_id: reg.id,
@@ -195,14 +237,14 @@ export const RegisterWizard = () => {
   if (submitted) {
     return (
       <Card className="p-8 text-center">
-        <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
+        <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
         <h2 className="font-display text-2xl font-bold text-primary mb-2">Registration Submitted!</h2>
         <p className="text-muted-foreground mb-1">
           Your district will review your application. You'll receive an email confirmation at <strong>{data.email}</strong>.
         </p>
         <p className="text-sm text-muted-foreground mb-6">Expected processing time: 5–10 business days.</p>
-        <Button onClick={() => navigate("/")} className="bg-primary text-primary-foreground">
-          Return to Homepage
+        <Button onClick={() => navigate(isInApp ? "/app/parent" : "/")} className="bg-primary text-primary-foreground">
+          {isInApp ? "Back to Dashboard" : "Return to Homepage"}
         </Button>
       </Card>
     );
@@ -225,12 +267,24 @@ export const RegisterWizard = () => {
       </div>
 
       <Card className="p-6 md:p-8">
-        {step === 0 && <StepParentInfo data={data} updateData={updateData} onNext={next} />}
-        {step === 1 && <StepStudentInfo data={data} updateData={updateData} onNext={next} onBack={back} />}
-        {step === 2 && <StepAddress data={data} updateData={updateData} onNext={next} onBack={back} />}
-        {step === 3 && <StepDocuments data={data} updateData={updateData} onNext={next} onBack={back} />}
-        {step === 4 && <StepChildcare data={data} updateData={updateData} onNext={next} onBack={back} />}
-        {step === 5 && <StepReview data={data} updateData={updateData} onBack={back} onSubmit={handleSubmit} submitting={submitting} />}
+        {isInApp ? (
+          <>
+            {step === 0 && <StepStudentInfo data={data} updateData={updateData} onNext={next} onBack={() => {}} />}
+            {step === 1 && <StepAddress data={data} updateData={updateData} onNext={next} onBack={back} />}
+            {step === 2 && <StepDocuments data={data} updateData={updateData} onNext={next} onBack={back} />}
+            {step === 3 && <StepChildcare data={data} updateData={updateData} onNext={next} onBack={back} />}
+            {step === 4 && <StepReview data={data} updateData={updateData} onBack={back} onSubmit={handleSubmit} submitting={submitting} />}
+          </>
+        ) : (
+          <>
+            {step === 0 && <StepParentInfo data={data} updateData={updateData} onNext={next} />}
+            {step === 1 && <StepStudentInfo data={data} updateData={updateData} onNext={next} onBack={back} />}
+            {step === 2 && <StepAddress data={data} updateData={updateData} onNext={next} onBack={back} />}
+            {step === 3 && <StepDocuments data={data} updateData={updateData} onNext={next} onBack={back} />}
+            {step === 4 && <StepChildcare data={data} updateData={updateData} onNext={next} onBack={back} />}
+            {step === 5 && <StepReview data={data} updateData={updateData} onBack={back} onSubmit={handleSubmit} submitting={submitting} />}
+          </>
+        )}
       </Card>
     </div>
   );

@@ -616,6 +616,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          slug: string | null
           state: string
           student_count: number | null
           subscription_status: string | null
@@ -635,6 +636,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          slug?: string | null
           state?: string
           student_count?: number | null
           subscription_status?: string | null
@@ -654,6 +656,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          slug?: string | null
           state?: string
           student_count?: number | null
           subscription_status?: string | null
