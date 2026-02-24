@@ -3,8 +3,8 @@ import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { AnimatedRouteMap } from "@/components/AnimatedRouteMap";
 import { ParentAppAnimated } from "@/components/ParentAppAnimated";
+import { DashboardAnimated } from "@/components/DashboardAnimated";
 import costSavingsImg from "@/assets/rideline-cost-savings.png";
-import dashboardImg from "@/assets/rideline-dashboard.png";
 
 const features = [
   {
@@ -18,8 +18,9 @@ const features = [
       "Special Ed & McKinney-Vento flagging with IEP compliance",
       "Mass import and bulk assignment for start-of-year",
     ],
-    image: dashboardImg,
-    imageAlt: "Parent receiving real-time bus notification on their phone",
+    image: null as unknown as string,
+    customComponent: "dashboard",
+    imageAlt: "RideLine student assignment dashboard",
     reversed: false,
   },
   {
@@ -95,6 +96,8 @@ export const FeatureDeepDives = () => (
             <div className={f.reversed ? "lg:[direction:ltr]" : ""}>
               {(f as any).customComponent === true ? (
                 <AnimatedRouteMap />
+              ) : (f as any).customComponent === "dashboard" ? (
+                <DashboardAnimated />
               ) : (f as any).customComponent === "parent" ? (
                 <ParentAppAnimated />
               ) : (f as any).static ? (
