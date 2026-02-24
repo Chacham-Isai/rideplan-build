@@ -2,8 +2,8 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { AnimatedRouteMap } from "@/components/AnimatedRouteMap";
+import { ParentAppAnimated } from "@/components/ParentAppAnimated";
 import costSavingsImg from "@/assets/rideline-cost-savings.png";
-import parentAppImg from "@/assets/rideline-parent-app.png";
 import dashboardImg from "@/assets/rideline-dashboard.png";
 
 const features = [
@@ -66,7 +66,8 @@ const features = [
       "Multilingual self-service portal for parents",
       "60% reduction in office phone calls from day one",
     ],
-    image: parentAppImg,
+    image: null as unknown as string,
+    customComponent: "parent",
     imageAlt: "Parent receiving real-time school bus notification on their phone",
     reversed: true,
   },
@@ -92,8 +93,10 @@ export const FeatureDeepDives = () => (
               </ul>
             </div>
             <div className={f.reversed ? "lg:[direction:ltr]" : ""}>
-              {(f as any).customComponent ? (
+              {(f as any).customComponent === true ? (
                 <AnimatedRouteMap />
+              ) : (f as any).customComponent === "parent" ? (
+                <ParentAppAnimated />
               ) : (f as any).static ? (
                 <div className="relative">
                   <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-accent/10 to-success/5 blur-xl opacity-60" />
