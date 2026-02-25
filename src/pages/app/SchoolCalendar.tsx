@@ -314,6 +314,44 @@ const SchoolCalendar = () => {
     if (error) toast.error(error.message); else { toast.success("Deleted"); fetchAll(); }
   };
 
+  // ── Auto-notify parents when override is created ──
+  const notifyParentsForOverride = async (school: string, overrideDate: string, notes: string | null, noTransport: boolean, bellScheduleId: string | null) => {
+    if (!district) return;
+    const linkedBell = bellScheduleId ? bellSchedules.find(b => b.id === bellScheduleId) : null;
+    const dateLabel = format(parseISO(overrideDate), "EEEE, MMMM d, yyyy");
+    let title = "Schedule Change";
+    let message = "";
+
+    if (noTransport) {
+      title = "No Transportation";
+      message = `There will be no bus service for ${school} on ${dateLabel}.`;
+    } else if (linkedBell?.schedule_name?.toLowerCase().includes("delay")) {
+      title = "Weather Delay";
+      message = `${school} will operate on a delayed schedule (${linkedBell.schedule_name}) on ${dateLabel}. Buses will run starting at ${linkedBell.am_start || "TBD"}.`;
+    } else if (linkedBell?.schedule_name?.toLowerCase().includes("half") || linkedBell?.schedule_name?.toLowerCase().includes("early")) {
+      title = "Early Dismissal";
+      message = `${school} will have early dismissal on ${dateLabel}. Dismissal at ${linkedBell.pm_end || "12:00"}.`;
+    } else {
+      title = "Schedule Override";
+      message = `${school} has a schedule change on ${dateLabel}.${linkedBell ? ` Operating on "${linkedBell.schedule_name}" schedule.` : ""}`;
+    }
+    if (notes) message += ` Note: ${notes}`;
+
+    const { data: students } = await supabase.from("student_registrations")
+      .select("parent_user_id").eq("school", school).eq("status", "approved");
+    if (!students || students.length === 0) return;
+
+    const parentIds = [...new Set(students.map(s => s.parent_user_id))];
+    const rows = parentIds.map(uid => ({
+      district_id: district.id, user_id: uid, title, message,
+      type: noTransport ? "warning" : "info", category: "calendar", link: "/app/calendar",
+    }));
+    for (let i = 0; i < rows.length; i += 100) {
+      await supabase.from("notifications").insert(rows.slice(i, i + 100) as any);
+    }
+    toast.success(`Notified ${parentIds.length} families about the schedule change`);
+  };
+
   // ── Override CRUD ──
   const saveOverride = async () => {
     if (!district) return;
@@ -328,7 +366,16 @@ const SchoolCalendar = () => {
       notes: overrideForm.notes || null,
     };
     const { error } = await supabase.from("schedule_overrides").insert(payload);
-    if (error) toast.error(error.message); else toast.success("Override created");
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Override created");
+      await notifyParentsForOverride(
+        overrideForm.school, overrideForm.override_date,
+        overrideForm.notes || null, overrideForm.no_transport,
+        overrideForm.bell_schedule_id || null,
+      );
+    }
     setSaving(false);
     setShowOverrideDialog(false);
     fetchAll();
