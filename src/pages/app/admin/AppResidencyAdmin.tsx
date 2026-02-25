@@ -45,6 +45,7 @@ const AppResidencyAdmin = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState("pending");
   const [selected, setSelected] = useState<Registration | null>(null);
   const [docs, setDocs] = useState<any[]>([]);
@@ -75,6 +76,12 @@ const AppResidencyAdmin = () => {
   }, [page, statusFilter, search]);
 
   useEffect(() => { fetchRegistrations(); }, [fetchRegistrations]);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput), 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   // Reset to first page when filters change
   useEffect(() => { setPage(0); }, [statusFilter, search]);
@@ -132,7 +139,7 @@ const AppResidencyAdmin = () => {
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[240px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search by student name..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder="Search by student name..." value={searchInput} onChange={e => setSearchInput(e.target.value)} className="pl-9" />
         </div>
         <select
           value={statusFilter}
