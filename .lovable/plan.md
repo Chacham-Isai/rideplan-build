@@ -1,152 +1,150 @@
 
 
-# Implementation Plan: Demo-Ready RideLine (4 Tasks)
+# Plan: Automate District Workflow Document in Dashboard
 
-This is a large, multi-task effort covering database seeding, data quality improvements, and two new UI flows. Here is the breakdown.
+## Workflow Document Analysis
 
----
+The uploaded PDF outlines 5 operational areas that a district transportation office handles daily. Here is a gap analysis mapping each workflow item to what currently exists and what needs to be built.
 
-## Task 1: Seed Oceanside UFSD (Second Demo District)
+### Current Coverage vs Gaps
 
-**Goal:** Prove multi-tenant isolation by having two fully populated districts.
-
-**Schema Changes Required First:**
-Several tables referenced in the seed are missing `district_id` and cannot be tenant-isolated:
-- `bids` — no `district_id` column
-- `bid_responses` — no `district_id` column  
-- `driver_reports` — no `district_id` column
-
-These need `ALTER TABLE ... ADD COLUMN district_id UUID REFERENCES districts(id)` migrations + RLS policies before seeding.
-
-**Database Migration (single large PL/pgSQL seed):**
-1. Add `district_id` to `bids`, `bid_responses`, `driver_reports` tables
-2. Add RLS policies for new columns
-3. Backfill existing Lawrence data with Lawrence's `district_id`
-4. Insert Oceanside district record
-5. Insert 3 Oceanside profile records (with placeholder auth UUIDs + comments)
-6. Insert 3 Oceanside contracts + insurance records
-7. Use `generate_series()` + name/street arrays to generate:
-   - ~5,179 student registrations across 10 schools
-   - 85 routes distributed across schools and contractors
-8. Insert 12 invoices with discrepancy stories
-9. Insert 9 contractor performance records (3 contractors x 3 months)
-10. Insert compliance data: 8 McKinney-Vento, 3 Ed Law 2-d, 6 training, 1 breach
-11. Insert 8 safety reports + 5 driver reports
-12. Insert 2 bids + 8 bid responses
-
-All INSERTs use `ON CONFLICT DO NOTHING` for idempotency. Street names and student names drawn from Oceanside-specific arrays.
-
----
-
-## Task 2: Tighten Lawrence UFSD Data Quality
-
-**Database Migration (separate SQL, uses UPSERT patterns):**
-
-A. **Contractor Performance:** Insert/upsert 24 records (4 contractors x 6 months Jul-Jan) with narrative arcs (Logan Bus declining, Baumann excellent on SPED).
-
-B. **Compliance Data:** Upsert McKinney-Vento (12 records, 4 without transport), Ed Law 2-d for all 4 contractors (Logan missing privacy plan), 8+ compliance training records (2-3 overdue), 1 breach incident for Logan Bus.
-
-C. **Route Storytelling:** Update specific Lawrence routes to create:
-- 5 ghost routes with `total_students` < 50% of `capacity`
-- 3 routes with `avg_ride_time_min` > 60
-- 8 routes with low utilization (efficiency grade D/F)
-- Merge candidate pairs serving same school
-
-D. **Invoice Discrepancies:** Upsert Lawrence invoices so Logan Bus has 2 invoices with >$2K discrepancies, total discrepancies >$10K.
-
-E. **Safety Reports:** Ensure 10 reports with priority mix (2 critical, 3 high, 3 medium, 2 low) and status mix.
-
-F. **Bids:** Ensure 1 awarded + 1 open bid with responses and scoring.
-
----
-
-## Task 3: Password Reset Flow
-
-**Two new pages + route updates:**
-
-### A. `/forgot-password` page
-- New file: `src/pages/ForgotPassword.tsx`
-- Navy background card matching `/login` design exactly
-- RideLine logo, email input with Zod validation
-- Calls `supabase.auth.resetPasswordForEmail()` with `redirectTo: origin + '/reset-password'`
-- Success/error states without revealing email existence
-- "Back to Sign In" link
-
-### B. `/reset-password` page
-- New file: `src/pages/ResetPassword.tsx`
-- Same navy card design
-- Two password fields with requirements display (8+ chars, uppercase, lowercase, number)
-- Zod validation for matching + strength
-- Calls `supabase.auth.updateUser({ password })`
-- Success: auto-redirect to `/login` after 3 seconds
-- Expired link error with link to `/forgot-password`
-
-### C. Wiring
-- Add both routes to `App.tsx` as public routes (between `/signup` and `/app`)
-- Add "Forgot your password?" link to `Login.tsx` below the submit button
-- Add to `robots.txt` disallow list
-- Add breadcrumb labels in `AppBreadcrumb.tsx`
-
----
-
-## Task 4: Profile Onboarding for New Users
-
-### A. Onboarding check in `ProtectedRoute.tsx`
-- After session confirmed, query `profiles` for user
-- If no profile or missing `full_name`/`district_id` → redirect to `/app/onboarding`
-- Cache result in `DistrictContext` (add `profileComplete` boolean)
-
-### B. `/app/onboarding` page
-- New file: `src/pages/app/Onboarding.tsx`
-- Wrapped in `ProtectedRoute` but NOT in `AppLayout` (clean focused flow)
-- Pre-fills name from auth metadata
-- Shows role + district as read-only
-- "Get Started" button upserts profile, then redirects to dashboard
-
-### C. Edge case: no district association
-- Show message: "Your account hasn't been linked to a district yet..."
-- Sign Out link available
-
-### D. Route addition
-- Add `/app/onboarding` route in `App.tsx` inside the `ProtectedRoute` wrapper but OUTSIDE the `AppLayout` wrapper
-
----
-
-## Technical Details
-
-### Migration Strategy
-- Tasks 1 & 2 will be a single large SQL migration using PL/pgSQL `DO $$` blocks with `generate_series()`, array indexing, and `random()` for realistic data generation
-- Name arrays: 100 first names + 100 last names per district (non-overlapping)
-- Address arrays: 30+ real street names per district
-- All monetary values calibrated to Long Island rates ($70K-$100K/route/year)
-
-### Schema Additions Required
 ```text
-bids              + district_id UUID REFERENCES districts(id)
-bid_responses     + district_id UUID REFERENCES districts(id)
-driver_reports    + district_id UUID REFERENCES districts(id)
+WORKFLOW AREA          | STATUS      | EXISTING MODULE
+───────────────────────┼─────────────┼──────────────────────────────
+I. SECRETARIAL
+  Calls/Emails/Texts   | MISSING     | No communication/ticket system
+  Stop Changes          | MISSING     | route_stops table exists, no request flow
+  Driver Issues         | PARTIAL     | driver_reports exists (public portal only)
+  Address Changes       | MISSING     | No change-request workflow
+  School Changes        | MISSING     | No change-request workflow
+  Appointments          | MISSING     | No scheduling system
+  Registration          | DONE        | RegisterWizard + Students page
+  Private School Reg    | PARTIAL     | Same wizard, no private school flag
+  Birth Cert / Docs     | DONE        | Document upload in registration
+
+II. TRANSPORTATION
+  Route Efficiency      | DONE        | Routes page (utilization, ghost routes)
+  Ride Time / Looping   | DONE        | avg_ride_time, long ride filter
+  Special Ed / Homeless | DONE        | IEP/504/MV/FC flags + filters
+  Aides & Monitors      | MISSING     | No aide/monitor tracking
+  Bus Company Comms     | MISSING     | No communication log
+  GPS Tracking          | MISSING     | No GPS data integration
+  Bus Passes            | MISSING     | No bus pass generation
+  Eligibility           | MISSING     | No distance-based eligibility calc
+  Reregistration        | DONE        | Reapply flow exists
+  School Communication  | MISSING     | No school comms log
+  Other District Coord  | MISSING     | No inter-district module
+  Piggyback / Shared    | MISSING     | No shared services tracking
+
+III. BUSINESS
+  Bids & Contracts      | DONE        | Contracts page + Bids admin
+  State Forms           | DONE        | Compliance (BEDS/STAC)
+  Payments / Invoices   | DONE        | Invoice auditing in Contracts
+  19A Certifications    | MISSING     | No driver certification tracking
+  Insurance             | DONE        | contractor_insurance table + UI
+  STAC                  | DONE        | Compliance page
+  Legal / Regulation    | PARTIAL     | Ed Law 2-d tracked
+
+IV. OTHER
+  NYSED                 | PARTIAL     | Compliance reports
+  Ed Law 2-d            | DONE        | Full Ed Law 2-d module
+
+V. FLEET (own fleet)
+  Fleet Management      | MISSING     | No fleet module (N/A for contracted)
 ```
 
-### New Files
-```text
-src/pages/ForgotPassword.tsx
-src/pages/ResetPassword.tsx
-src/pages/app/Onboarding.tsx
-```
+## Implementation Plan
 
-### Modified Files
-```text
-src/App.tsx                          (add 3 routes)
-src/pages/Login.tsx                  (add forgot password link)
-src/components/app/ProtectedRoute.tsx (add onboarding check)
-src/contexts/DistrictContext.tsx      (add profileComplete flag)
-src/components/app/AppBreadcrumb.tsx  (add labels)
-public/robots.txt                    (add disallow entries)
-```
+### Phase 1: Service Request Hub (covers Secretarial workflows)
 
-### Execution Order
-1. Schema migration (add missing `district_id` columns + RLS)
-2. Seed migration (Oceanside + Lawrence tightening)
-3. Frontend: Password reset pages + routes
-4. Frontend: Onboarding page + ProtectedRoute logic
+Create a new `service_requests` table and a **"Requests"** page that acts as the central inbox for all secretarial tasks: stop changes, address changes, school changes, driver issues, and general inquiries.
+
+**Database migration:**
+- New `service_requests` table with columns: `id`, `district_id`, `parent_user_id` (nullable), `request_type` (enum: `stop_change`, `address_change`, `school_change`, `driver_issue`, `general_inquiry`, `bus_pass`), `student_registration_id` (nullable FK), `subject`, `description`, `current_value`, `requested_value`, `priority`, `status` (open/in_progress/resolved/closed), `assigned_to`, `resolved_at`, `created_at`
+- RLS: parents can insert/view own requests; district staff can view/update all within their district
+- New `service_request_notes` table for threaded responses: `id`, `request_id`, `user_id`, `note`, `created_at`
+
+**New page: `/app/requests`** (add to sidebar as "Requests" with `MessageSquare` icon)
+- Summary cards: Open Requests, Avg Resolution Time, By Type breakdown
+- Filterable table with type, priority, status, date, student name
+- Detail dialog with timeline of notes, status update buttons
+- Parents can submit requests from their portal
+
+**Dashboard integration:**
+- Add "Open Requests" stat card linking to `/app/requests`
+- Add quick action: "View Requests"
+
+### Phase 2: Bus Pass & Eligibility System
+
+**Database migration:**
+- New `bus_passes` table: `id`, `registration_id`, `district_id`, `pass_number`, `school_year`, `status` (active/expired/revoked), `issued_at`, `expires_at`
+- New `eligibility_rules` table: `id`, `district_id`, `grade_range_start`, `grade_range_end`, `min_distance_miles`, `school_year`
+
+**Students page enhancement:**
+- Add "Generate Bus Pass" button in student detail dialog
+- Add eligibility badge based on `distance_to_school` vs district rules
+- Bulk bus pass generation for approved students
+
+**Dashboard integration:**
+- Add "Bus Passes Issued" to bottom stats row
+
+### Phase 3: 19A Driver Certification Tracking
+
+**Database migration:**
+- New `driver_certifications` table: `id`, `district_id`, `driver_name`, `contractor_id` (nullable), `certification_type` (19a_initial, 19a_biennial, cdl, medical), `issued_date`, `expiration_date`, `status`, `document_url`
+
+**Contracts page enhancement:**
+- Add a "Drivers" tab showing all drivers with certification status
+- Expiration alerts (30/60/90 day warnings)
+- Compliance percentage per contractor
+
+**Dashboard integration:**
+- Add "Expiring Certifications" alert card
+
+### Phase 4: Aide & Monitor Assignment
+
+**Database migration:**
+- New `route_aides` table: `id`, `route_id`, `district_id`, `aide_name`, `aide_type` (aide/monitor), `certification`, `assigned_date`, `status`
+
+**Routes page enhancement:**
+- Add aide/monitor column to route table
+- Detail dialog shows assigned aides
+- Add/remove aide from route detail
+
+### Phase 5: Communication Log
+
+**Database migration:**
+- New `communication_log` table: `id`, `district_id`, `contact_type` (parent/school/contractor/other_district), `contact_name`, `direction` (inbound/outbound), `channel` (phone/email/text/in_person), `subject`, `notes`, `related_student_id`, `related_route_id`, `logged_by`, `created_at`
+
+**New page: `/app/communications`** or embedded in relevant pages
+- Log calls, emails, and texts with parent/school/contractor
+- Link communications to students or routes
+- Search and filter by contact, type, date
+
+### Phase 6: Dashboard Overhaul
+
+Redesign the dashboard to serve as the **operational command center** with sections mapping to all 5 workflow areas:
+
+1. **Action Items Banner** - Critical items needing attention (expiring certs, open requests, MV students without transport, expiring contracts, overdue compliance filings)
+2. **Secretarial Section** - Open service requests count, recent requests, quick-submit button
+3. **Transportation Section** - Route efficiency score, ghost routes, long rides, special ed stats, aide coverage
+4. **Business Section** - Contract status, pending invoices, insurance expirations, 19A cert status
+5. **Compliance Section** - Audit readiness score, filing deadlines, training completion, Ed Law 2-d status
+6. **Quick Actions** - Expanded to include: Add Student, New Request, Generate Bus Pass, Log Communication, Generate Report
+
+### Recommended Implementation Order
+
+1. **Phase 1 (Service Requests)** - Highest impact, covers the entire Secretarial section
+2. **Phase 6 (Dashboard Overhaul)** - Makes all data visible from one screen
+3. **Phase 2 (Bus Passes & Eligibility)** - Frequently requested by parents
+4. **Phase 3 (19A Certifications)** - Legal compliance requirement
+5. **Phase 4 (Aides & Monitors)** - Important for special ed compliance
+6. **Phase 5 (Communication Log)** - Nice-to-have for audit trails
+
+### Technical Notes
+
+- All new tables will include `district_id` with RLS policies matching the existing pattern (`get_user_district_id()` + `has_app_role()`)
+- New sidebar items will be added to `AppLayout.tsx` staffNav array
+- Each new page follows the existing pattern: stat cards at top, tabbed or filtered table, detail dialogs
+- Seed data will be added for Lawrence UFSD to demonstrate all features
 
