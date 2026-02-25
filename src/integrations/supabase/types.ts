@@ -1944,6 +1944,8 @@ export type Database = {
           ai_suggested_priority: string | null
           ai_suggested_type: string | null
           assigned_to: string | null
+          caller_name: string | null
+          caller_phone: string | null
           created_at: string
           current_value: string | null
           description: string
@@ -1962,6 +1964,8 @@ export type Database = {
           ai_suggested_priority?: string | null
           ai_suggested_type?: string | null
           assigned_to?: string | null
+          caller_name?: string | null
+          caller_phone?: string | null
           created_at?: string
           current_value?: string | null
           description?: string
@@ -1980,6 +1984,8 @@ export type Database = {
           ai_suggested_priority?: string | null
           ai_suggested_type?: string | null
           assigned_to?: string | null
+          caller_name?: string | null
+          caller_phone?: string | null
           created_at?: string
           current_value?: string | null
           description?: string
