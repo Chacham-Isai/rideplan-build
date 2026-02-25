@@ -14,12 +14,19 @@ type Props = {
 };
 
 const DOC_TYPES = [
-  "Utility Bill",
+  "Utility Bill (electric, gas, water)",
   "Lease / Mortgage Statement",
   "Property Tax Bill",
-  "Bank Statement",
+  "Bank Statement (with address)",
   "Vehicle Registration",
-  "Government ID",
+  "Government-Issued ID",
+  "Homeowners / Renters Insurance",
+];
+
+const PRIMARY_DOC_TYPES = [
+  "Utility Bill (electric, gas, water)",
+  "Lease / Mortgage Statement",
+  "Property Tax Bill",
 ];
 
 export const StepDocuments = ({ data, updateData, onNext, onBack }: Props) => {
@@ -43,7 +50,8 @@ export const StepDocuments = ({ data, updateData, onNext, onBack }: Props) => {
     updateData({ documents: docs });
   };
 
-  const canProceed = data.documents.length >= 2 && data.documents.every(d => d.type);
+  const hasPrimaryDoc = data.documents.some(d => PRIMARY_DOC_TYPES.includes(d.type));
+  const canProceed = data.documents.length >= 2 && data.documents.every(d => d.type) && hasPrimaryDoc;
 
   return (
     <div className="space-y-5">
@@ -51,7 +59,7 @@ export const StepDocuments = ({ data, updateData, onNext, onBack }: Props) => {
 
       <Alert>
         <AlertDescription>
-          Upload <strong>2 or more documents</strong> to verify your residency. Accepted formats: PDF, JPG, PNG (max 10MB each).
+          Upload <strong>2 or more documents</strong> to verify your residency. <strong>At least one must be a utility bill, lease/mortgage, or property tax bill.</strong> Accepted formats: PDF, JPG, PNG (max 10MB each).
         </AlertDescription>
       </Alert>
 
@@ -97,6 +105,9 @@ export const StepDocuments = ({ data, updateData, onNext, onBack }: Props) => {
 
       {data.documents.length < 2 && data.documents.length > 0 && (
         <p className="text-sm text-destructive">Please upload at least 2 documents.</p>
+      )}
+      {data.documents.length >= 2 && !hasPrimaryDoc && (
+        <p className="text-sm text-destructive">At least one document must be a utility bill, lease/mortgage, or property tax bill.</p>
       )}
 
       <div className="flex justify-between">
