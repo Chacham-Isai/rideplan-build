@@ -14,6 +14,173 @@ export type Database = {
   }
   public: {
     Tables: {
+      accident_notifications: {
+        Row: {
+          accident_report_id: string
+          channel: string
+          district_id: string
+          id: string
+          message: string
+          recipient_count: number
+          sent_at: string
+          sent_by: string | null
+        }
+        Insert: {
+          accident_report_id: string
+          channel?: string
+          district_id: string
+          id?: string
+          message: string
+          recipient_count?: number
+          sent_at?: string
+          sent_by?: string | null
+        }
+        Update: {
+          accident_report_id?: string
+          channel?: string
+          district_id?: string
+          id?: string
+          message?: string
+          recipient_count?: number
+          sent_at?: string
+          sent_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accident_notifications_accident_report_id_fkey"
+            columns: ["accident_report_id"]
+            isOneToOne: false
+            referencedRelation: "accident_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accident_notifications_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accident_report_documents: {
+        Row: {
+          accident_report_id: string
+          district_id: string
+          document_type: string
+          file_name: string
+          file_url: string
+          id: string
+          uploaded_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          accident_report_id: string
+          district_id: string
+          document_type?: string
+          file_name: string
+          file_url: string
+          id?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          accident_report_id?: string
+          district_id?: string
+          document_type?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accident_report_documents_accident_report_id_fkey"
+            columns: ["accident_report_id"]
+            isOneToOne: false
+            referencedRelation: "accident_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accident_report_documents_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accident_reports: {
+        Row: {
+          bus_number: string
+          created_at: string
+          created_by: string | null
+          description: string
+          district_id: string
+          driver_name: string | null
+          id: string
+          incident_date: string
+          incident_time: string | null
+          injuries_reported: boolean
+          location: string | null
+          police_report_number: string | null
+          road_conditions: string | null
+          severity: string
+          status: string
+          students_on_bus: number | null
+          updated_at: string
+          weather_conditions: string | null
+        }
+        Insert: {
+          bus_number: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          district_id: string
+          driver_name?: string | null
+          id?: string
+          incident_date: string
+          incident_time?: string | null
+          injuries_reported?: boolean
+          location?: string | null
+          police_report_number?: string | null
+          road_conditions?: string | null
+          severity?: string
+          status?: string
+          students_on_bus?: number | null
+          updated_at?: string
+          weather_conditions?: string | null
+        }
+        Update: {
+          bus_number?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          district_id?: string
+          driver_name?: string | null
+          id?: string
+          incident_date?: string
+          incident_time?: string | null
+          injuries_reported?: boolean
+          location?: string | null
+          police_report_number?: string | null
+          road_conditions?: string | null
+          severity?: string
+          status?: string
+          students_on_bus?: number | null
+          updated_at?: string
+          weather_conditions?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accident_reports_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_requests: {
         Row: {
           created_at: string
