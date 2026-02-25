@@ -60,6 +60,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "accident_notifications_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       accident_report_documents: {
@@ -106,6 +113,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accident_report_documents_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -177,6 +191,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accident_reports_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -256,6 +277,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bell_schedules_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       bid_responses: {
@@ -310,6 +338,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bid_responses_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       bids: {
@@ -352,6 +387,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bids_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -449,6 +491,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bus_passes_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
           {
@@ -559,6 +608,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "communication_log_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "communication_log_related_route_id_fkey"
             columns: ["related_route_id"]
             isOneToOne: false
@@ -637,6 +693,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "compliance_reports_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       compliance_training: {
@@ -685,6 +748,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_training_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -753,6 +823,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contract_invoices_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contractor_insurance: {
@@ -810,6 +887,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contractor_insurance_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contractor_performance: {
@@ -862,6 +946,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_performance_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -926,6 +1017,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contracts_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       demo_sessions: {
@@ -964,6 +1062,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "demo_sessions_impersonating_district_id_fkey"
+            columns: ["impersonating_district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       district_user_roles: {
@@ -994,6 +1099,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "district_user_roles_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1113,6 +1225,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "driver_certifications_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       driver_reports: {
@@ -1158,6 +1277,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_reports_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1259,6 +1385,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ed_law_2d_contractors_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       eligibility_rules: {
@@ -1295,6 +1428,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eligibility_rules_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1368,6 +1508,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "field_trips_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       import_log: {
@@ -1413,6 +1560,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_log_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1478,6 +1632,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "mckinney_vento_students_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "mckinney_vento_students_route_id_fkey"
             columns: ["route_id"]
             isOneToOne: false
@@ -1531,6 +1692,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "notifications_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -1576,6 +1744,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1758,6 +1933,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "route_aides_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "route_aides_route_id_fkey"
             columns: ["route_id"]
             isOneToOne: false
@@ -1820,6 +2002,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "route_scenarios_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       route_stops: {
@@ -1877,6 +2066,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_stops_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
           {
@@ -1973,6 +2169,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "routes_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       safety_reports: {
@@ -1981,7 +2184,7 @@ export type Database = {
           bus_number: string
           created_at: string
           description: string
-          district_id: string
+          district_id: string | null
           id: string
           incident_date: string
           report_type: Database["public"]["Enums"]["safety_report_type"]
@@ -1996,7 +2199,7 @@ export type Database = {
           bus_number: string
           created_at?: string
           description: string
-          district_id: string
+          district_id?: string | null
           id?: string
           incident_date: string
           report_type: Database["public"]["Enums"]["safety_report_type"]
@@ -2011,7 +2214,7 @@ export type Database = {
           bus_number?: string
           created_at?: string
           description?: string
-          district_id?: string
+          district_id?: string | null
           id?: string
           incident_date?: string
           report_type?: Database["public"]["Enums"]["safety_report_type"]
@@ -2027,6 +2230,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "safety_reports_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2087,6 +2297,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "schedule_overrides_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       school_calendar_events: {
@@ -2141,6 +2358,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_calendar_events_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2247,6 +2471,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "service_requests_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "service_requests_student_registration_id_fkey"
             columns: ["student_registration_id"]
             isOneToOne: false
@@ -2339,6 +2570,13 @@ export type Database = {
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "student_registrations_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -2364,7 +2602,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      districts_public: {
+        Row: {
+          city: string | null
+          id: string | null
+          name: string | null
+          slug: string | null
+          state: string | null
+        }
+        Insert: {
+          city?: string | null
+          id?: string | null
+          name?: string | null
+          slug?: string | null
+          state?: string | null
+        }
+        Update: {
+          city?: string | null
+          id?: string | null
+          name?: string | null
+          slug?: string | null
+          state?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_demo_district_id: { Args: never; Returns: string }

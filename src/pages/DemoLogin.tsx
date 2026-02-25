@@ -11,7 +11,6 @@ interface DistrictOption {
   id: string;
   name: string;
   state: string;
-  student_count: number | null;
   city: string | null;
 }
 
@@ -22,10 +21,11 @@ const DemoLogin = () => {
 
   useEffect(() => {
     supabase
-      .from("districts")
-      .select("id, name, state, student_count, city")
+      .from("districts" as any)
+      .select("id, name, state, city")
+      .not("slug", "is", null)
       .order("name")
-      .then(({ data }) => {
+      .then(({ data }: any) => {
         setDistricts((data as DistrictOption[]) ?? []);
         setLoading(false);
       });
@@ -79,11 +79,6 @@ const DemoLogin = () => {
                           </p>
                         </div>
                       </div>
-                      {d.student_count && (
-                        <Badge variant="secondary" className="text-xs">
-                          {d.student_count.toLocaleString()} students
-                        </Badge>
-                      )}
                     </div>
 
                     <div className="flex gap-2">
