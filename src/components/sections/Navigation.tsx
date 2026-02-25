@@ -114,7 +114,7 @@ export const Navigation = ({ onGetAudit }: { onGetAudit?: () => void }) => {
           })}
           <button
             onClick={() => navigate(session ? "/app/dashboard" : "/login")}
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="rounded-lg border-2 border-primary px-4 py-2 text-sm font-semibold text-primary transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:scale-105 hover:shadow-md"
           >
             {session ? "Dashboard" : "Login"}
           </button>
