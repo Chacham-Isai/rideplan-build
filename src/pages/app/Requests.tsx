@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { differenceInYears, parseISO } from "date-fns";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Search, Loader2, Eye, Plus, MessageSquare, Clock, CheckCircle,
   AlertTriangle, MapPin, Home, School, Bus, HelpCircle, Send, Download,
-  Sparkles, Bot,
+  Sparkles, Bot, User, Phone,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csvExport";
 import { toast } from "sonner";
@@ -55,6 +56,14 @@ type ServiceRequest = {
   assigned_to: string | null;
   ai_suggested_priority: string | null;
   ai_suggested_type: string | null;
+  caller_name: string | null;
+  caller_phone: string | null;
+  student_registration_id: string | null;
+  // Joined from student_registrations
+  student_name?: string;
+  student_school?: string;
+  student_grade?: string;
+  student_dob?: string;
 };
 
 type Note = {
@@ -85,18 +94,37 @@ const Requests = () => {
   const [addForm, setAddForm] = useState({
     request_type: "general_inquiry", subject: "", description: "",
     current_value: "", requested_value: "", priority: "medium",
+    caller_name: "", caller_phone: "", student_registration_id: "",
   });
   const [addSaving, setAddSaving] = useState(false);
+  const [studentOptions, setStudentOptions] = useState<{ id: string; student_name: string; school: string; grade: string }[]>([]);
+
+  // Fetch students for linking
+  useEffect(() => {
+    if (!district) return;
+    supabase.from("student_registrations").select("id, student_name, school, grade")
+      .eq("status", "approved").order("student_name").limit(500)
+      .then(({ data }) => setStudentOptions((data as any[]) ?? []));
+  }, [district]);
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
-    let query = supabase.from("service_requests").select("*").order("created_at", { ascending: false });
+    let query = supabase.from("service_requests")
+      .select("*, student_registrations!service_requests_student_registration_id_fkey(student_name, school, grade, dob)")
+      .order("created_at", { ascending: false });
     if (typeFilter !== "all") query = query.eq("request_type", typeFilter as any);
     if (statusFilter !== "all") query = query.eq("status", statusFilter as any);
     if (priorityFilter !== "all") query = query.eq("priority", priorityFilter as any);
     if (search) query = query.ilike("subject", `%${search}%`);
     const { data } = await query;
-    setRequests((data as ServiceRequest[]) ?? []);
+    const mapped: ServiceRequest[] = ((data as any[]) ?? []).map((r: any) => ({
+      ...r,
+      student_name: r.student_registrations?.student_name ?? null,
+      student_school: r.student_registrations?.school ?? null,
+      student_grade: r.student_registrations?.grade ?? null,
+      student_dob: r.student_registrations?.dob ?? null,
+    }));
+    setRequests(mapped);
     setLoading(false);
   }, [search, typeFilter, statusFilter, priorityFilter]);
 
@@ -176,7 +204,10 @@ const Requests = () => {
       requested_value: addForm.requested_value || null,
       priority: addForm.priority as any,
       status: "open" as any,
-    }).select("id").single();
+      caller_name: addForm.caller_name || null,
+      caller_phone: addForm.caller_phone || null,
+      student_registration_id: addForm.student_registration_id || null,
+    } as any).select("id").single();
     if (error) toast.error(error.message);
     else {
       toast.success("Request created");
@@ -185,7 +216,7 @@ const Requests = () => {
       if (inserted?.id) {
         triageRequest(inserted.id, addForm.subject, addForm.description);
       }
-      setAddForm({ request_type: "general_inquiry", subject: "", description: "", current_value: "", requested_value: "", priority: "medium" });
+      setAddForm({ request_type: "general_inquiry", subject: "", description: "", current_value: "", requested_value: "", priority: "medium", caller_name: "", caller_phone: "", student_registration_id: "" });
       fetchRequests();
     }
     setAddSaving(false);
@@ -211,6 +242,9 @@ const Requests = () => {
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => exportToCsv("requests", requests, [
             { key: "request_type", label: "Type" }, { key: "subject", label: "Subject" },
+            { key: "caller_name", label: "Caller" }, { key: "caller_phone", label: "Phone" },
+            { key: "student_name", label: "Student" }, { key: "student_school", label: "School" },
+            { key: "student_grade", label: "Grade" },
             { key: "priority", label: "Priority" }, { key: "status", label: "Status" },
             { key: "created_at", label: "Created" }, { key: "description", label: "Description" },
           ])}>
@@ -300,6 +334,7 @@ const Requests = () => {
             <TableHeader><TableRow>
               <TableHead>Type</TableHead>
               <TableHead>Subject</TableHead>
+              <TableHead>Caller / Student</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
@@ -309,16 +344,17 @@ const Requests = () => {
               {loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 6 }).map((_, j) => (
+                    {Array.from({ length: 7 }).map((_, j) => (
                       <TableCell key={j}><div className="h-4 w-full animate-pulse rounded bg-muted" style={{ opacity: 1 - i * 0.1 }} /></TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : requests.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="h-32 text-center text-muted-foreground">No requests found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="h-32 text-center text-muted-foreground">No requests found</TableCell></TableRow>
               ) : requests.map(r => {
                 const cfg = TYPE_CONFIG[r.request_type] ?? TYPE_CONFIG.general_inquiry;
                 const hasAiSuggestion = r.ai_suggested_priority || r.ai_suggested_type;
+                const age = r.student_dob ? differenceInYears(new Date(), parseISO(r.student_dob)) : null;
                 return (
                   <TableRow key={r.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openDetail(r)}>
                     <TableCell>
@@ -330,7 +366,28 @@ const Requests = () => {
                         {hasAiSuggestion && <Sparkles className="h-3 w-3 text-violet-500" />}
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium max-w-[300px] truncate">{r.subject}</TableCell>
+                    <TableCell className="font-medium max-w-[250px] truncate">{r.subject}</TableCell>
+                    <TableCell>
+                      <div className="space-y-0.5">
+                        {r.caller_name && (
+                          <div className="flex items-center gap-1 text-xs">
+                            <User className="h-3 w-3 text-muted-foreground" />
+                            <span className="font-medium">{r.caller_name}</span>
+                          </div>
+                        )}
+                        {r.student_name && (
+                          <div className="text-xs text-muted-foreground">
+                            {r.student_name}
+                            {r.student_grade && <span> · Gr {r.student_grade}</span>}
+                            {age !== null && <span> · Age {age}</span>}
+                          </div>
+                        )}
+                        {r.student_school && (
+                          <div className="text-[10px] text-muted-foreground truncate max-w-[180px]">{r.student_school}</div>
+                        )}
+                        {!r.caller_name && !r.student_name && <span className="text-xs text-muted-foreground">—</span>}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${PRIORITY_STYLE[r.priority] ?? ""}`}>
                         {r.priority}
@@ -386,6 +443,31 @@ const Requests = () => {
                       {new Date(selected.created_at).toLocaleDateString()}
                     </span>
                   </div>
+
+                  {/* Caller & Student Info */}
+                  {(selected.caller_name || selected.student_name) && (
+                    <div className="rounded-lg bg-muted/50 p-3 space-y-1.5">
+                      {selected.caller_name && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <User className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="font-medium">{selected.caller_name}</span>
+                          {selected.caller_phone && (
+                            <span className="text-muted-foreground flex items-center gap-1"><Phone className="h-3 w-3" />{selected.caller_phone}</span>
+                          )}
+                        </div>
+                      )}
+                      {selected.student_name && (
+                        <div className="text-sm space-y-0.5">
+                          <p className="font-medium">{selected.student_name}</p>
+                          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                            {selected.student_school && <span>{selected.student_school}</span>}
+                            {selected.student_grade && <span>· Grade {selected.student_grade}</span>}
+                            {selected.student_dob && <span>· Age {differenceInYears(new Date(), parseISO(selected.student_dob))}</span>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* AI Triage Badge */}
                   {(selected.ai_suggested_priority || selected.ai_suggested_type) && (
@@ -465,6 +547,23 @@ const Requests = () => {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>New Service Request</DialogTitle></DialogHeader>
           <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium">Caller Name</label>
+                <Input value={addForm.caller_name} onChange={e => setAddForm({ ...addForm, caller_name: e.target.value })} className="mt-1" placeholder="Parent/guardian name" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Caller Phone</label>
+                <Input value={addForm.caller_phone} onChange={e => setAddForm({ ...addForm, caller_phone: e.target.value })} className="mt-1" placeholder="(516) 555-0100" />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Student</label>
+              <select value={addForm.student_registration_id} onChange={e => setAddForm({ ...addForm, student_registration_id: e.target.value })} className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm">
+                <option value="">Select student (optional)</option>
+                {studentOptions.map(s => <option key={s.id} value={s.id}>{s.student_name} — {s.school} (Gr {s.grade})</option>)}
+              </select>
+            </div>
             <div>
               <label className="text-sm font-medium">Type</label>
               <select value={addForm.request_type} onChange={e => setAddForm({ ...addForm, request_type: e.target.value })} className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm">
