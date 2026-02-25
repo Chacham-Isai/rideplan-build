@@ -26,9 +26,18 @@ export const ChatWidget = () => {
     }
   }, [messages]);
 
+  const MAX_INPUT_LENGTH = 500;
+  const MAX_MESSAGES_PER_SESSION = 30;
+
   const sendMessage = useCallback(
     async (text: string) => {
       if (!text.trim() || isLoading) return;
+      if (text.trim().length > MAX_INPUT_LENGTH) {
+        return;
+      }
+      if (messages.length >= MAX_MESSAGES_PER_SESSION * 2) {
+        return;
+      }
       const userMsg: Msg = { role: "user", content: text.trim() };
       const allMessages = [...messages, userMsg];
       setMessages(allMessages);
@@ -237,7 +246,8 @@ export const ChatWidget = () => {
             >
               <input
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => setInput(e.target.value.slice(0, MAX_INPUT_LENGTH))}
+                maxLength={MAX_INPUT_LENGTH}
                 placeholder="Ask about RideLine..."
                 className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
                 disabled={isLoading}

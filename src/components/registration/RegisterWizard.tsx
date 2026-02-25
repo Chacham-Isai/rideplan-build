@@ -117,7 +117,7 @@ export const RegisterWizard = ({ mode = "public", prefill }: WizardProps) => {
     const urlParams = new URLSearchParams(window.location.search);
     const slug = urlParams.get("district");
     if (slug) {
-      supabase.from("districts").select("id").eq("slug", slug).maybeSingle().then(({ data: d }) => {
+      supabase.from("districts_public").select("id").eq("slug", slug).maybeSingle().then(({ data: d }) => {
         if (d) setResolvedDistrictId(d.id);
       });
     }
@@ -222,14 +222,10 @@ export const RegisterWizard = ({ mode = "public", prefill }: WizardProps) => {
               .upload(filePath, doc.file);
             if (uploadError) throw uploadError;
 
-            const { data: urlData } = supabase.storage
-              .from("residency-documents")
-              .getPublicUrl(filePath);
-
             await supabase.from("residency_documents").insert({
               registration_id: reg.id,
               document_type: doc.type,
-              file_url: urlData.publicUrl || filePath,
+              file_url: filePath,
             });
           }
         }

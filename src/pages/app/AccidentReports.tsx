@@ -280,13 +280,11 @@ const AccidentReports = () => {
     const { error: uploadErr } = await supabase.storage.from("accident-documents").upload(path, file);
     if (uploadErr) { toast.error(uploadErr.message); setUploading(false); return; }
 
-    const { data: urlData } = supabase.storage.from("accident-documents").getPublicUrl(path);
-
     const { error: insertErr } = await supabase.from("accident_report_documents").insert({
       accident_report_id: selected.id,
       district_id: district.id,
       file_name: file.name,
-      file_url: urlData.publicUrl || path,
+      file_url: path,
       document_type: uploadDocType,
       uploaded_by: user?.id ?? null,
     } as any);
@@ -646,8 +644,12 @@ const AccidentReports = () => {
                               <p className="text-xs text-muted-foreground">{d.document_type.replace("_", " ")} · {format(parseISO(d.uploaded_at), "MMM d, yyyy h:mm a")}</p>
                             </div>
                           </div>
-                          <Button variant="ghost" size="icon" asChild>
-                            <a href={d.file_url} target="_blank" rel="noopener noreferrer"><Download className="h-4 w-4" /></a>
+                          <Button variant="ghost" size="icon" onClick={async () => {
+                            const { data } = await supabase.storage.from("accident-documents").createSignedUrl(d.file_url, 300);
+                            if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                            else toast.error("Could not generate download link");
+                          }}>
+                            <Download className="h-4 w-4" />
                           </Button>
                         </div>
                       ))}

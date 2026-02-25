@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-ugnis";
 
 type DataType = "students" | "routes" | "stops" | "contracts" | "performance";
 
