@@ -9,9 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Search, Loader2, Eye, Plus, MessageSquare, Clock, CheckCircle,
   AlertTriangle, MapPin, Home, School, Bus, HelpCircle, Send, Download,
+  Sparkles, Bot,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csvExport";
 import { toast } from "sonner";
@@ -51,6 +53,8 @@ type ServiceRequest = {
   created_at: string;
   resolved_at: string | null;
   assigned_to: string | null;
+  ai_suggested_priority: string | null;
+  ai_suggested_type: string | null;
 };
 
 type Note = {
@@ -138,10 +142,32 @@ const Requests = () => {
     }
   };
 
+  // AI triage after creating a request
+  const triageRequest = async (requestId: string, subject: string, description: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("triage-request", {
+        body: { subject, description },
+      });
+      if (error) { console.error("AI triage failed:", error); return; }
+      if (data?.priority && data?.request_type) {
+        await supabase.from("service_requests").update({
+          ai_suggested_priority: data.priority,
+          ai_suggested_type: data.request_type,
+        } as any).eq("id", requestId);
+        toast.success("AI triage complete", {
+          description: `Suggested: ${data.priority} priority, ${data.request_type.replace("_", " ")}`,
+        });
+        fetchRequests();
+      }
+    } catch (e) {
+      console.error("AI triage error:", e);
+    }
+  };
+
   const handleAdd = async () => {
     if (!addForm.subject || !district) { toast.error("Subject is required"); return; }
     setAddSaving(true);
-    const { error } = await supabase.from("service_requests").insert({
+    const { data: inserted, error } = await supabase.from("service_requests").insert({
       district_id: district.id,
       request_type: addForm.request_type as any,
       subject: addForm.subject,
@@ -150,11 +176,15 @@ const Requests = () => {
       requested_value: addForm.requested_value || null,
       priority: addForm.priority as any,
       status: "open" as any,
-    });
+    }).select("id").single();
     if (error) toast.error(error.message);
     else {
       toast.success("Request created");
       setShowAdd(false);
+      // Trigger AI triage in background
+      if (inserted?.id) {
+        triageRequest(inserted.id, addForm.subject, addForm.description);
+      }
       setAddForm({ request_type: "general_inquiry", subject: "", description: "", current_value: "", requested_value: "", priority: "medium" });
       fetchRequests();
     }
@@ -282,6 +312,7 @@ const Requests = () => {
                 <TableRow><TableCell colSpan={6} className="h-32 text-center text-muted-foreground">No requests found</TableCell></TableRow>
               ) : requests.map(r => {
                 const cfg = TYPE_CONFIG[r.request_type] ?? TYPE_CONFIG.general_inquiry;
+                const hasAiSuggestion = r.ai_suggested_priority || r.ai_suggested_type;
                 return (
                   <TableRow key={r.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openDetail(r)}>
                     <TableCell>
@@ -290,6 +321,7 @@ const Requests = () => {
                           <cfg.icon className="h-3.5 w-3.5" />
                         </div>
                         <span className="text-xs font-medium">{cfg.label}</span>
+                        {hasAiSuggestion && <Sparkles className="h-3 w-3 text-violet-500" />}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium max-w-[300px] truncate">{r.subject}</TableCell>
@@ -324,6 +356,8 @@ const Requests = () => {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           {selected && (() => {
             const cfg = TYPE_CONFIG[selected.request_type] ?? TYPE_CONFIG.general_inquiry;
+            const hasAiDiff = (selected.ai_suggested_priority && selected.ai_suggested_priority !== selected.priority) ||
+              (selected.ai_suggested_type && selected.ai_suggested_type !== selected.request_type);
             return (
               <>
                 <DialogHeader>
@@ -335,7 +369,7 @@ const Requests = () => {
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 text-sm">
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[selected.status]}`}>
                       {selected.status.replace("_", " ")}
                     </span>
@@ -346,6 +380,21 @@ const Requests = () => {
                       {new Date(selected.created_at).toLocaleDateString()}
                     </span>
                   </div>
+
+                  {/* AI Triage Badge */}
+                  {(selected.ai_suggested_priority || selected.ai_suggested_type) && (
+                    <Alert className="border-violet-200 bg-violet-50">
+                      <Bot className="h-4 w-4 text-violet-600" />
+                      <AlertDescription className="text-xs">
+                        <span className="font-semibold text-violet-700">AI Triage:</span>{" "}
+                        Suggested <strong>{selected.ai_suggested_priority}</strong> priority,{" "}
+                        <strong>{selected.ai_suggested_type?.replace("_", " ")}</strong> type
+                        {hasAiDiff && (
+                          <span className="ml-1 text-violet-500">(differs from current)</span>
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
                   <p className="text-muted-foreground">{selected.description}</p>
 
@@ -445,6 +494,9 @@ const Requests = () => {
                 <option value="urgent">Urgent</option>
               </select>
             </div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Sparkles className="h-3 w-3 text-violet-500" /> AI will auto-triage after submission
+            </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
