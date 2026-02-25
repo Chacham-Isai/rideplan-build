@@ -12,7 +12,7 @@ const ParentTracking = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     supabase
       .from("student_registrations")
       .select("*")
