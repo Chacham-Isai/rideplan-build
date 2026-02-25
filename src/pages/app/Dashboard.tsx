@@ -5,6 +5,8 @@ import { useDistrict } from "@/contexts/DistrictContext";
 import {
   Users, MapPin, Bus, TrendingUp, Clock, AlertTriangle,
   ArrowUpRight, ArrowDownRight, Plus, Baby, GraduationCap, FileEdit,
+  MessageSquare, Phone, Shield, FileText, CreditCard, UserCheck,
+  AlertCircle, CheckCircle, XCircle, Ticket,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,7 @@ interface DashboardStats {
 }
 
 const COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#8B5CF6", "#EC4899", "#06B6D4", "#EF4444"];
+const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 const Dashboard = () => {
   const { district } = useDistrict();
@@ -34,14 +37,33 @@ const Dashboard = () => {
   const [tierData, setTierData] = useState<{ name: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // New phase data
+  const [openRequests, setOpenRequests] = useState(0);
+  const [urgentRequests, setUrgentRequests] = useState(0);
+  const [expiringCerts, setExpiringCerts] = useState(0);
+  const [expiredCerts, setExpiredCerts] = useState(0);
+  const [busPassesIssued, setBusPassesIssued] = useState(0);
+  const [activeAides, setActiveAides] = useState(0);
+  const [recentComms, setRecentComms] = useState(0);
+  const [pendingInvoices, setPendingInvoices] = useState(0);
+  const [expiringContracts, setExpiringContracts] = useState(0);
+  const [actionItems, setActionItems] = useState<{ label: string; count: number; icon: React.ElementType; color: string; href: string }[]>([]);
+
   useEffect(() => {
     const fetchDashboard = async () => {
       setLoading(true);
 
-      const [routesRes, studentsRes, pendingRes] = await Promise.all([
+      const [routesRes, studentsRes, pendingRes, requestsRes, certsRes, passesRes, aidesRes, commsRes, invoicesRes, contractsRes] = await Promise.all([
         supabase.from("routes").select("school, status, total_students, total_miles, on_time_pct, avg_ride_time_min, cost_per_student, tier"),
         supabase.from("student_registrations").select("id", { count: "exact", head: true }).eq("status", "approved"),
         supabase.from("student_registrations").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("service_requests").select("status, priority"),
+        supabase.from("driver_certifications").select("status"),
+        supabase.from("bus_passes").select("id", { count: "exact", head: true }).eq("status", "active" as any),
+        supabase.from("route_aides").select("id", { count: "exact", head: true }).eq("status", "active" as any),
+        supabase.from("communication_log").select("id", { count: "exact", head: true }),
+        supabase.from("contract_invoices").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("contracts").select("contract_end, status").eq("status", "active"),
       ]);
 
       const routes = routesRes.data ?? [];
@@ -49,14 +71,11 @@ const Dashboard = () => {
 
       const totalMiles = routes.reduce((s, r) => s + (r.total_miles ?? 0), 0);
       const avgOnTime = activeRoutes.length
-        ? activeRoutes.reduce((s, r) => s + (r.on_time_pct ?? 0), 0) / activeRoutes.length
-        : 0;
+        ? activeRoutes.reduce((s, r) => s + (r.on_time_pct ?? 0), 0) / activeRoutes.length : 0;
       const avgRideTime = activeRoutes.length
-        ? activeRoutes.reduce((s, r) => s + (r.avg_ride_time_min ?? 0), 0) / activeRoutes.length
-        : 0;
+        ? activeRoutes.reduce((s, r) => s + (r.avg_ride_time_min ?? 0), 0) / activeRoutes.length : 0;
       const avgCost = activeRoutes.length
-        ? activeRoutes.reduce((s, r) => s + (r.cost_per_student ?? 0), 0) / activeRoutes.length
-        : 0;
+        ? activeRoutes.reduce((s, r) => s + (r.cost_per_student ?? 0), 0) / activeRoutes.length : 0;
 
       setStats({
         totalStudents: studentsRes.count ?? 0,
@@ -68,6 +87,39 @@ const Dashboard = () => {
         avgRideTime: Math.round(avgRideTime),
         avgCostPerStudent: Math.round(avgCost),
       });
+
+      // Service requests
+      const reqs = requestsRes.data ?? [];
+      const openReqs = reqs.filter(r => r.status === "open" || r.status === "in_progress").length;
+      const urgentReqs = reqs.filter(r => r.priority === "urgent" && (r.status === "open" || r.status === "in_progress")).length;
+      setOpenRequests(openReqs);
+      setUrgentRequests(urgentReqs);
+
+      // Certs
+      const certs = certsRes.data ?? [];
+      setExpiringCerts(certs.filter(c => c.status === "expiring").length);
+      setExpiredCerts(certs.filter(c => c.status === "expired").length);
+
+      setBusPassesIssued(passesRes.count ?? 0);
+      setActiveAides(aidesRes.count ?? 0);
+      setRecentComms(commsRes.count ?? 0);
+      setPendingInvoices(invoicesRes.count ?? 0);
+
+      // Expiring contracts (next 90 days)
+      const now = new Date();
+      const in90 = new Date(now.getTime() + 90 * 86400000);
+      const expContracts = (contractsRes.data ?? []).filter(c => new Date(c.contract_end) <= in90 && new Date(c.contract_end) > now).length;
+      setExpiringContracts(expContracts);
+
+      // Build action items
+      const items: typeof actionItems = [];
+      if (urgentReqs > 0) items.push({ label: "Urgent Requests", count: urgentReqs, icon: AlertCircle, color: "text-red-600 bg-red-50", href: "/app/requests" });
+      if (certs.filter(c => c.status === "expired").length > 0) items.push({ label: "Expired Certifications", count: certs.filter(c => c.status === "expired").length, icon: XCircle, color: "text-red-600 bg-red-50", href: "/app/contracts" });
+      if (certs.filter(c => c.status === "expiring").length > 0) items.push({ label: "Expiring Certifications", count: certs.filter(c => c.status === "expiring").length, icon: AlertTriangle, color: "text-amber-600 bg-amber-50", href: "/app/contracts" });
+      if (expContracts > 0) items.push({ label: "Contracts Expiring Soon", count: expContracts, icon: FileText, color: "text-amber-600 bg-amber-50", href: "/app/contracts" });
+      if ((pendingRes.count ?? 0) > 0) items.push({ label: "Pending Registrations", count: pendingRes.count ?? 0, icon: UserCheck, color: "text-blue-600 bg-blue-50", href: "/app/admin/residency" });
+      if ((invoicesRes.count ?? 0) > 0) items.push({ label: "Pending Invoices", count: invoicesRes.count ?? 0, icon: CreditCard, color: "text-purple-600 bg-purple-50", href: "/app/contracts" });
+      setActionItems(items);
 
       // School breakdown
       const schoolMap = new Map<string, { students: number; routes: number }>();
@@ -110,14 +162,14 @@ const Dashboard = () => {
     { label: "Total Students", value: stats?.totalStudents?.toLocaleString() ?? "0", icon: Users, color: "text-blue-600", bg: "bg-blue-50", trend: "+3.2%", up: true, href: "/app/students" },
     { label: "Active Routes", value: `${stats?.activeRoutes ?? 0} / ${stats?.totalRoutes ?? 0}`, icon: MapPin, color: "text-emerald-600", bg: "bg-emerald-50", trend: "99%", up: true, href: "/app/routes" },
     { label: "On-Time Rate", value: `${stats?.avgOnTime ?? 0}%`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", trend: "+1.4%", up: true, href: "/app/routes" },
-    { label: "Pending Registrations", value: stats?.pendingRegistrations?.toLocaleString() ?? "0", icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50", trend: "Action needed", up: false, href: "/app/admin/residency" },
+    { label: "Open Requests", value: openRequests.toString(), icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50", trend: urgentRequests > 0 ? `${urgentRequests} urgent` : "All clear", up: urgentRequests === 0, href: "/app/requests" },
   ];
 
   const quickActions = [
     { label: "Add Student", icon: Plus, href: "/app/students?action=add", color: "text-blue-600" },
-    { label: "Childcare Requests", icon: Baby, href: "/app/students?filter=childcare", color: "text-purple-600" },
-    { label: "Special Ed Pickups", icon: GraduationCap, href: "/app/students?filter=special_ed", color: "text-amber-600" },
-    { label: "Edit Requests", icon: FileEdit, href: "/app/students?filter=special_requests", color: "text-emerald-600" },
+    { label: "New Request", icon: MessageSquare, href: "/app/requests", color: "text-purple-600" },
+    { label: "Log Communication", icon: Phone, href: "/app/communications", color: "text-emerald-600" },
+    { label: "View Registrations", icon: UserCheck, href: "/app/admin/residency", color: "text-amber-600" },
   ];
 
   return (
@@ -131,7 +183,30 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Stat cards — now clickable */}
+      {/* Action Items Banner */}
+      {actionItems.length > 0 && (
+        <Card className="border-0 shadow-sm border-l-4 border-l-amber-500">
+          <CardContent className="p-4">
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600" /> Action Items Requiring Attention
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {actionItems.map((item, i) => (
+                <button
+                  key={i}
+                  onClick={() => navigate(item.href)}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:shadow-md ${item.color}`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}: <span className="font-bold">{item.count}</span>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => (
           <Card
@@ -180,9 +255,81 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
+      {/* Workflow Sections Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Secretarial */}
+        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md" onClick={() => navigate("/app/requests")}>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-50">
+                <MessageSquare className="h-4 w-4 text-purple-600" />
+              </div>
+              <h3 className="text-sm font-semibold">Secretarial</h3>
+            </div>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Open Requests</span><span className="font-bold">{openRequests}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Urgent</span><span className={`font-bold ${urgentRequests > 0 ? "text-red-600" : ""}`}>{urgentRequests}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Pending Registrations</span><span className="font-bold">{stats?.pendingRegistrations}</span></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Transportation */}
+        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md" onClick={() => navigate("/app/routes")}>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50">
+                <Bus className="h-4 w-4 text-emerald-600" />
+              </div>
+              <h3 className="text-sm font-semibold">Transportation</h3>
+            </div>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Active Routes</span><span className="font-bold">{stats?.activeRoutes}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Daily Miles</span><span className="font-bold">{stats?.totalMiles?.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Aides Assigned</span><span className="font-bold">{activeAides}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Bus Passes</span><span className="font-bold">{busPassesIssued}</span></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Business */}
+        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md" onClick={() => navigate("/app/contracts")}>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50">
+                <FileText className="h-4 w-4 text-blue-600" />
+              </div>
+              <h3 className="text-sm font-semibold">Business</h3>
+            </div>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Pending Invoices</span><span className="font-bold">{pendingInvoices}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Expiring Contracts</span><span className={`font-bold ${expiringContracts > 0 ? "text-amber-600" : ""}`}>{expiringContracts}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Expiring 19A Certs</span><span className={`font-bold ${expiringCerts > 0 ? "text-amber-600" : ""}`}>{expiringCerts}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Expired 19A Certs</span><span className={`font-bold ${expiredCerts > 0 ? "text-red-600" : ""}`}>{expiredCerts}</span></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Compliance */}
+        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md" onClick={() => navigate("/app/compliance")}>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50">
+                <Shield className="h-4 w-4 text-amber-600" />
+              </div>
+              <h3 className="text-sm font-semibold">Compliance</h3>
+            </div>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Avg Cost/Student</span><span className="font-bold">${stats?.avgCostPerStudent}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Avg Ride Time</span><span className="font-bold">{stats?.avgRideTime} min</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Communications</span><span className="font-bold">{recentComms}</span></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Charts row */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Students by school */}
         <Card className="border-0 shadow-sm lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Students by School</CardTitle>
@@ -194,9 +341,7 @@ const Dashboard = () => {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                   <XAxis dataKey="school" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12 }}
-                  />
+                  <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12 }} />
                   <Bar dataKey="students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -204,7 +349,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Route tiers */}
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Route Tiers</CardTitle>
@@ -238,7 +382,7 @@ const Dashboard = () => {
       </div>
 
       {/* Bottom stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <Card className="border-0 shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
@@ -274,6 +418,19 @@ const Dashboard = () => {
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wide">Avg Cost / Student</p>
                 <p className="text-xl font-bold">${stats?.avgCostPerStudent?.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
+                <Ticket className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Bus Passes Issued</p>
+                <p className="text-xl font-bold">{busPassesIssued}</p>
               </div>
             </div>
           </CardContent>

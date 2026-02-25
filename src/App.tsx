@@ -56,6 +56,8 @@ import Students from "./pages/app/Students";
 import AppRoutes from "./pages/app/AppRoutes";
 import Contracts from "./pages/app/Contracts";
 import Compliance from "./pages/app/Compliance";
+import Requests from "./pages/app/Requests";
+import Communications from "./pages/app/Communications";
 import Reports from "./pages/app/Reports";
 import AppSettings from "./pages/app/Settings";
 import ParentDashboard from "./pages/app/parent/ParentDashboard";
@@ -130,6 +132,8 @@ const App = () => (
                   <Route path="reports" element={<Reports />} />
                   <Route path="contracts" element={<RoleGate requires="district_admin"><Contracts /></RoleGate>} />
                   <Route path="compliance" element={<RoleGate requires="district_admin"><Compliance /></RoleGate>} />
+                  <Route path="requests" element={<Requests />} />
+                  <Route path="communications" element={<Communications />} />
                   <Route path="settings" element={<RoleGate requires="district_admin"><AppSettings /></RoleGate>} />
 
                   {/* Parent portal */}

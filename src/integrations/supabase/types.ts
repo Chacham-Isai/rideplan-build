@@ -195,6 +195,54 @@ export type Database = {
           },
         ]
       }
+      bus_passes: {
+        Row: {
+          district_id: string
+          expires_at: string | null
+          id: string
+          issued_at: string
+          pass_number: string
+          registration_id: string
+          school_year: string
+          status: Database["public"]["Enums"]["bus_pass_status"]
+        }
+        Insert: {
+          district_id: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          pass_number: string
+          registration_id: string
+          school_year: string
+          status?: Database["public"]["Enums"]["bus_pass_status"]
+        }
+        Update: {
+          district_id?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          pass_number?: string
+          registration_id?: string
+          school_year?: string
+          status?: Database["public"]["Enums"]["bus_pass_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bus_passes_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bus_passes_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "student_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       childcare_requests: {
         Row: {
           created_at: string
@@ -236,6 +284,73 @@ export type Database = {
           {
             foreignKeyName: "childcare_requests_registration_id_fkey"
             columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "student_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_log: {
+        Row: {
+          channel: Database["public"]["Enums"]["comm_channel"]
+          contact_name: string
+          contact_type: Database["public"]["Enums"]["comm_contact_type"]
+          created_at: string
+          direction: Database["public"]["Enums"]["comm_direction"]
+          district_id: string
+          id: string
+          logged_by: string
+          notes: string | null
+          related_route_id: string | null
+          related_student_id: string | null
+          subject: string
+        }
+        Insert: {
+          channel?: Database["public"]["Enums"]["comm_channel"]
+          contact_name: string
+          contact_type?: Database["public"]["Enums"]["comm_contact_type"]
+          created_at?: string
+          direction?: Database["public"]["Enums"]["comm_direction"]
+          district_id: string
+          id?: string
+          logged_by: string
+          notes?: string | null
+          related_route_id?: string | null
+          related_student_id?: string | null
+          subject?: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["comm_channel"]
+          contact_name?: string
+          contact_type?: Database["public"]["Enums"]["comm_contact_type"]
+          created_at?: string
+          direction?: Database["public"]["Enums"]["comm_direction"]
+          district_id?: string
+          id?: string
+          logged_by?: string
+          notes?: string | null
+          related_route_id?: string | null
+          related_student_id?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_log_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_log_related_route_id_fkey"
+            columns: ["related_route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_log_related_student_id_fkey"
+            columns: ["related_student_id"]
             isOneToOne: false
             referencedRelation: "student_registrations"
             referencedColumns: ["id"]
@@ -691,6 +806,60 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_certifications: {
+        Row: {
+          certification_type: Database["public"]["Enums"]["certification_type"]
+          contractor_id: string | null
+          created_at: string
+          district_id: string
+          document_url: string | null
+          driver_name: string
+          expiration_date: string
+          id: string
+          issued_date: string
+          status: Database["public"]["Enums"]["certification_status"]
+        }
+        Insert: {
+          certification_type: Database["public"]["Enums"]["certification_type"]
+          contractor_id?: string | null
+          created_at?: string
+          district_id: string
+          document_url?: string | null
+          driver_name: string
+          expiration_date: string
+          id?: string
+          issued_date: string
+          status?: Database["public"]["Enums"]["certification_status"]
+        }
+        Update: {
+          certification_type?: Database["public"]["Enums"]["certification_type"]
+          contractor_id?: string | null
+          created_at?: string
+          district_id?: string
+          document_url?: string | null
+          driver_name?: string
+          expiration_date?: string
+          id?: string
+          issued_date?: string
+          status?: Database["public"]["Enums"]["certification_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_certifications_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_certifications_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_reports: {
         Row: {
           bus_number: string
@@ -830,6 +999,44 @@ export type Database = {
           },
           {
             foreignKeyName: "ed_law_2d_contractors_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eligibility_rules: {
+        Row: {
+          created_at: string
+          district_id: string
+          grade_range_end: string
+          grade_range_start: string
+          id: string
+          min_distance_miles: number
+          school_year: string
+        }
+        Insert: {
+          created_at?: string
+          district_id: string
+          grade_range_end?: string
+          grade_range_start?: string
+          id?: string
+          min_distance_miles?: number
+          school_year: string
+        }
+        Update: {
+          created_at?: string
+          district_id?: string
+          grade_range_end?: string
+          grade_range_start?: string
+          id?: string
+          min_distance_miles?: number
+          school_year?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eligibility_rules_district_id_fkey"
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
@@ -1084,6 +1291,57 @@ export type Database = {
             columns: ["registration_id"]
             isOneToOne: false
             referencedRelation: "student_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      route_aides: {
+        Row: {
+          aide_name: string
+          aide_type: Database["public"]["Enums"]["aide_type"]
+          assigned_date: string
+          certification: string | null
+          created_at: string
+          district_id: string
+          id: string
+          route_id: string
+          status: Database["public"]["Enums"]["aide_status"]
+        }
+        Insert: {
+          aide_name: string
+          aide_type?: Database["public"]["Enums"]["aide_type"]
+          assigned_date?: string
+          certification?: string | null
+          created_at?: string
+          district_id: string
+          id?: string
+          route_id: string
+          status?: Database["public"]["Enums"]["aide_status"]
+        }
+        Update: {
+          aide_name?: string
+          aide_type?: Database["public"]["Enums"]["aide_type"]
+          assigned_date?: string
+          certification?: string | null
+          created_at?: string
+          district_id?: string
+          id?: string
+          route_id?: string
+          status?: Database["public"]["Enums"]["aide_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_aides_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_aides_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
             referencedColumns: ["id"]
           },
         ]
@@ -1353,6 +1611,104 @@ export type Database = {
           },
         ]
       }
+      service_request_notes: {
+        Row: {
+          created_at: string
+          id: string
+          note: string
+          request_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note: string
+          request_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string
+          request_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_request_notes_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_requests: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          current_value: string | null
+          description: string
+          district_id: string
+          id: string
+          parent_user_id: string | null
+          priority: Database["public"]["Enums"]["service_request_priority"]
+          request_type: Database["public"]["Enums"]["service_request_type"]
+          requested_value: string | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["service_request_status"]
+          student_registration_id: string | null
+          subject: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          current_value?: string | null
+          description?: string
+          district_id: string
+          id?: string
+          parent_user_id?: string | null
+          priority?: Database["public"]["Enums"]["service_request_priority"]
+          request_type?: Database["public"]["Enums"]["service_request_type"]
+          requested_value?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["service_request_status"]
+          student_registration_id?: string | null
+          subject: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          current_value?: string | null
+          description?: string
+          district_id?: string
+          id?: string
+          parent_user_id?: string | null
+          priority?: Database["public"]["Enums"]["service_request_priority"]
+          request_type?: Database["public"]["Enums"]["service_request_type"]
+          requested_value?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["service_request_status"]
+          student_registration_id?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_requests_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_student_registration_id_fkey"
+            columns: ["student_registration_id"]
+            isOneToOne: false
+            referencedRelation: "student_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_registrations: {
         Row: {
           address_line: string
@@ -1478,6 +1834,8 @@ export type Database = {
     }
     Enums: {
       ai_priority: "low" | "medium" | "high" | "critical"
+      aide_status: "active" | "inactive"
+      aide_type: "aide" | "monitor"
       app_role: "admin" | "user"
       audit_action:
         | "approved"
@@ -1487,7 +1845,13 @@ export type Database = {
         | "unflagged"
       bid_response_status: "submitted" | "shortlisted" | "awarded" | "rejected"
       bid_status: "draft" | "open" | "closed" | "awarded"
+      bus_pass_status: "active" | "expired" | "revoked"
+      certification_status: "valid" | "expiring" | "expired" | "pending"
+      certification_type: "19a_initial" | "19a_biennial" | "cdl" | "medical"
       childcare_transport_type: "am" | "pm" | "both"
+      comm_channel: "phone" | "email" | "text" | "in_person"
+      comm_contact_type: "parent" | "school" | "contractor" | "other_district"
+      comm_direction: "inbound" | "outbound"
       contract_status: "active" | "expired" | "pending"
       driver_report_type: "incident" | "maintenance" | "schedule" | "other"
       insurance_status: "active" | "expiring" | "expired"
@@ -1495,6 +1859,15 @@ export type Database = {
       registration_status: "pending" | "approved" | "denied" | "under_review"
       report_status: "new" | "reviewing" | "resolved"
       safety_report_type: "bullying" | "driver_safety" | "other"
+      service_request_priority: "low" | "medium" | "high" | "urgent"
+      service_request_status: "open" | "in_progress" | "resolved" | "closed"
+      service_request_type:
+        | "stop_change"
+        | "address_change"
+        | "school_change"
+        | "driver_issue"
+        | "general_inquiry"
+        | "bus_pass"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1623,6 +1996,8 @@ export const Constants = {
   public: {
     Enums: {
       ai_priority: ["low", "medium", "high", "critical"],
+      aide_status: ["active", "inactive"],
+      aide_type: ["aide", "monitor"],
       app_role: ["admin", "user"],
       audit_action: [
         "approved",
@@ -1633,7 +2008,13 @@ export const Constants = {
       ],
       bid_response_status: ["submitted", "shortlisted", "awarded", "rejected"],
       bid_status: ["draft", "open", "closed", "awarded"],
+      bus_pass_status: ["active", "expired", "revoked"],
+      certification_status: ["valid", "expiring", "expired", "pending"],
+      certification_type: ["19a_initial", "19a_biennial", "cdl", "medical"],
       childcare_transport_type: ["am", "pm", "both"],
+      comm_channel: ["phone", "email", "text", "in_person"],
+      comm_contact_type: ["parent", "school", "contractor", "other_district"],
+      comm_direction: ["inbound", "outbound"],
       contract_status: ["active", "expired", "pending"],
       driver_report_type: ["incident", "maintenance", "schedule", "other"],
       insurance_status: ["active", "expiring", "expired"],
@@ -1641,6 +2022,16 @@ export const Constants = {
       registration_status: ["pending", "approved", "denied", "under_review"],
       report_status: ["new", "reviewing", "resolved"],
       safety_report_type: ["bullying", "driver_safety", "other"],
+      service_request_priority: ["low", "medium", "high", "urgent"],
+      service_request_status: ["open", "in_progress", "resolved", "closed"],
+      service_request_type: [
+        "stop_change",
+        "address_change",
+        "school_change",
+        "driver_issue",
+        "general_inquiry",
+        "bus_pass",
+      ],
     },
   },
 } as const
