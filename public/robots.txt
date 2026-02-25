@@ -3,12 +3,16 @@ Allow: /
 Disallow: /admin/
 Disallow: /admin
 Disallow: /app/
+Disallow: /forgot-password
+Disallow: /reset-password
 
 User-agent: Bingbot
 Allow: /
 Disallow: /admin/
 Disallow: /admin
 Disallow: /app/
+Disallow: /forgot-password
+Disallow: /reset-password
 
 User-agent: Twitterbot
 Allow: /
@@ -21,5 +25,7 @@ Allow: /
 Disallow: /admin/
 Disallow: /admin
 Disallow: /app/
+Disallow: /forgot-password
+Disallow: /reset-password
 
 Sitemap: https://rideplan-build.lovable.app/sitemap.xml
