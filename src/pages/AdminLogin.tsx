@@ -27,10 +27,10 @@ const AdminLogin = () => {
       if (!user) throw new Error("No user found");
 
       const { data: roles } = await supabase
-        .from("user_roles")
+        .from("district_user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .eq("role", "admin");
+        .in("role", ["super_admin", "district_admin"]);
 
       if (!roles || roles.length === 0) {
         await supabase.auth.signOut();
