@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BoardReportGenerator } from "@/components/app/BoardReportGenerator";
+import { DashboardSkeleton } from "@/components/app/PageSkeletons";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
@@ -157,11 +158,7 @@ const Dashboard = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const statCards = [
