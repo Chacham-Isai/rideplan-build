@@ -1,130 +1,213 @@
 
 
-# Plan: Demo-Ready Implementation (6 Tasks)
+# Phase 2: Comprehensive Implementation Plan (8 Tasks)
 
-This is a large, multi-task implementation covering seed data, new UI features, and polish. Here is the breakdown.
+This is the full Phase 2 implementation covering demo infrastructure, route visualization, data import, board reports, notifications, AI integration, and polish. The plan follows the priority order specified in the prompt for maximum demo impact.
 
 ---
 
-## Task 1: Seed Oceanside UFSD (Full Second District)
+## Task 1: Demo Login Switcher
 
-**Single SQL migration** using PL/pgSQL `DO $$ ... $$` block with idempotency check (`IF NOT EXISTS (SELECT 1 FROM districts WHERE slug = 'oceanside-ufsd')`).
+### Database Changes
+- Create `demo_sessions` table with `original_user_id`, `impersonating_district_id`, `impersonating_role`, `is_active`, timestamps
+- RLS: only super_admin can INSERT/SELECT/UPDATE
+- Create `get_demo_district_id()` SECURITY DEFINER function that checks for active demo session, falls back to `get_user_district_id()`
+- Update ALL existing RLS policies (across all 34+ tables) to reference `get_demo_district_id()` instead of `get_user_district_id()` — non-demo users unaffected since it falls through
 
-Seeds all 34 tables for Oceanside with the exact data specified in the prompt:
-- District record (Oceanside UFSD, slug `oceanside-ufsd`, 5,179 students, professional tier)
-- 3 profiles (placeholder UUIDs — district_admin, staff, parent) + district_user_roles
-- ~5,179 student registrations across 10 schools using `generate_series()` with arrays of 120 first/last names, Oceanside streets, correct status/flag distributions
-- 85 routes (OC-001 to OC-085) with 3 contractors, realistic metrics
-- 850 route stops (~10 per route) with Oceanside geocoordinates (40.63-40.65, -73.62 to -73.66)
-- 12 route aides on SPED routes
-- 150 bus passes linked to approved registrations
-- 3 contracts (Nassau Student Transport, South Shore Bus Co., Island Transit Services)
-- 3 contractor insurance records (South Shore expiring within 30 days for alert)
-- 12 invoices with discrepancies
-- 9 contractor performance records (3 months × 3 contractors)
-- 15 service requests with notes
-- 10 communication log entries
-- 25 driver certifications (including 3 expiring, 2 expired)
-- 8 safety reports, 5 driver reports
-- 6 McKinney-Vento students (4 with transport, 2 without)
-- 3 Ed Law 2-d contractor records (South Shore non-compliant)
-- 8 compliance training records (2 overdue)
-- 1 breach incident (South Shore)
-- 2 bids with responses
-- 5 report alerts
-- Target: ~48% audit readiness
+### Frontend Changes
+- **`src/contexts/DistrictContext.tsx`** — On mount, query `demo_sessions` for active session. If found, override district and role with impersonated values. Add `demoActive`, `demoDistrict`, `endDemo()`, `startDemo()` to context interface.
+- **`src/components/app/AppLayout.tsx`** — Add "Demo" button (outline, next to bell) visible only to super_admin. Opens dialog with district dropdown + role dropdown + Start/End buttons. Render amber sticky banner when demo active: "DEMO MODE — Viewing as [District] ([Role]) [End Demo]"
+- **`src/pages/DemoLogin.tsx`** (new) — Public `/demo-login` route with two district cards (Lawrence / Oceanside) each with "Enter as Admin" and "Parent View" toggle. Signs in as shared demo account, activates demo session.
+- **`src/App.tsx`** — Add `/demo-login` route
 
-## Task 2: Tighten Lawrence UFSD Data
+### Files Modified
+`supabase/migrations/[new].sql`, `src/contexts/DistrictContext.tsx`, `src/components/app/AppLayout.tsx`, `src/pages/DemoLogin.tsx` (new), `src/App.tsx`
 
-**Same migration file** (or second migration). Inserts additional data using `INSERT ... ON CONFLICT DO NOTHING` or existence checks:
+---
 
-- Contractor performance: 6 months (Jul 2025 - Jan 2026) for all 4 contractors with story arcs (Logan Bus declining)
-- Compliance: 12+ MV students, Ed Law 2-d for all 4 contractors (Logan non-compliant), training records, 1 breach incident
-- Route inefficiency patterns: ensure 5+ ghost routes at <50%, 3+ long rides >60 min, merge candidates
-- Invoice discrepancies: Logan Bus >$2K discrepancies, total >$10K
-- Safety reports: 10+ with variety
-- Bid data: 1 awarded, 1 open
-- Service requests: ensure all 6 types covered with notes
-- Communication log: 8+ with all channel/contact types
-- Driver certs: 2 expired + 4 expiring within 30 days
-- Target: ~68% audit readiness
+## Task 2: Route Map Visualization
 
-## Task 3: Parent Service Request Submission
+### Dependencies
+- Install `react-leaflet`, `leaflet`, `@types/leaflet`
+- Add Leaflet CSS link in `index.html`
 
-**Database changes:**
-- Add RLS policies on `service_requests`: parents can INSERT with their own `parent_user_id` and SELECT where `parent_user_id = auth.uid()`
-- Add RLS policy on `service_request_notes`: parents can SELECT notes linked to their requests
+### Frontend Changes
+- **`src/components/app/RouteMap.tsx`** (new) — Lazy-loaded Leaflet map component:
+  - Centers on district geocoordinates (Lawrence: 40.6159/-73.7296, Oceanside: 40.6388/-73.6400)
+  - Plots route_stops as color-coded circle markers by route
+  - Click popup: address, route number, students, time
+  - Route selector dropdown draws polyline connecting stops in order, colored by efficiency grade (A=green through F=red)
+  - Filter controls: school, contractor, efficiency grade multi-select, "Ghost Routes Only" toggle
+  - School markers as distinct icons at hardcoded locations
+  - Fetches stops in batches by route
 
-**UI changes in `src/pages/app/parent/ParentDashboard.tsx`:**
-- Add "Submit a Request" button in quick actions grid
-- Add request submission dialog with: type dropdown (stop_change, address_change, bus_pass, general_inquiry only), subject, description, student dropdown (from parent's children)
-- Auto-set priority to 'normal', status to 'open'
-- Add "My Requests" section below children cards showing parent's submitted requests with status badges
-- Click to see detail with staff notes
+- **`src/pages/app/AppRoutes.tsx`** — Add third tab "Map" with lazy-loaded RouteMap component inside Suspense with skeleton fallback
 
-## Task 4: Bulk Bus Pass Generation
+- **`src/pages/app/parent/ParentTracking.tsx`** — Replace/supplement animated bus with static Leaflet map showing student's assigned route stops, their stop highlighted, and "Live tracking coming Q2 2026" note
 
-**UI changes in `src/pages/app/AppRoutes.tsx`:**
-- Add "Generate Bus Passes" button (visible to district_admin role only)
-- Bulk generation dialog: scope selector (all approved or by school), school year dropdown, preview count, generate button
-- Queries approved students without active passes, bulk inserts bus_passes
-- Add "Bus Passes" tab with table: student name, school, route, bus #, status, issued date
-- Search, filter by school/status, revoke button, CSV export
+### Files Modified
+`index.html`, `src/components/app/RouteMap.tsx` (new), `src/pages/app/AppRoutes.tsx`, `src/pages/app/parent/ParentTracking.tsx`
 
-## Task 5: Cross-District Benchmarking
+---
 
-**Database changes:**
-- Create `get_regional_benchmarks()` SQL function (SECURITY DEFINER) returning anonymized averages across all districts
+## Task 3: Route Scenarios Seed Data
 
-**UI changes in `src/pages/app/Contracts.tsx`:**
-- Add "Regional Benchmark" card showing your district vs regional average for rate/route, on-time %, utilization
-- Green/red indicators for above/below average
-- "Based on N districts and M routes"
+### Database Changes (migration)
+- Insert 3 Oceanside route scenarios (merge OC-012+013, consolidate OC-045-047, eliminate OC-071) with realistic savings and utilization data
+- Check and insert 3 Lawrence route scenarios (merge L-023+024, consolidate L-089-091, eliminate L-112) if missing
+- All with appropriate district_id references, status (draft/approved)
 
-**UI changes in `src/pages/app/Dashboard.tsx`:**
-- Add benchmark line in Business workflow card
+### Files Modified
+`supabase/migrations/[new].sql`
 
-## Task 6: Data Quality Polish & Demo Readiness
+---
 
-**A. Dashboard action items** — Already implemented; seed data ensures correct items appear per district.
+## Task 4: Data Import System
 
-**B. Data leakage verification** — Include verification queries in the migration (informational, not blocking).
+### Dependencies
+- Install `xlsx` (SheetJS) for Excel parsing
 
-**C. Sidebar badge counts in `src/components/app/AppLayout.tsx`:**
-- Fetch counts on mount for: open requests, pending registrations, expiring contracts/insurance
-- Store in component state, refresh every 5 minutes
-- Render small circular badges on sidebar nav icons
+### Database Changes
+- Create `import_log` table with district_id, imported_by, data_type, file_name, total/imported/skipped/error row counts
+- RLS: staff can SELECT, district_admin can INSERT
 
-**D. CSV export on all table pages:**
-- Add "Export CSV" button to: Students, Routes, Compliance MV tab, Requests, Communications
-- Client-side CSV generation from current query results using Blob + download pattern
+### Frontend Changes
+- **`src/pages/app/admin/ImportData.tsx`** (new) — 4-step wizard:
+  1. Select data type (students, routes, stops, contracts, performance) with template download
+  2. Upload file (drag-drop, .csv/.xlsx/.xls/.tsv, 10MB limit, client-side Excel parsing via SheetJS)
+  3. Map & validate: preview table, auto-map columns (fuzzy matching), Zod validation with real-time error/warning counts
+  4. Confirm & import: batch INSERT (100 rows) with district_id, ON CONFLICT DO NOTHING, progress bar, summary
 
-**E. Empty state improvements:**
-- Create reusable `EmptyState` component with icon, message, and CTA button
-- Apply to all table pages (Students, Routes, Requests, Communications, etc.)
+- **CSV templates** generated on-the-fly from exportToCsv with correct headers + 2-3 example rows
+
+- **`src/components/app/AppLayout.tsx`** — Add "Import Data" nav item (Upload icon, district_admin only)
+- **`src/App.tsx`** — Add `/app/admin/import` route with RoleGate
+
+### Files Modified
+`supabase/migrations/[new].sql`, `src/pages/app/admin/ImportData.tsx` (new), `src/components/app/AppLayout.tsx`, `src/App.tsx`
+
+---
+
+## Task 5: Board Presentation Export
+
+### Frontend Changes
+- **`src/components/app/BoardReportGenerator.tsx`** (new) — Dialog component:
+  - 8 section checkboxes (executive summary, financial, benchmarks, routes, contractors, compliance, safety, requests)
+  - Date range selector
+  - "Generate Report" button fetches all data via existing Supabase queries
+  - Compiles into HTML (with inline CSS, tables, formatted metrics) and Markdown
+  - Downloads as `[District]_Board_Report_[Date].html` and `.md` via Blob
+
+- **`src/pages/app/Dashboard.tsx`** — Add "Generate Board Report" button in Quick Actions (district_admin only), opens BoardReportGenerator dialog
+
+### Files Modified
+`src/components/app/BoardReportGenerator.tsx` (new), `src/pages/app/Dashboard.tsx`
+
+---
+
+## Task 6: Notification Bell System
+
+### Database Changes
+- Create `notifications` table with district_id, user_id (nullable for broadcast), title, message, type (urgent/warning/info/success), category, link, is_read
+- RLS: users can SELECT/UPDATE own notifications (user_id = auth.uid() OR user_id IS NULL) within their district
+- Create `generate_system_notifications()` PL/pgSQL function that scans expired certs, expiring insurance, pending invoices, urgent requests, MV compliance gaps — inserts notifications with dedup (7-day window)
+- Run function once to seed notifications for both districts
+- Manually seed additional notifications per prompt spec
+
+### Frontend Changes
+- **`src/components/app/AppLayout.tsx`** — Wire up bell icon:
+  - Badge count (red circle with unread count), fetched on mount + every 60s
+  - Popover dropdown on click: scrollable list with colored left borders, title/message/timestamp/"2 hours ago", unread blue dot
+  - "Mark All Read" link in header
+  - Click item navigates to `notification.link` and marks read
+  - Empty state: "All caught up!"
+  - Demo mode integration: show notifications for impersonated district
+
+### Files Modified
+`supabase/migrations/[new].sql`, `src/components/app/AppLayout.tsx`
+
+---
+
+## Task 7: AI Integration
+
+### Database Changes
+- Add `ai_suggested_priority` and `ai_suggested_type` columns to `service_requests`
+
+### Edge Function Changes
+- **`supabase/functions/triage-request/index.ts`** (new) — Receives subject + description, calls Lovable AI (gemini-3-flash-preview) to suggest priority + type + reasoning, returns JSON
+
+### Frontend Changes
+- **`src/pages/app/Requests.tsx`** — After creating a request, call triage-request edge function, update request with AI suggestions, show "AI Triage" badge in detail dialog if AI suggested differently
+
+- **`src/pages/app/Reports.tsx`** — Safety tab: Add "AI Analysis" button that sends last 30 days of safety reports to analyze-reports function, displays pattern detection results in Alert card
+
+- **`src/pages/app/Communications.tsx`** — "Draft with AI" button next to notes textarea when logging outbound comms, calls chat edge function, pre-fills draft
+
+- **`src/pages/app/Contracts.tsx`** — Invoice discrepancy "Why?" link, sends invoice details to analyze-reports, shows AI explanation in popover
+
+### Files Modified
+`supabase/migrations/[new].sql`, `supabase/functions/triage-request/index.ts` (new), `src/pages/app/Requests.tsx`, `src/pages/app/Reports.tsx`, `src/pages/app/Communications.tsx`, `src/pages/app/Contracts.tsx`
+
+---
+
+## Task 8: Polish & Demo Readiness
+
+### A. Loading Skeletons
+- Audit all 20 /app/* pages, replace spinner-only states with shadcn Skeleton components (cards, table rows, charts, map placeholder)
+
+### B. Error Boundaries
+- Create `src/components/app/ErrorBoundary.tsx` — wraps page sections with friendly error message + retry button
+
+### C. Mobile Responsiveness
+- Ensure tables wrapped in `overflow-x-auto`, stat cards stack 2x2 on tablet / 1-col on mobile, dialogs full-screen on small screens, Quick Actions wrap to 2-col
+
+### D. Keyboard Shortcuts
+- `Ctrl/Cmd+K`: Command palette (shadcn Command/cmdk — already installed) searching students, routes, requests
+- `Ctrl/Cmd+N`: New service request
+- `Escape`: Close dialogs
+- `?`: Show shortcuts overlay
+- **`src/components/app/CommandPalette.tsx`** (new) — cmdk-based search across 3 entity types with debounced parallel queries
+
+### E. Print Stylesheet
+- Add `@media print` rules to `src/index.css`: hide sidebar/topbar/demo-banner, full-width content, no page-break mid-row, logo header, URL footer
+
+### F. Accessibility
+- Add aria-labels to interactive elements, verify focus rings, color contrast, alt text
+
+### G. PWA Metadata
+- Add `public/manifest.json` with app name, start_url `/app/dashboard`, standalone display
+- Add apple-touch-icon link in `index.html`
+
+### Files Modified
+All 20 /app/* page files (skeleton additions), `src/components/app/ErrorBoundary.tsx` (new), `src/components/app/CommandPalette.tsx` (new), `src/index.css`, `index.html`, `public/manifest.json` (new), `src/components/app/AppLayout.tsx`
 
 ---
 
 ## Implementation Order
 
-1. **Migration file** (Tasks 1 + 2) — single large SQL migration
-2. **Task 3** — Parent request submission (RLS + ParentDashboard.tsx)
-3. **Task 5** — Benchmarking function + Contracts/Dashboard UI
-4. **Task 4** — Bus pass generation UI in Routes page
-5. **Task 6C** — Sidebar badges in AppLayout
-6. **Task 6D** — CSV export buttons on all table pages
-7. **Task 6E** — Empty state component + integration
+```text
+Step 1: Migration (Tasks 1+3+6 DB) — demo_sessions, notifications, route_scenarios, RLS updates
+Step 2: Task 1 Frontend — DistrictContext demo override, AppLayout demo UI, DemoLogin page
+Step 3: Task 6 Frontend — Notification bell UI in AppLayout
+Step 4: Task 2 — Leaflet map (install deps, RouteMap component, AppRoutes tab, ParentTracking)
+Step 5: Task 5 — Board report generator component + Dashboard button
+Step 6: Task 4 — Import system (install xlsx, import_log migration, ImportData page, sidebar nav)
+Step 7: Task 7 — AI integration (triage edge function, AI buttons on 4 pages)
+Step 8: Task 8 — Polish pass (skeletons, error boundaries, mobile, shortcuts, print, a11y, PWA)
+```
 
-## Files Modified
+## New Files Created
+- `src/pages/DemoLogin.tsx`
+- `src/components/app/RouteMap.tsx`
+- `src/components/app/BoardReportGenerator.tsx`
+- `src/components/app/CommandPalette.tsx`
+- `src/components/app/ErrorBoundary.tsx`
+- `src/pages/app/admin/ImportData.tsx`
+- `supabase/functions/triage-request/index.ts`
+- `public/manifest.json`
+- 2-3 SQL migration files
 
-- `supabase/migrations/[new].sql` — Oceanside seed + Lawrence gap fill + benchmarking function + RLS policies
-- `src/pages/app/parent/ParentDashboard.tsx` — Request submission + My Requests section
-- `src/pages/app/AppRoutes.tsx` — Bus pass generation + Bus Passes tab
-- `src/pages/app/Contracts.tsx` — Regional benchmark card
-- `src/pages/app/Dashboard.tsx` — Benchmark summary line
-- `src/components/app/AppLayout.tsx` — Sidebar badge counts
-- `src/pages/app/Students.tsx` — CSV export + empty state
-- `src/pages/app/Requests.tsx` — CSV export + empty state
-- `src/pages/app/Communications.tsx` — CSV export + empty state
-- `src/components/app/EmptyState.tsx` — New reusable component
+## NPM Packages to Install
+- `react-leaflet`, `leaflet`, `@types/leaflet`
+- `xlsx`
 
