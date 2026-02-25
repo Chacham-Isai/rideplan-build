@@ -12,8 +12,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Search, ChevronLeft, ChevronRight, Plus, Eye, Baby, GraduationCap, Loader2, Save, Pencil, Trash2, X } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Plus, Eye, Baby, GraduationCap, Loader2, Save, Pencil, Trash2, X, Download } from "lucide-react";
 import { toast } from "sonner";
+import { exportToCsv } from "@/lib/csvExport";
 
 type Registration = {
   id: string;
@@ -267,9 +268,18 @@ const Students = () => {
           <h1 className="text-2xl font-bold text-foreground">Students</h1>
           <p className="text-sm text-muted-foreground">{totalCount.toLocaleString()} total registrations</p>
         </div>
-        <Button onClick={() => setShowAddDialog(true)} size="sm">
-          <Plus className="h-4 w-4 mr-1" /> Add Student
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => exportToCsv("students", students, [
+            { key: "student_name", label: "Name" }, { key: "grade", label: "Grade" }, { key: "school", label: "School" },
+            { key: "address_line", label: "Address" }, { key: "city", label: "City" }, { key: "zip", label: "ZIP" },
+            { key: "status", label: "Status" }, { key: "dob", label: "DOB" },
+          ])}>
+            <Download className="h-4 w-4 mr-1" /> Export CSV
+          </Button>
+          <Button onClick={() => setShowAddDialog(true)} size="sm">
+            <Plus className="h-4 w-4 mr-1" /> Add Student
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

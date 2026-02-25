@@ -10,8 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   Search, Loader2, Plus, Phone, Mail, MessageCircle, Users,
-  ArrowDownLeft, ArrowUpRight, Building2,
+  ArrowDownLeft, ArrowUpRight, Building2, Download,
 } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { toast } from "sonner";
 
 const CHANNEL_ICON: Record<string, React.ElementType> = {
@@ -105,9 +106,19 @@ const Communications = () => {
           <h1 className="text-2xl font-bold text-foreground">Communication Log</h1>
           <p className="text-sm text-muted-foreground">Track calls, emails & texts with parents, schools and contractors</p>
         </div>
-        <Button size="sm" onClick={() => setShowAdd(true)}>
-          <Plus className="h-4 w-4 mr-1" /> Log Communication
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => exportToCsv("communications", logs, [
+            { key: "direction", label: "Direction" }, { key: "contact_name", label: "Contact" },
+            { key: "contact_type", label: "Type" }, { key: "channel", label: "Channel" },
+            { key: "subject", label: "Subject" }, { key: "notes", label: "Notes" },
+            { key: "created_at", label: "Date" },
+          ])}>
+            <Download className="h-4 w-4 mr-1" /> Export CSV
+          </Button>
+          <Button size="sm" onClick={() => setShowAdd(true)}>
+            <Plus className="h-4 w-4 mr-1" /> Log Communication
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

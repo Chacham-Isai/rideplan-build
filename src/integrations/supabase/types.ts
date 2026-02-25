@@ -1821,6 +1821,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_regional_benchmarks: { Args: never; Returns: Json }
       get_user_district_id: { Args: never; Returns: string }
       get_user_role: { Args: never; Returns: string }
       has_app_role: { Args: { required_role: string }; Returns: boolean }
