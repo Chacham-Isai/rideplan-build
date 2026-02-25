@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   Search, Loader2, Plus, Phone, Mail, MessageCircle, Users,
-  ArrowDownLeft, ArrowUpRight, Building2, Download,
+  ArrowDownLeft, ArrowUpRight, Download, Sparkles,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csvExport";
 import { toast } from "sonner";
@@ -57,6 +57,7 @@ const Communications = () => {
     channel: "phone", subject: "", notes: "",
   });
   const [saving, setSaving] = useState(false);
+  const [aiDrafting, setAiDrafting] = useState(false);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -94,6 +95,74 @@ const Communications = () => {
       fetchLogs();
     }
     setSaving(false);
+  };
+
+  // AI Draft for outbound communications
+  const draftWithAi = async () => {
+    if (!form.subject && !form.contact_name) {
+      toast.error("Add a subject first so AI can draft a response");
+      return;
+    }
+    setAiDrafting(true);
+    try {
+      const prompt = `Draft a brief, professional outbound ${form.channel} communication for a school transportation department.
+Contact: ${form.contact_name} (${form.contact_type})
+Subject: ${form.subject}
+Channel: ${form.channel}
+
+Write 2-3 concise paragraphs appropriate for the channel. Be helpful and professional.`;
+
+      const { data, error } = await supabase.functions.invoke("chat", {
+        body: {
+          messages: [{ role: "user", content: prompt }],
+        },
+      });
+
+      if (error) throw error;
+
+      // Parse streaming response
+      let result = "";
+      if (data instanceof ReadableStream || (data && typeof data.getReader === "function")) {
+        const reader = (data as ReadableStream).getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ")) continue;
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) result += content;
+            } catch { /* skip */ }
+          }
+        }
+      } else if (typeof data === "string") {
+        for (const line of data.split("\n")) {
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) result += content;
+          } catch { /* skip */ }
+        }
+        if (!result) result = data;
+      }
+
+      if (result) {
+        setForm(prev => ({ ...prev, notes: result }));
+        toast.success("AI draft generated");
+      }
+    } catch (e: any) {
+      console.error("AI draft error:", e);
+      toast.error("Failed to generate AI draft");
+    }
+    setAiDrafting(false);
   };
 
   const inboundCount = logs.filter(l => l.direction === "inbound").length;
@@ -243,8 +312,23 @@ const Communications = () => {
               <Input value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} className="mt-1" />
             </div>
             <div>
-              <label className="text-sm font-medium">Notes</label>
-              <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1" />
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Notes</label>
+                {form.direction === "outbound" && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto py-1 text-xs text-violet-600 hover:text-violet-700"
+                    onClick={draftWithAi}
+                    disabled={aiDrafting}
+                  >
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    {aiDrafting ? "Drafting..." : "Draft with AI"}
+                  </Button>
+                )}
+              </div>
+              <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1" rows={form.notes && form.notes.length > 200 ? 8 : 3} />
             </div>
           </div>
           <DialogFooter>

@@ -5,19 +5,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import {
   AlertTriangle, FileText, TrendingUp, Bell,
-  Plus, Eye, Search, Loader2, CheckCircle,
+  Eye, Search, Loader2, CheckCircle, Sparkles, Bot,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,6 +52,10 @@ const Reports = () => {
   const [selectedDriver, setSelectedDriver] = useState<any>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
+  // AI Analysis
+  const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+
   // Debounce
   useEffect(() => {
     const t = setTimeout(() => setSearch(searchInput), 350);
@@ -73,6 +76,76 @@ const Reports = () => {
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  // AI Pattern Analysis
+  const runAiAnalysis = async () => {
+    setAiAnalyzing(true);
+    setAiAnalysis(null);
+    try {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+      const recent = safetyReports.filter(r => r.created_at >= thirtyDaysAgo);
+      if (recent.length === 0) {
+        setAiAnalysis("No safety reports in the last 30 days to analyze.");
+        setAiAnalyzing(false);
+        return;
+      }
+      const summary = recent.map(r => `[${r.report_type}] Bus ${r.bus_number} at ${r.school_name}: ${r.description?.slice(0, 100)}`).join("\n");
+
+      const { data, error } = await supabase.functions.invoke("chat", {
+        body: {
+          messages: [
+            { role: "user", content: `Analyze these ${recent.length} school bus safety reports from the last 30 days for patterns, trends, and recommendations. Be concise with bullet points.\n\n${summary}` },
+          ],
+        },
+      });
+
+      if (error) throw error;
+
+      // Handle streaming response - read the body
+      if (data instanceof ReadableStream || (data && typeof data.getReader === "function")) {
+        const reader = (data as ReadableStream).getReader();
+        const decoder = new TextDecoder();
+        let result = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ") || line.trim() === "") continue;
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) result += content;
+            } catch { /* skip partial */ }
+          }
+        }
+        setAiAnalysis(result || "Analysis complete but no patterns detected.");
+      } else if (typeof data === "string") {
+        // Try parsing SSE from string
+        let result = "";
+        for (const line of data.split("\n")) {
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) result += content;
+          } catch { /* skip */ }
+        }
+        setAiAnalysis(result || data);
+      } else {
+        setAiAnalysis("AI analysis returned an unexpected format.");
+      }
+    } catch (e: any) {
+      console.error("AI analysis error:", e);
+      toast.error("AI analysis failed");
+      setAiAnalysis("Failed to run AI analysis. Please try again.");
+    }
+    setAiAnalyzing(false);
+  };
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
 
@@ -189,7 +262,22 @@ const Reports = () => {
               <option value="all">All Statuses</option>
               <option value="new">New</option><option value="reviewing">Reviewing</option><option value="resolved">Resolved</option>
             </select>
+            <Button variant="outline" size="sm" onClick={runAiAnalysis} disabled={aiAnalyzing}>
+              <Sparkles className="h-4 w-4 mr-1 text-violet-500" />
+              {aiAnalyzing ? "Analyzing..." : "AI Analysis"}
+            </Button>
           </div>
+
+          {/* AI Analysis Result */}
+          {aiAnalysis && (
+            <Alert className="border-violet-200 bg-violet-50">
+              <Bot className="h-4 w-4 text-violet-600" />
+              <AlertTitle className="text-violet-700 text-sm">AI Pattern Analysis</AlertTitle>
+              <AlertDescription className="text-xs text-violet-800 whitespace-pre-wrap mt-1">
+                {aiAnalysis}
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Card className="border-0 shadow-sm"><CardContent className="p-0">
             <Table>
@@ -269,7 +357,6 @@ const Reports = () => {
         {/* Analytics */}
         <TabsContent value="analytics" className="mt-4 space-y-6">
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Monthly trend */}
             {monthlyTrend.length > 0 && (
               <Card className="border-0 shadow-sm">
                 <CardHeader className="pb-2"><CardTitle className="text-base">Reports by Month</CardTitle></CardHeader>
@@ -292,7 +379,6 @@ const Reports = () => {
               </Card>
             )}
 
-            {/* Type breakdown */}
             {typeBreakdown.length > 0 && (
               <Card className="border-0 shadow-sm">
                 <CardHeader className="pb-2"><CardTitle className="text-base">Report Type Breakdown</CardTitle></CardHeader>
@@ -330,13 +416,21 @@ const Reports = () => {
                   <div><span className="text-muted-foreground">Email:</span> {selectedSafety.reporter_email}</div>
                 </div>
                 <div className="flex gap-2">
-                  <Badge variant="outline" className={priorityStyle(selectedSafety.ai_priority)}>{selectedSafety.ai_priority}</Badge>
+                  <Badge variant="outline" className={priorityStyle(selectedSafety.ai_priority)}>AI: {selectedSafety.ai_priority}</Badge>
                   <Badge variant="outline" className={statusStyle(selectedSafety.status)}>{selectedSafety.status}</Badge>
                 </div>
-                <div><span className="text-muted-foreground">Description:</span><p className="mt-1">{selectedSafety.description}</p></div>
-                <div className="flex gap-2 pt-2">
-                  {selectedSafety.status !== "reviewing" && <Button size="sm" variant="outline" onClick={() => updateSafetyStatus(selectedSafety.id, "reviewing")} disabled={updatingStatus}>Mark Reviewing</Button>}
-                  {selectedSafety.status !== "resolved" && <Button size="sm" onClick={() => updateSafetyStatus(selectedSafety.id, "resolved")} disabled={updatingStatus} className="bg-emerald-600 hover:bg-emerald-700 text-white">Resolve</Button>}
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p>{selectedSafety.description}</p>
+                </div>
+                <div className="flex gap-2">
+                  {selectedSafety.status === "new" && (
+                    <Button size="sm" variant="outline" onClick={() => updateSafetyStatus(selectedSafety.id, "reviewing")} disabled={updatingStatus}>Mark Reviewing</Button>
+                  )}
+                  {selectedSafety.status !== "resolved" && (
+                    <Button size="sm" variant="outline" className="text-emerald-600" onClick={() => updateSafetyStatus(selectedSafety.id, "resolved")} disabled={updatingStatus}>
+                      <CheckCircle className="h-3 w-3 mr-1" /> Resolve
+                    </Button>
+                  )}
                 </div>
               </div>
             </>
@@ -352,16 +446,22 @@ const Reports = () => {
               <DialogHeader><DialogTitle>Driver Report</DialogTitle></DialogHeader>
               <div className="space-y-3 text-sm">
                 <div className="grid grid-cols-2 gap-2">
+                  <div><span className="text-muted-foreground">Date:</span> {new Date(selectedDriver.created_at).toLocaleDateString()}</div>
+                  <div><span className="text-muted-foreground">Type:</span> <span className="capitalize">{selectedDriver.report_type}</span></div>
                   <div><span className="text-muted-foreground">Driver:</span> {selectedDriver.driver_name}</div>
                   <div><span className="text-muted-foreground">Bus:</span> {selectedDriver.bus_number}</div>
-                  <div><span className="text-muted-foreground">Type:</span> <span className="capitalize">{selectedDriver.report_type}</span></div>
-                  <div><span className="text-muted-foreground">Route:</span> {selectedDriver.route_info ?? "—"}</div>
                 </div>
                 <Badge variant="outline" className={statusStyle(selectedDriver.status)}>{selectedDriver.status}</Badge>
-                <div><span className="text-muted-foreground">Description:</span><p className="mt-1">{selectedDriver.description}</p></div>
-                <div className="flex gap-2 pt-2">
-                  {selectedDriver.status !== "reviewing" && <Button size="sm" variant="outline" onClick={() => updateDriverStatus(selectedDriver.id, "reviewing")} disabled={updatingStatus}>Mark Reviewing</Button>}
-                  {selectedDriver.status !== "resolved" && <Button size="sm" onClick={() => updateDriverStatus(selectedDriver.id, "resolved")} disabled={updatingStatus} className="bg-emerald-600 hover:bg-emerald-700 text-white">Resolve</Button>}
+                <div className="rounded-lg bg-muted/50 p-3"><p>{selectedDriver.description}</p></div>
+                <div className="flex gap-2">
+                  {selectedDriver.status === "new" && (
+                    <Button size="sm" variant="outline" onClick={() => updateDriverStatus(selectedDriver.id, "reviewing")} disabled={updatingStatus}>Mark Reviewing</Button>
+                  )}
+                  {selectedDriver.status !== "resolved" && (
+                    <Button size="sm" variant="outline" className="text-emerald-600" onClick={() => updateDriverStatus(selectedDriver.id, "resolved")} disabled={updatingStatus}>
+                      <CheckCircle className="h-3 w-3 mr-1" /> Resolve
+                    </Button>
+                  )}
                 </div>
               </div>
             </>
