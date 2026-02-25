@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
 import {
   Users, MapPin, Bus, TrendingUp, Clock, AlertTriangle,
-  CheckCircle2, BarChart3, ArrowUpRight, ArrowDownRight,
+  ArrowUpRight, ArrowDownRight, Plus, Baby, GraduationCap, FileEdit,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line,
+  ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 
 interface DashboardStats {
@@ -26,6 +28,7 @@ const COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#8B5CF6", "#EC4899", "#06B6D4"
 
 const Dashboard = () => {
   const { district } = useDistrict();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [schoolData, setSchoolData] = useState<{ school: string; students: number; routes: number }[]>([]);
   const [tierData, setTierData] = useState<{ name: string; value: number }[]>([]);
@@ -104,10 +107,17 @@ const Dashboard = () => {
   }
 
   const statCards = [
-    { label: "Total Students", value: stats?.totalStudents?.toLocaleString() ?? "0", icon: Users, color: "text-blue-600", bg: "bg-blue-50", trend: "+3.2%", up: true },
-    { label: "Active Routes", value: `${stats?.activeRoutes ?? 0} / ${stats?.totalRoutes ?? 0}`, icon: MapPin, color: "text-emerald-600", bg: "bg-emerald-50", trend: "99%", up: true },
-    { label: "On-Time Rate", value: `${stats?.avgOnTime ?? 0}%`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", trend: "+1.4%", up: true },
-    { label: "Pending Registrations", value: stats?.pendingRegistrations?.toLocaleString() ?? "0", icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50", trend: "Action needed", up: false },
+    { label: "Total Students", value: stats?.totalStudents?.toLocaleString() ?? "0", icon: Users, color: "text-blue-600", bg: "bg-blue-50", trend: "+3.2%", up: true, href: "/app/students" },
+    { label: "Active Routes", value: `${stats?.activeRoutes ?? 0} / ${stats?.totalRoutes ?? 0}`, icon: MapPin, color: "text-emerald-600", bg: "bg-emerald-50", trend: "99%", up: true, href: "/app/routes" },
+    { label: "On-Time Rate", value: `${stats?.avgOnTime ?? 0}%`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", trend: "+1.4%", up: true, href: "/app/routes" },
+    { label: "Pending Registrations", value: stats?.pendingRegistrations?.toLocaleString() ?? "0", icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50", trend: "Action needed", up: false, href: "/app/admin/residency" },
+  ];
+
+  const quickActions = [
+    { label: "Add Student", icon: Plus, href: "/app/students?action=add", color: "text-blue-600" },
+    { label: "Childcare Requests", icon: Baby, href: "/app/students?filter=childcare", color: "text-purple-600" },
+    { label: "Special Ed Pickups", icon: GraduationCap, href: "/app/students?filter=special_ed", color: "text-amber-600" },
+    { label: "Edit Requests", icon: FileEdit, href: "/app/students?filter=special_requests", color: "text-emerald-600" },
   ];
 
   return (
@@ -121,10 +131,14 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Stat cards */}
+      {/* Stat cards — now clickable */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => (
-          <Card key={card.label} className="border-0 shadow-sm">
+          <Card
+            key={card.label}
+            className="border-0 shadow-sm cursor-pointer transition-shadow hover:shadow-md hover:ring-1 hover:ring-primary/20"
+            onClick={() => navigate(card.href)}
+          >
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
@@ -143,6 +157,28 @@ const Dashboard = () => {
           </Card>
         ))}
       </div>
+
+      {/* Quick Actions */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {quickActions.map((action) => (
+              <Button
+                key={action.label}
+                variant="outline"
+                className="h-auto flex-col gap-2 py-4 hover:bg-muted/50"
+                onClick={() => navigate(action.href)}
+              >
+                <action.icon className={`h-5 w-5 ${action.color}`} />
+                <span className="text-xs font-medium">{action.label}</span>
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Charts row */}
       <div className="grid gap-6 lg:grid-cols-3">
