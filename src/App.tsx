@@ -61,6 +61,7 @@ import Communications from "./pages/app/Communications";
 import Reports from "./pages/app/Reports";
 import SchoolCalendar from "./pages/app/SchoolCalendar";
 import AccidentReports from "./pages/app/AccidentReports";
+import FieldTrips from "./pages/app/FieldTrips";
 import AppSettings from "./pages/app/Settings";
 import ParentDashboard from "./pages/app/parent/ParentDashboard";
 import ParentRegister from "./pages/app/parent/ParentRegister";
@@ -136,6 +137,7 @@ const App = () => (
                   <Route path="reports" element={<Reports />} />
                   <Route path="calendar" element={<SchoolCalendar />} />
                   <Route path="accidents" element={<AccidentReports />} />
+                  <Route path="field-trips" element={<FieldTrips />} />
                   <Route path="contracts" element={<RoleGate requires="district_admin"><Contracts /></RoleGate>} />
                   <Route path="compliance" element={<RoleGate requires="district_admin"><Compliance /></RoleGate>} />
                   <Route path="requests" element={<Requests />} />

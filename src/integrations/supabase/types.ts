@@ -1299,6 +1299,77 @@ export type Database = {
           },
         ]
       }
+      field_trips: {
+        Row: {
+          bus_number: string | null
+          chaperone_count: number | null
+          created_at: string
+          created_by: string | null
+          departure_date: string
+          departure_time: string
+          destination: string
+          district_id: string
+          driver_name: string | null
+          grade_level: string | null
+          id: string
+          notes: string | null
+          return_time: string
+          school: string
+          status: string
+          student_count: number | null
+          trip_name: string
+          updated_at: string
+        }
+        Insert: {
+          bus_number?: string | null
+          chaperone_count?: number | null
+          created_at?: string
+          created_by?: string | null
+          departure_date: string
+          departure_time?: string
+          destination: string
+          district_id: string
+          driver_name?: string | null
+          grade_level?: string | null
+          id?: string
+          notes?: string | null
+          return_time?: string
+          school: string
+          status?: string
+          student_count?: number | null
+          trip_name: string
+          updated_at?: string
+        }
+        Update: {
+          bus_number?: string | null
+          chaperone_count?: number | null
+          created_at?: string
+          created_by?: string | null
+          departure_date?: string
+          departure_time?: string
+          destination?: string
+          district_id?: string
+          driver_name?: string | null
+          grade_level?: string | null
+          id?: string
+          notes?: string | null
+          return_time?: string
+          school?: string
+          status?: string
+          student_count?: number | null
+          trip_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_trips_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_log: {
         Row: {
           created_at: string
