@@ -44,6 +44,11 @@ import NotFound from "./pages/NotFound";
 // New auth pages
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
+// Onboarding
+import Onboarding from "./pages/app/Onboarding";
 
 // App pages (behind auth)
 import Dashboard from "./pages/app/Dashboard";
@@ -110,9 +115,13 @@ const App = () => (
               {/* ===== NEW AUTH ROUTES ===== */}
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* ===== PROTECTED APP ROUTES ===== */}
               <Route path="/app" element={<ProtectedRoute />}>
+                {/* Onboarding — outside AppLayout for clean focused flow */}
+                <Route path="onboarding" element={<Onboarding />} />
                 <Route element={<AppLayout />}>
                   <Route index element={<Navigate to="/app/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />

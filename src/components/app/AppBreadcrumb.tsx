@@ -19,6 +19,9 @@ const LABEL_MAP: Record<string, string> = {
   residency: "Residency",
   invoices: "Invoices",
   bids: "Bids",
+  onboarding: "Get Started",
+  "forgot-password": "Forgot Password",
+  "reset-password": "Reset Password",
 };
 
 export const AppBreadcrumb = () => {

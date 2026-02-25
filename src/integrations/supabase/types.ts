@@ -46,6 +46,7 @@ export type Database = {
           bid_id: string
           contractor_name: string
           created_at: string
+          district_id: string | null
           fleet_details: string | null
           id: string
           proposed_rate: number
@@ -57,6 +58,7 @@ export type Database = {
           bid_id: string
           contractor_name: string
           created_at?: string
+          district_id?: string | null
           fleet_details?: string | null
           id?: string
           proposed_rate?: number
@@ -68,6 +70,7 @@ export type Database = {
           bid_id?: string
           contractor_name?: string
           created_at?: string
+          district_id?: string | null
           fleet_details?: string | null
           id?: string
           proposed_rate?: number
@@ -83,6 +86,13 @@ export type Database = {
             referencedRelation: "bids"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bid_responses_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       bids: {
@@ -90,6 +100,7 @@ export type Database = {
           close_date: string | null
           created_at: string
           description: string | null
+          district_id: string | null
           id: string
           open_date: string | null
           routes_spec: string | null
@@ -100,6 +111,7 @@ export type Database = {
           close_date?: string | null
           created_at?: string
           description?: string | null
+          district_id?: string | null
           id?: string
           open_date?: string | null
           routes_spec?: string | null
@@ -110,13 +122,22 @@ export type Database = {
           close_date?: string | null
           created_at?: string
           description?: string | null
+          district_id?: string | null
           id?: string
           open_date?: string | null
           routes_spec?: string | null
           status?: Database["public"]["Enums"]["bid_status"]
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bids_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       breach_incidents: {
         Row: {
@@ -676,6 +697,7 @@ export type Database = {
           contact_info: string | null
           created_at: string
           description: string
+          district_id: string | null
           driver_name: string
           id: string
           report_type: Database["public"]["Enums"]["driver_report_type"]
@@ -687,6 +709,7 @@ export type Database = {
           contact_info?: string | null
           created_at?: string
           description: string
+          district_id?: string | null
           driver_name: string
           id?: string
           report_type: Database["public"]["Enums"]["driver_report_type"]
@@ -698,13 +721,22 @@ export type Database = {
           contact_info?: string | null
           created_at?: string
           description?: string
+          district_id?: string | null
           driver_name?: string
           id?: string
           report_type?: Database["public"]["Enums"]["driver_report_type"]
           route_info?: string | null
           status?: Database["public"]["Enums"]["report_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "driver_reports_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       driver_tips: {
         Row: {
