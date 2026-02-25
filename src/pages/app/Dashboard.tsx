@@ -8,7 +8,7 @@ import {
   Users, MapPin, Bus, TrendingUp, Clock, AlertTriangle,
   ArrowUpRight, ArrowDownRight, Plus, Baby, GraduationCap, FileEdit,
   MessageSquare, Phone, Shield, FileText, CreditCard, UserCheck,
-  AlertCircle, CheckCircle, XCircle, Ticket,
+  AlertCircle, CheckCircle, XCircle, Ticket, Calendar,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
+import { format, parseISO } from "date-fns";
 
 interface DashboardStats {
   totalStudents: number;
@@ -52,6 +53,8 @@ const Dashboard = () => {
   const [expiringContracts, setExpiringContracts] = useState(0);
   const [actionItems, setActionItems] = useState<{ label: string; count: number; icon: React.ElementType; color: string; href: string }[]>([]);
   const [benchmarks, setBenchmarks] = useState<any>(null);
+  const [upcomingCalendar, setUpcomingCalendar] = useState<{ title: string; event_date: string; event_type: string }[]>([]);
+  const [todayOverride, setTodayOverride] = useState<{ school: string; no_transport: boolean; notes: string | null }[]>([]);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -128,6 +131,17 @@ const Dashboard = () => {
       // Fetch benchmarks
       supabase.rpc("get_regional_benchmarks").then(({ data }) => setBenchmarks(data));
 
+      // Fetch upcoming calendar events
+      const todayStr = format(new Date(), "yyyy-MM-dd");
+      supabase.from("school_calendar_events").select("title, event_date, event_type")
+        .gte("event_date", todayStr).order("event_date").limit(5)
+        .then(({ data }) => setUpcomingCalendar((data as any[]) ?? []));
+
+      // Fetch today's overrides
+      supabase.from("schedule_overrides").select("school, no_transport, notes")
+        .eq("override_date", todayStr)
+        .then(({ data }) => setTodayOverride((data as any[]) ?? []));
+
       // School breakdown
       const schoolMap = new Map<string, { students: number; routes: number }>();
       routes.forEach((r) => {
@@ -190,6 +204,24 @@ const Dashboard = () => {
           </Button>
         )}
       </div>
+
+      {/* Today's Schedule Override Banner */}
+      {todayOverride.length > 0 && (
+        <Card className="border-0 shadow-sm border-l-4 border-l-amber-400">
+          <CardContent className="p-4 flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-amber-600 flex-shrink-0" />
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Schedule Change Today</h3>
+              <div className="text-xs text-muted-foreground space-y-0.5">
+                {todayOverride.map((o, i) => (
+                  <p key={i}>{o.school}: {o.no_transport ? "No Transportation" : "Modified Schedule"}{o.notes ? ` — ${o.notes}` : ""}</p>
+                ))}
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" className="ml-auto" onClick={() => navigate("/app/calendar")}>View Calendar</Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Action Items Banner */}
       {actionItems.length > 0 && (
@@ -338,6 +370,35 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Upcoming Calendar Card */}
+      {upcomingCalendar.length > 0 && (
+        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md" onClick={() => navigate("/app/calendar")}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-primary" /> Upcoming Calendar
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {upcomingCalendar.map((ev, i) => (
+                <div key={i} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className={`h-2 w-2 rounded-full ${
+                      ev.event_type === "legal_holiday" ? "bg-red-500" :
+                      ev.event_type === "religious_observance" ? "bg-purple-500" :
+                      ev.event_type === "early_dismissal" || ev.event_type === "delay" ? "bg-orange-500" :
+                      "bg-blue-500"
+                    }`} />
+                    <span className="text-foreground">{ev.title}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{format(parseISO(ev.event_date), "MMM d")}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Charts row */}
       <div className="grid gap-6 lg:grid-cols-3">

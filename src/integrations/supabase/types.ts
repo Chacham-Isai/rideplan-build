@@ -41,6 +41,56 @@ export type Database = {
         }
         Relationships: []
       }
+      bell_schedules: {
+        Row: {
+          am_end: string
+          am_start: string
+          created_at: string
+          district_id: string
+          id: string
+          is_default: boolean
+          pm_end: string
+          pm_start: string
+          schedule_name: string
+          school: string
+          school_year: string
+        }
+        Insert: {
+          am_end: string
+          am_start: string
+          created_at?: string
+          district_id: string
+          id?: string
+          is_default?: boolean
+          pm_end: string
+          pm_start: string
+          schedule_name: string
+          school: string
+          school_year: string
+        }
+        Update: {
+          am_end?: string
+          am_start?: string
+          created_at?: string
+          district_id?: string
+          id?: string
+          is_default?: boolean
+          pm_end?: string
+          pm_start?: string
+          schedule_name?: string
+          school?: string
+          school_year?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bell_schedules_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bid_responses: {
         Row: {
           bid_id: string
@@ -1736,6 +1786,120 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "safety_reports_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_overrides: {
+        Row: {
+          bell_schedule_id: string | null
+          calendar_event_id: string | null
+          created_at: string
+          district_id: string
+          id: string
+          no_transport: boolean
+          notes: string | null
+          override_date: string
+          school: string
+        }
+        Insert: {
+          bell_schedule_id?: string | null
+          calendar_event_id?: string | null
+          created_at?: string
+          district_id: string
+          id?: string
+          no_transport?: boolean
+          notes?: string | null
+          override_date: string
+          school: string
+        }
+        Update: {
+          bell_schedule_id?: string | null
+          calendar_event_id?: string | null
+          created_at?: string
+          district_id?: string
+          id?: string
+          no_transport?: boolean
+          notes?: string | null
+          override_date?: string
+          school?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_overrides_bell_schedule_id_fkey"
+            columns: ["bell_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "bell_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_overrides_calendar_event_id_fkey"
+            columns: ["calendar_event_id"]
+            isOneToOne: false
+            referencedRelation: "school_calendar_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_overrides_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_calendar_events: {
+        Row: {
+          applies_to: string
+          created_at: string
+          created_by: string | null
+          delay_minutes: number | null
+          dismissal_time: string | null
+          district_id: string
+          end_date: string | null
+          event_date: string
+          event_type: string
+          id: string
+          notes: string | null
+          school_year: string
+          title: string
+        }
+        Insert: {
+          applies_to?: string
+          created_at?: string
+          created_by?: string | null
+          delay_minutes?: number | null
+          dismissal_time?: string | null
+          district_id: string
+          end_date?: string | null
+          event_date: string
+          event_type?: string
+          id?: string
+          notes?: string | null
+          school_year: string
+          title: string
+        }
+        Update: {
+          applies_to?: string
+          created_at?: string
+          created_by?: string | null
+          delay_minutes?: number | null
+          dismissal_time?: string | null
+          district_id?: string
+          end_date?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          notes?: string | null
+          school_year?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_calendar_events_district_id_fkey"
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
