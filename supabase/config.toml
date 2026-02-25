@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.triage-request]
 verify_jwt = false
+
+[functions.nysed-advisor]
+verify_jwt = false

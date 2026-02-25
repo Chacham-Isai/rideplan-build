@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BoardReportGenerator } from "@/components/app/BoardReportGenerator";
+import { NysedAdvisorWidget } from "@/components/app/NysedAdvisorWidget";
 import { DashboardSkeleton } from "@/components/app/PageSkeletons";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -508,6 +509,9 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* NYSED Law Advisor */}
+      <NysedAdvisorWidget />
 
       <BoardReportGenerator open={showBoardReport} onOpenChange={setShowBoardReport} />
     </div>
