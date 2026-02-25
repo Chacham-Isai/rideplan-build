@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 import { FileText, GraduationCap, Shield, Users, Plus, AlertTriangle, Loader2, CheckCircle } from "lucide-react";
+import { NysedAdvisorWidget } from "@/components/app/NysedAdvisorWidget";
 import { toast } from "sonner";
 
 const statusStyle = (s: string) => {
@@ -151,6 +152,9 @@ const Compliance = () => {
         <h1 className="text-2xl font-bold text-foreground">Compliance</h1>
         <p className="text-sm text-muted-foreground">State reporting, training, Ed Law 2-d & McKinney-Vento</p>
       </div>
+
+      {/* NYSED Law Advisor */}
+      <NysedAdvisorWidget />
 
       {/* Summary */}
       <div className="grid gap-4 sm:grid-cols-4">
