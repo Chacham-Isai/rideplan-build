@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -99,9 +100,21 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
 
   try {
-    // --- Authentication: require Authorization header ---
+    // --- Authentication: require and validate JWT ---
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
       return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
@@ -175,7 +188,7 @@ serve(async (req) => {
   } catch (e) {
     console.error("chat error:", e);
     return jsonResponse(
-      { error: e instanceof Error ? e.message : "Unknown error" },
+      { error: "An error occurred" },
       500
     );
   }

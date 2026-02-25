@@ -130,9 +130,39 @@ export const RegisterWizard = ({ mode = "public", prefill }: WizardProps) => {
   const next = () => setStep(s => Math.min(s + 1, maxStep));
   const back = () => setStep(s => Math.max(s - 1, 0));
 
+  const validateRegistrationData = (d: RegistrationData): string | null => {
+    // Validate parent info
+    if (!isInApp) {
+      if (!d.parentName.trim() || d.parentName.length > 100) return "Invalid parent name";
+      if (!d.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email) || d.email.length > 255) return "Invalid email";
+      if (d.phone && d.phone.length > 20) return "Phone number too long";
+      if (!d.password || d.password.length < 8) return "Password must be at least 8 characters";
+    }
+    // Validate students
+    if (d.students.length === 0 || d.students.length > 10) return "Invalid number of students";
+    for (const s of d.students) {
+      if (!s.name.trim() || s.name.length > 100) return `Invalid student name: ${s.name || "(empty)"}`;
+      if (!s.dob || !/^\d{4}-\d{2}-\d{2}$/.test(s.dob)) return `Invalid date of birth for ${s.name}`;
+      if (!s.grade.trim() || s.grade.length > 10) return `Invalid grade for ${s.name}`;
+      if (!s.school.trim() || s.school.length > 200) return `Invalid school for ${s.name}`;
+    }
+    // Validate address
+    if (!d.address.trim() || d.address.length > 300) return "Invalid address";
+    if (!d.city.trim() || d.city.length > 100) return "Invalid city";
+    if (!d.state.trim() || d.state.length > 2) return "Invalid state";
+    if (!d.zip.trim() || !/^\d{5}(-\d{4})?$/.test(d.zip)) return "Invalid ZIP code";
+    // Validate signature
+    if (!d.signatureText.trim() || d.signatureText.length > 200) return "Signature is required";
+    return null;
+  };
+
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
+      // Client-side validation
+      const validationError = validateRegistrationData(data);
+      if (validationError) throw new Error(validationError);
+
       let userId: string;
 
       if (isInApp) {
@@ -143,10 +173,10 @@ export const RegisterWizard = ({ mode = "public", prefill }: WizardProps) => {
       } else {
         // Public: create auth account
         const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: data.email,
+          email: data.email.trim(),
           password: data.password,
           options: {
-            data: { full_name: data.parentName, phone: data.phone, language: data.language },
+            data: { full_name: data.parentName.trim(), phone: data.phone.trim(), language: data.language },
             emailRedirectTo: window.location.origin,
           },
         });
@@ -165,14 +195,14 @@ export const RegisterWizard = ({ mode = "public", prefill }: WizardProps) => {
           .insert({
             parent_user_id: userId,
             district_id: districtId,
-            student_name: student.name,
+            student_name: student.name.trim().slice(0, 100),
             dob: student.dob,
-            grade: student.grade,
-            school: student.school,
-            address_line: data.address,
-            city: data.city,
-            state: data.state,
-            zip: data.zip,
+            grade: student.grade.trim().slice(0, 10),
+            school: student.school.trim().slice(0, 200),
+            address_line: data.address.trim().slice(0, 300),
+            city: data.city.trim().slice(0, 100),
+            state: data.state.trim().slice(0, 2),
+            zip: data.zip.trim().slice(0, 10),
             iep_flag: student.iep,
             section_504_flag: student.section504,
             mckinney_vento_flag: student.mckinneyVento,
