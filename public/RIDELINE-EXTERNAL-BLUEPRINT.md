@@ -1,6 +1,6 @@
 # RideLine — Full Project Blueprint for External AI Assistants
 
-> **Last updated:** 2026-02-25 (verified via browser testing)
+> **Last updated:** 2026-02-25 (Phase 1–6 workflow automation complete)
 > **Purpose:** Give this file to any AI assistant (Claude, GPT, Cursor, etc.) so it can fully understand the RideLine project — architecture, tech stack, page flow, component tree, database schema, auth system, design system, current build state, wireframe logic, and capabilities.
 > **Live preview:** https://rideplan-build.lovable.app
 > **Project host:** Lovable (lovable.dev) with Lovable Cloud (Supabase-powered backend)
@@ -23,7 +23,11 @@ RideLine is a **B2B SaaS platform** for K–12 school-district transportation ma
 - Digital student registration & residency verification
 - Contract management, invoicing, bid/RFP solicitation
 - Compliance center (BEDS/STAC, McKinney-Vento, Ed Law 2-d)
-- Coverage across the U.S. Northeast (expanding)
+- Service request hub for secretarial workflow automation
+- Communication logging for audit trails
+- 19A driver certification tracking
+- Bus pass generation & eligibility management
+- Aide & monitor assignment per route
 
 ---
 
@@ -66,7 +70,7 @@ RideLine is a **B2B SaaS platform** for K–12 school-district transportation ma
 │   │   │   ├── HeroSection.tsx → CTASection.tsx → Footer.tsx
 │   │   │   └── ... (AnnouncementBar, ByTheNumbers, ComparisonTable, etc.)
 │   │   ├── app/                # Authenticated app shell
-│   │   │   ├── AppLayout.tsx       # Sidebar + top bar
+│   │   │   ├── AppLayout.tsx       # Sidebar + top bar (staffNav + parentNav)
 │   │   │   ├── AppBreadcrumb.tsx
 │   │   │   ├── ProtectedRoute.tsx  # Auth gate → /login
 │   │   │   ├── RoleGate.tsx        # Role-based access gate
@@ -92,18 +96,21 @@ RideLine is a **B2B SaaS platform** for K–12 school-district transportation ma
 │   │   ├── 17 more public pages (Blog, Demo, About, Contact, etc.)
 │   │   ├── admin/              # 11 legacy admin pages
 │   │   └── app/                # Authenticated portal pages
-│   │       ├── Dashboard.tsx   # ✅ LIVE
+│   │       ├── Dashboard.tsx   # ✅ Operational Command Center
 │   │       ├── Students.tsx    # ✅ LIVE
 │   │       ├── AppRoutes.tsx   # ✅ LIVE — routes, inefficiency detection, consolidation sim
 │   │       ├── Contracts.tsx   # ✅ LIVE — 3 tabs (contracts, invoices, performance)
 │   │       ├── Compliance.tsx  # ✅ LIVE — 4 tabs (BEDS/STAC, MV, Ed Law, Audit)
 │   │       ├── Reports.tsx     # ✅ LIVE — 4 tabs (safety, driver, alerts, analytics)
+│   │       ├── Requests.tsx    # ✅ NEW — Service Request Hub
+│   │       ├── Communications.tsx # ✅ NEW — Communication Log
 │   │       ├── Settings.tsx    # ✅ LIVE — 4 tabs (district, subscription, users, privacy)
+│   │       ├── Onboarding.tsx  # ✅ LIVE — new user onboarding flow
 │   │       ├── parent/
-│   │       │   ├── ParentDashboard.tsx  # ✅ LIVE — children cards, quick actions
-│   │       │   ├── ParentRegister.tsx   # ✅ LIVE — in-app registration wizard
-│   │       │   ├── ParentReapply.tsx    # ✅ LIVE — returning-family reapply
-│   │       │   └── ParentTracking.tsx   # ✅ LIVE — coming soon preview w/ bus assignments
+│   │       │   ├── ParentDashboard.tsx  # ✅ LIVE
+│   │       │   ├── ParentRegister.tsx   # ✅ LIVE
+│   │       │   ├── ParentReapply.tsx    # ✅ LIVE
+│   │       │   └── ParentTracking.tsx   # ✅ LIVE — coming soon preview
 │   │       └── admin/
 │   │           ├── AppResidencyAdmin.tsx # ✅ LIVE — residency review
 │   │           ├── UsersAdmin.tsx        # ✅ LIVE — user/role management
@@ -118,7 +125,7 @@ RideLine is a **B2B SaaS platform** for K–12 school-district transportation ma
 │   └── functions/
 │       ├── chat/index.ts       # AI chatbot
 │       └── analyze-reports/index.ts  # AI report analysis
-├── RIDELINE-PROJECT-BLUEPRINT.md  # Internal blueprint (this is the external version)
+├── RIDELINE-PROJECT-BLUEPRINT.md  # Internal blueprint
 ├── tailwind.config.ts
 └── vite.config.ts
 ```
@@ -149,6 +156,8 @@ RideLine is a **B2B SaaS platform** for K–12 school-district transportation ma
 | `/reapply` | `Reapply` | Returning-family re-registration |
 | `/login` | `Login` | Email/password + Google + Apple OAuth |
 | `/signup` | `Signup` | Redirect to demo request |
+| `/forgot-password` | `ForgotPassword` | Password reset request |
+| `/reset-password` | `ResetPassword` | Password reset completion |
 | `*` | `NotFound` | 404 page |
 
 ### Authenticated App Routes (`/app/*`)
@@ -158,21 +167,45 @@ All wrapped in: `ProtectedRoute` → `DistrictProvider` → `AppLayout`
 | Path | Component | Role | Status |
 |---|---|---|---|
 | `/app` | → redirect `/app/dashboard` | any | ✅ |
-| `/app/dashboard` | `Dashboard` | any | ✅ **LIVE** — stat cards, charts, quick actions |
+| `/app/onboarding` | `Onboarding` | any | ✅ **LIVE** — outside AppLayout, focused new-user flow |
+| `/app/dashboard` | `Dashboard` | any | ✅ **LIVE** — Operational Command Center (5 workflow areas) |
 | `/app/students` | `Students` | any | ✅ **LIVE** — full CRUD, filters, detail/edit dialog |
 | `/app/routes` | `AppRoutes` | any | ✅ **LIVE** — stats, inefficiency cards, route table, consolidation simulator |
+| `/app/requests` | `Requests` | staff+ | ✅ **NEW** — Service Request Hub (stop/address/school changes, driver issues) |
+| `/app/communications` | `Communications` | staff+ | ✅ **NEW** — Communication Log (phone/email/text/in-person) |
 | `/app/reports` | `Reports` | any | ✅ **LIVE** — 4 tabs: safety reports, driver reports, alerts, analytics charts |
-| `/app/contracts` | `Contracts` | district_admin | ✅ **LIVE** — 3 tabs: contracts w/ detail dialog, invoices w/ approve/dispute, performance leaderboard |
-| `/app/compliance` | `Compliance` | district_admin | ✅ **LIVE** — 4 tabs: BEDS/STAC generation, McKinney-Vento tracker, Ed Law 2-d, audit readiness |
+| `/app/contracts` | `Contracts` | district_admin | ✅ **LIVE** — 3 tabs: contracts w/ detail dialog, invoices, performance |
+| `/app/compliance` | `Compliance` | district_admin | ✅ **LIVE** — 4 tabs: BEDS/STAC, McKinney-Vento, Ed Law 2-d, audit readiness |
 | `/app/settings` | `AppSettings` | district_admin | ✅ **LIVE** — 4 tabs: district info, subscription, users, data & privacy |
-| `/app/parent` | `ParentDashboard` | parent | ✅ **LIVE** — welcome, children cards, quick actions, activity timeline |
+| `/app/parent` | `ParentDashboard` | parent | ✅ **LIVE** — welcome, children cards, quick actions |
 | `/app/parent/register` | `ParentRegister` | parent | ✅ **LIVE** — in-app registration wizard |
 | `/app/parent/reapply` | `ParentReapply` | parent | ✅ **LIVE** — returning-family reapply with grade auto-increment |
 | `/app/parent/tracking` | `ParentTracking` | parent | ✅ **LIVE** — coming soon page with animated bus, bus assignments |
-| `/app/admin/users` | `UsersAdmin` | district_admin | ✅ **LIVE** — user table, role editing, invite flow, role distribution |
+| `/app/admin/users` | `UsersAdmin` | district_admin | ✅ **LIVE** — user table, role editing, invite flow |
 | `/app/admin/residency` | `AppResidencyAdmin` | district_admin | ✅ **LIVE** — debounced search, approve/deny with audit log |
 | `/app/admin/invoices` | `AppInvoicesAdmin` | district_admin | ✅ **LIVE** — stats, filters, bulk approve, CSV export |
 | `/app/admin/bids` | `AppBidsAdmin` | district_admin | ✅ **LIVE** — bid CRUD, response scoring, award workflow |
+
+### Sidebar Navigation (AppLayout.tsx)
+
+**Staff sidebar (staffNav):**
+1. Dashboard (`/app/dashboard`) — LayoutDashboard
+2. Students (`/app/students`) — Users
+3. Routes (`/app/routes`) — MapPin
+4. Requests (`/app/requests`) — MessageSquare ← **NEW**
+5. Communications (`/app/communications`) — Phone ← **NEW**
+6. Reports (`/app/reports`) — BarChart3
+7. Registrations (`/app/admin/residency`) — ClipboardCheck
+8. Contracts (`/app/contracts`) — FileText (district_admin)
+9. Compliance (`/app/compliance`) — Shield (district_admin)
+10. Settings (`/app/settings`) — Settings (district_admin)
+
+**Parent sidebar (parentNav):**
+1. Dashboard (`/app/parent`)
+2. My Students (`/app/students`)
+3. Register (`/app/parent/register`)
+4. Reapply (`/app/parent/reapply`)
+5. Track Bus (`/app/parent/tracking`)
 
 ### Legacy Admin Routes (`/admin/*`)
 
@@ -200,6 +233,7 @@ All wrapped in: `ProtectedRoute` → `DistrictProvider` → `AppLayout`
 - **Methods:** Email/password, Google OAuth, Apple OAuth
 - **OAuth library:** `@lovable.dev/cloud-auth-js` (managed, no API keys)
 - **Context:** `AuthContext` wraps entire app → `session`, `user`, `loading`, `signOut`
+- **Password reset:** `/forgot-password` → email link → `/reset-password`
 
 ### Multi-Tenancy (District Isolation)
 Every user belongs to exactly ONE district. Every data table includes `district_id`. RLS ensures complete data isolation.
@@ -229,7 +263,7 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 - **Sidebar:** Navy (#151D33), collapsible, role-filtered nav items
 - **Top bar:** District name, notification bell, user avatar dropdown
 - **Content area:** Off-white (#F7F8FA) with breadcrumbs
-- **Active item:** Gold left border + lighter navy background
+- **Active item:** White/10 background + primary border-left
 
 ---
 
@@ -266,7 +300,7 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 
 ---
 
-## 7. Database Schema (28 tables)
+## 7. Database Schema (34 tables)
 
 ### Multi-tenant core
 
@@ -296,6 +330,7 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 | `residency_attestations` | E-signed attestations | Parent-owned + district staff |
 | `childcare_requests` | Childcare transport requests | Parent-owned + admin |
 | `residency_audit_log` | Admin audit trail | Admin/staff only |
+| `eligibility_rules` | Distance-based eligibility per grade range | District admin + staff read |
 
 ### Contracts & financial
 
@@ -315,6 +350,22 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 | `routes` | Route data & metrics (575 routes) |
 | `route_stops` | Stop-level data with geocoding |
 | `route_scenarios` | Consolidation simulation scenarios |
+| `route_aides` | **NEW** — Aide/monitor assignments per route |
+| `bus_passes` | **NEW** — Bus pass generation & tracking |
+
+### Service & communication (NEW — Phase 1 & 5)
+
+| Table | Purpose | RLS |
+|---|---|---|
+| `service_requests` | Central inbox for secretarial tasks | District staff CRUD |
+| `service_request_notes` | Threaded responses on requests | District staff CRUD |
+| `communication_log` | Phone/email/text/in-person log | District staff CRUD |
+
+### Driver management (NEW — Phase 3)
+
+| Table | Purpose | RLS |
+|---|---|---|
+| `driver_certifications` | 19A/CDL/medical cert tracking with expiration alerts | District staff CRUD |
 
 ### Compliance
 
@@ -327,7 +378,21 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 | `breach_incidents` | Data breach logs |
 
 ### Key Enums
-`ai_priority` (low/medium/high/critical), `app_role` (admin/user), `audit_action` (approved/denied/flagged/requested_info/unflagged), `bid_status`, `bid_response_status`, `childcare_transport_type` (am/pm/both), `contract_status`, `driver_report_type`, `insurance_status`, `invoice_status`, `registration_status` (pending/approved/denied/under_review), `report_status`, `safety_report_type`
+
+**Original:** `ai_priority`, `app_role`, `audit_action`, `bid_status`, `bid_response_status`, `childcare_transport_type`, `contract_status`, `driver_report_type`, `insurance_status`, `invoice_status`, `registration_status`, `report_status`, `safety_report_type`
+
+**New (Phase 1–6):**
+- `service_request_type` (stop_change, address_change, school_change, driver_issue, general_inquiry, bus_pass)
+- `service_request_status` (open, in_progress, resolved, closed)
+- `service_request_priority` (low, normal, high, urgent)
+- `certification_type` (19a_initial, 19a_biennial, cdl, medical)
+- `certification_status` (valid, expiring, expired)
+- `aide_type` (aide, monitor)
+- `aide_status` (active, inactive)
+- `bus_pass_status` (active, expired, revoked)
+- `comm_contact_type` (parent, school, contractor, other_district)
+- `comm_direction` (inbound, outbound)
+- `comm_channel` (phone, email, text, in_person)
 
 ### Edge Functions
 
@@ -359,16 +424,24 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 
 **Authentication:**
 - Email/password + Google + Apple OAuth login
+- Password reset flow (forgot → email → reset)
 - Role-based redirect: parent → /app/parent, staff/admin → /app/dashboard
 - Auth-aware navigation (Login/Dashboard button with outlined style)
+- New user onboarding flow (`/app/onboarding`)
 
-**App Portal (`/app/*`) — ALL 16 PAGES LIVE:**
+**App Portal (`/app/*`) — ALL 20 PAGES LIVE:**
 
-- **Dashboard** (`/app/dashboard`):
-  - 4 clickable stat cards (Total Students, Active Routes, On-Time Rate, Pending Registrations)
-  - Quick Actions bar (Add Student, Childcare Requests, Special Ed Pickups, Edit Requests)
-  - Students by School bar chart + Route Tiers pie chart
-  - Bottom stats (Total Daily Miles, Avg Ride Time, Avg Cost/Student)
+- **Dashboard** (`/app/dashboard`) — **Operational Command Center:**
+  - **Action Items Banner** — Urgent requests, expired/expiring certifications, expiring contracts, pending registrations, pending invoices (amber left border, clickable pills)
+  - **4 stat cards** (Total Students, Active Routes, On-Time Rate, Open Requests) — clickable, with trends
+  - **Quick Actions** bar (Add Student, New Request, Log Communication, View Registrations)
+  - **4 Workflow Section cards:**
+    - **Secretarial:** Open requests, urgent count, pending registrations → links to `/app/requests`
+    - **Transportation:** Active routes, daily miles, aides assigned, bus passes → links to `/app/routes`
+    - **Business:** Pending invoices, expiring contracts, expiring/expired 19A certs → links to `/app/contracts`
+    - **Compliance:** Avg cost/student, avg ride time, communications count → links to `/app/compliance`
+  - **Charts:** Students by School bar chart + Route Tiers pie chart
+  - **Bottom stats:** Total Daily Miles, Avg Ride Time, Avg Cost/Student, Bus Passes Issued
 
 - **Students** (`/app/students`):
   - Paginated table (50/page, 9,000+ records) with debounced search
@@ -383,6 +456,20 @@ Every user belongs to exactly ONE district. Every data table includes `district_
   - Filter by school, AM/PM, contractor, utilization level
   - Route detail dialog with capacity chart
   - Consolidation simulator: select 2+ routes → simulate merge → save scenario
+
+- **Requests** (`/app/requests`) — **NEW Service Request Hub:**
+  - Summary cards: Open Requests, Avg Resolution Time, By Type breakdown
+  - Filterable table with type (stop_change, address_change, school_change, driver_issue, general_inquiry, bus_pass), priority, status, date
+  - Detail dialog with timeline of notes, status update buttons
+  - Create new request form
+
+- **Communications** (`/app/communications`) — **NEW Communication Log:**
+  - Log calls, emails, texts, in-person meetings
+  - Contact types: parent, school, contractor, other_district
+  - Direction: inbound/outbound
+  - Link to related students or routes
+  - Searchable and filterable by contact, type, date
+  - New entry form
 
 - **Contracts** (`/app/contracts`) — 3 tabs:
   - **Contracts tab:** Stats bar, filterable contractor table with insurance/performance badges, contract detail dialog (terms, insurance, performance scorecard, rate comparison), Add Contract form
@@ -407,116 +494,93 @@ Every user belongs to exactly ONE district. Every data table includes `district_
   - **Users:** User table with role editing, invite flow, active toggles
   - **Data & Privacy:** Ed Law §2-d compliance status, Parents' Bill of Rights accordion
 
+- **Onboarding** (`/app/onboarding`):
+  - New user onboarding flow (outside AppLayout for focused experience)
+
 - **Parent Dashboard** (`/app/parent`):
   - Welcome message with parent name
   - Quick action buttons: Register Child, Reapply Next Year, Track Bus, Notifications
   - My Children cards: student name, grade, school, status badge, address, school year
-  - Shows all registered children (approved, pending, denied)
 
 - **Parent Register** (`/app/parent/register`):
   - In-app registration wizard (reuses RegisterWizard pattern)
-  - Pre-populated with parent profile data
 
 - **Parent Reapply** (`/app/parent/reapply`):
-  - Fetches previous year registrations
-  - Auto-increments grade, "same address?" toggle
-  - Single attestation e-signature for all children
+  - Fetches previous year registrations, auto-increments grade, e-signature
 
 - **Parent Tracking** (`/app/parent/tracking`):
-  - "GPS Tracking Launching Soon" with animated bus illustration (Framer Motion)
-  - Bus assignment cards for each approved child
-  - Feature preview cards (Live Map, ETA Updates, Notifications)
+  - "GPS Tracking Launching Soon" with animated bus, bus assignment cards
 
 - **Admin Users** (`/app/admin/users`):
-  - Full user table with search, role distribution badges
-  - Role editing via dropdown, active toggle
-  - Invite User dialog
+  - Full user table with search, role distribution badges, invite flow
 
 - **Admin Residency** (`/app/admin/residency`):
-  - Searchable registration review with debounced search (350ms)
-  - Approve/deny with audit logging
+  - Searchable registration review with debounced search (350ms), approve/deny with audit logging
 
 - **Admin Invoices** (`/app/admin/invoices`):
-  - Stats: Total Invoiced ($5M+), Total Verified, Discrepancies, Pending count
-  - Full invoice table with status filters
-  - Bulk approve with checkboxes
-  - CSV export (client-side Blob download)
+  - Stats, filters, bulk approve, CSV export
 
 - **Admin Bids** (`/app/admin/bids`):
-  - Bid CRUD with status summary cards (Draft, Open, Closed, Awarded)
-  - Create Bid form dialog
-  - Bid detail with responses table, scoring system
-  - Award workflow
+  - Bid CRUD, status cards, scoring system, award workflow
 
 **Legacy Admin (`/admin/*`):**
-- 11 fully functional sub-pages (safety reports, driver reports, residency audit, tips, alerts, analytics, contracts, invoices, bids, routes, compliance)
+- 11 fully functional sub-pages
 
 **Backend:**
-- 28 database tables with comprehensive RLS policies
+- 34 database tables with comprehensive RLS policies
 - Multi-tenant isolation via district_id
 - Hierarchical role system with SQL helper functions
 - File storage bucket for residency documents
 
-### ✅ Browser-Verified Pages (2026-02-25)
-
-All pages below were navigated to and visually confirmed via automated browser testing:
-
-| Page | Test Result |
-|---|---|
-| `/app/dashboard` | ✅ Stats, charts, quick actions all rendering with live data |
-| `/app/students` | ✅ 9,000+ records, pagination, search, filters, detail dialog |
-| `/app/routes` | ✅ 575 routes, inefficiency cards, utilization bars, efficiency grades |
-| `/app/contracts` | ✅ 6 contractors, $14.1M total, insurance/performance badges, 3 tabs |
-| `/app/compliance` | ✅ 4 tabs, BEDS/STAC reports, 48% audit score |
-| `/app/reports` | ✅ 4 tabs, safety reports with priority/status badges |
-| `/app/settings` | ✅ 4 tabs, district info (BEDS 280209), profile editor |
-| `/app/parent` | ✅ Welcome message, children cards, quick actions |
-| `/app/parent/register` | ✅ 5-step wizard (Student Info, Address, Documents, Childcare, Review & Sign) |
-| `/app/parent/reapply` | ✅ 13 students loaded, grade auto-increment, e-signature, form validation |
-| `/app/parent/tracking` | ✅ Coming soon page with animated bus, bus assignment cards |
-| `/app/admin/users` | ✅ User table, role distribution, invite flow |
-| `/app/admin/residency` | ✅ Searchable registration review, approve/deny workflow |
-| `/app/admin/invoices` | ✅ Stats, filters, bulk approve, CSV export |
-| `/app/admin/bids` | ✅ Bid CRUD, status cards, scoring system |
-| `/reapply` (public) | ✅ Marketing nav, login gate, same reapply form |
-
 ### 🔲 Not Yet Built (Future Features)
 
-- Password reset flow (`/reset-password`)
-- Profile onboarding for new users
 - Real-time GPS bus tracking (ParentTracking page is a "coming soon" preview)
 - Real-time subscriptions (Supabase Realtime)
 - Push notification system
 - Dark mode (not planned — navy sections provide contrast)
+- Parent-submitted service requests (parents can't yet submit from their portal)
+- Bulk bus pass generation UI
+- Fleet management module (N/A for contracted transport)
 
 ---
 
 ## 9. Wireframe & UI Patterns
 
-### Dashboard Layout
+### Dashboard Layout (Operational Command Center)
 ```
-┌────────────────────────────────────────────────────┐
-│ [Logo]  Lawrence Union Free School District  🔔 👤 │
-├──────┬─────────────────────────────────────────────┤
-│      │ Home > Dashboard                            │
-│ 🏠   │                                             │
-│ 👥   │ ┌─────────┐┌─────────┐┌─────────┐┌────────┐│
-│ 🗺️   │ │Students ││Routes   ││On-Time  ││Pending ││
-│ 📊   │ │ 8,302   ││538/575  ││93%      ││697     ││
-│ 📋   │ │ +3.2%   ││99%      ││+1.4%    ││Action! ││
-│ 📄   │ └─────────┘└─────────┘└─────────┘└────────┘│
-│ ⚙️   │                                             │
-│      │ Quick Actions                               │
-│      │ [+ Add] [Childcare] [Sp.Ed] [Edits]        │
-│      │                                             │
-│      │ ┌──── Students by School ────┐┌─ Tiers ──┐ │
-│      │ │ [bar chart]               ││ [donut]   │ │
-│      │ └───────────────────────────┘└───────────┘ │
-│      │                                             │
-│      │ ┌─ Miles ──┐┌─ Ride Time ─┐┌─ Cost ──────┐│
-│      │ │ 7,111    ││ 30 min      ││ $1,099      ││
-│      │ └──────────┘└─────────────┘└─────────────┘│
-└──────┴─────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│ [Logo]  Lawrence Union Free School District       🔔 👤    │
+├──────┬─────────────────────────────────────────────────────┤
+│      │ Dashboard                                           │
+│ 🏠   │ Lawrence UFSD — Tuesday, February 25, 2026          │
+│ 👥   │                                                     │
+│ 🗺️   │ ⚠ Action Items Requiring Attention                  │
+│ 💬   │ [Urgent Requests: 3] [Expired Certs: 2]            │
+│ 📞   │ [Expiring Certs: 4] [Pending Registrations: 697]   │
+│ 📊   │                                                     │
+│ 📋   │ ┌──────────┐┌──────────┐┌──────────┐┌─────────────┐│
+│ 📄   │ │Students  ││Routes    ││On-Time   ││Open Requests││
+│ 🛡️   │ │ 8,302    ││538/575   ││93%       ││12           ││
+│ ⚙️   │ │ +3.2%    ││99%       ││+1.4%     ││3 urgent     ││
+│      │ └──────────┘└──────────┘└──────────┘└─────────────┘│
+│      │                                                     │
+│      │ Quick Actions                                       │
+│      │ [+ Student] [New Request] [Log Comm] [Registrations]│
+│      │                                                     │
+│      │ ┌─Secretarial─┐┌─Transport──┐┌─Business─┐┌─Comply─┐│
+│      │ │Open: 12     ││Routes: 538 ││Invoices:3││$/Stu:  ││
+│      │ │Urgent: 3    ││Miles: 7111 ││Exp Certs ││Ride: 30││
+│      │ │Pending: 697 ││Aides: 15   ││Contracts ││Comms:8 ││
+│      │ └─────────────┘└────────────┘└──────────┘└────────┘│
+│      │                                                     │
+│      │ ┌──── Students by School ────┐┌─── Tiers ────┐     │
+│      │ │ [bar chart]               ││ [donut]       │     │
+│      │ └───────────────────────────┘└───────────────┘     │
+│      │                                                     │
+│      │ ┌─Miles──┐┌─Ride Time─┐┌─Cost/Stu─┐┌─Bus Passes──┐│
+│      │ │ 7,111  ││ 30 min    ││ $1,099   ││ 200         ││
+│      │ └────────┘└───────────┘└──────────┘└─────────────┘│
+└──────┴─────────────────────────────────────────────────────┘
 ```
 
 ### Students Page Layout
@@ -586,6 +650,42 @@ Dashboard Quick Action → /app/students?filter=childcare (or ?action=add)
   → RoleGate blocks unauthorized routes
 ```
 
+### Service Request Flow (NEW)
+```
+Dashboard Action Items → click "Urgent Requests" → /app/requests
+  → Requests page fetches service_requests with filters
+  → Create request → insert service_requests row
+  → Add note → insert service_request_notes row
+  → Change status → update service_requests.status
+  → Resolve → sets resolved_at timestamp
+```
+
+### Communication Log Flow (NEW)
+```
+Dashboard Quick Action → "Log Communication" → /app/communications
+  → New entry form: contact type, direction, channel, subject, notes
+  → Optionally link to student or route
+  → Insert communication_log row
+  → Search/filter existing logs
+```
+
+### Dashboard Data Flow (NEW — Operational Command Center)
+```
+Dashboard mounts → 10 parallel Supabase queries:
+  1. routes (school, status, metrics, tier)
+  2. student_registrations (approved count)
+  3. student_registrations (pending count)
+  4. service_requests (status, priority)
+  5. driver_certifications (status)
+  6. bus_passes (active count)
+  7. route_aides (active count)
+  8. communication_log (total count)
+  9. contract_invoices (pending count)
+  10. contracts (active, expiring in 90 days)
+→ Aggregates into stat cards, action items, workflow sections
+→ Action items banner: urgent requests + expired certs + expiring certs + expiring contracts + pending registrations + pending invoices
+```
+
 ### RLS Data Access
 ```
 User logs in → auth.uid() available
@@ -629,6 +729,8 @@ User logs in → auth.uid() available
 11. **Direct Supabase queries** — Pages use `useCallback` + `useEffect` pattern (not React Query hooks) for data fetching, matching established codebase conventions
 12. **Currency formatting** — `Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })`
 13. **Pagination** — 50 records per page with offset-based pagination
+14. **Dashboard as Command Center** — 10 parallel queries aggregate data from all workflow areas into a single operational view
+15. **Workflow automation** — Service requests cover all secretarial tasks (stop changes, address changes, school changes, driver issues, general inquiries, bus pass requests)
 
 ---
 
@@ -666,6 +768,11 @@ User logs in → auth.uid() available
 - **Avg Cost/Student:** $1,099
 - **Contracts:** Multiple active contractors (Atlantic Express, Logan Bus, Varsity Transit, Baumann & Sons)
 - **Invoices:** 17 invoices totaling $5M+, with $11.9K in discrepancies found
+- **Service Requests:** 12 seeded (3 urgent, various types)
+- **Driver Certifications:** 19 seeded (including expiring/expired alerts)
+- **Bus Passes:** 200 active
+- **Route Aides:** 15 assigned
+- **Communication Log:** 8 entries
 - **Users:** 1 district admin (A. Blumstein)
 
 ---
@@ -680,4 +787,4 @@ User logs in → auth.uid() available
 
 ---
 
-*End of external blueprint. Updated 2026-02-25.*
+*End of external blueprint. Updated 2026-02-25 (Phase 1–6 workflow automation complete).*
