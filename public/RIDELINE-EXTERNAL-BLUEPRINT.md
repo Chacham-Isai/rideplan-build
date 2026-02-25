@@ -1,6 +1,6 @@
 # RideLine — Full Project Blueprint for External AI Assistants
 
-> **Last updated:** 2026-02-25
+> **Last updated:** 2026-02-25 (verified via browser testing)
 > **Purpose:** Give this file to any AI assistant (Claude, GPT, Cursor, etc.) so it can fully understand the RideLine project — architecture, tech stack, page flow, component tree, database schema, auth system, design system, current build state, wireframe logic, and capabilities.
 > **Live preview:** https://rideplan-build.lovable.app
 > **Project host:** Lovable (lovable.dev) with Lovable Cloud (Supabase-powered backend)
@@ -456,6 +456,29 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 - Multi-tenant isolation via district_id
 - Hierarchical role system with SQL helper functions
 - File storage bucket for residency documents
+
+### ✅ Browser-Verified Pages (2026-02-25)
+
+All pages below were navigated to and visually confirmed via automated browser testing:
+
+| Page | Test Result |
+|---|---|
+| `/app/dashboard` | ✅ Stats, charts, quick actions all rendering with live data |
+| `/app/students` | ✅ 9,000+ records, pagination, search, filters, detail dialog |
+| `/app/routes` | ✅ 575 routes, inefficiency cards, utilization bars, efficiency grades |
+| `/app/contracts` | ✅ 6 contractors, $14.1M total, insurance/performance badges, 3 tabs |
+| `/app/compliance` | ✅ 4 tabs, BEDS/STAC reports, 48% audit score |
+| `/app/reports` | ✅ 4 tabs, safety reports with priority/status badges |
+| `/app/settings` | ✅ 4 tabs, district info (BEDS 280209), profile editor |
+| `/app/parent` | ✅ Welcome message, children cards, quick actions |
+| `/app/parent/register` | ✅ 5-step wizard (Student Info, Address, Documents, Childcare, Review & Sign) |
+| `/app/parent/reapply` | ✅ 13 students loaded, grade auto-increment, e-signature, form validation |
+| `/app/parent/tracking` | ✅ Coming soon page with animated bus, bus assignment cards |
+| `/app/admin/users` | ✅ User table, role distribution, invite flow |
+| `/app/admin/residency` | ✅ Searchable registration review, approve/deny workflow |
+| `/app/admin/invoices` | ✅ Stats, filters, bulk approve, CSV export |
+| `/app/admin/bids` | ✅ Bid CRUD, status cards, scoring system |
+| `/reapply` (public) | ✅ Marketing nav, login gate, same reapply form |
 
 ### 🔲 Not Yet Built (Future Features)
 
