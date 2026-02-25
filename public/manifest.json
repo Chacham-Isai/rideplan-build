@@ -1,0 +1,15 @@
+{
+  "name": "RideLine AI",
+  "short_name": "RideLine",
+  "start_url": "/app/dashboard",
+  "display": "standalone",
+  "background_color": "#F7F8FA",
+  "theme_color": "#1B2541",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

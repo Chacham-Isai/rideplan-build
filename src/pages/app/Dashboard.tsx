@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BoardReportGenerator } from "@/components/app/BoardReportGenerator";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
@@ -30,12 +31,13 @@ const COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#8B5CF6", "#EC4899", "#06B6D4"
 const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 const Dashboard = () => {
-  const { district } = useDistrict();
+  const { district, isAdmin } = useDistrict();
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [schoolData, setSchoolData] = useState<{ school: string; students: number; routes: number }[]>([]);
   const [tierData, setTierData] = useState<{ name: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showBoardReport, setShowBoardReport] = useState(false);
 
   // New phase data
   const [openRequests, setOpenRequests] = useState(0);
@@ -185,6 +187,11 @@ const Dashboard = () => {
             {district?.name ?? "District"} — {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
+        {isAdmin && (
+          <Button variant="outline" size="sm" onClick={() => setShowBoardReport(true)}>
+            <FileText className="h-4 w-4 mr-1" /> Board Report
+          </Button>
+        )}
       </div>
 
       {/* Action Items Banner */}
@@ -443,6 +450,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      <BoardReportGenerator open={showBoardReport} onOpenChange={setShowBoardReport} />
     </div>
   );
 };

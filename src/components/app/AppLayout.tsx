@@ -4,10 +4,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AppBreadcrumb } from "./AppBreadcrumb";
+import { NotificationBell } from "./NotificationBell";
+import { DemoSwitcher, DemoBanner } from "./DemoSwitcher";
+import { CommandPalette } from "./CommandPalette";
 import {
   LayoutDashboard, Users, MapPin, FileText, Shield, BarChart3,
-  Settings, Bus, UserPlus, Navigation, Bell, LogOut, Menu, X, ChevronLeft,
-  User, RefreshCw, ClipboardCheck, MessageSquare, Phone,
+  Settings, Bus, UserPlus, Navigation, LogOut, Menu, X, ChevronLeft,
+  User, RefreshCw, ClipboardCheck, MessageSquare, Phone, Upload,
 } from "lucide-react";
 import logoIcon from "@/assets/rideline-logo-icon.png";
 import logoHorizontal from "@/assets/rideline-logo-horizontal.png";
@@ -31,6 +34,7 @@ const staffNav: NavItem[] = [
   { label: "Registrations", href: "/app/admin/residency", icon: ClipboardCheck, minRole: "staff", badgeKey: "pendingRegistrations" },
   { label: "Contracts", href: "/app/contracts", icon: FileText, minRole: "district_admin", badgeKey: "expiringContracts" },
   { label: "Compliance", href: "/app/compliance", icon: Shield, minRole: "district_admin" },
+  { label: "Import Data", href: "/app/admin/import", icon: Upload, minRole: "district_admin" },
   { label: "Settings", href: "/app/settings", icon: Settings, minRole: "district_admin" },
 ];
 
@@ -174,6 +178,7 @@ export const AppLayout = () => {
 
       {/* Main area */}
       <div className="flex flex-1 flex-col overflow-hidden">
+        <DemoBanner />
         {/* Top bar */}
         <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 shrink-0">
           <div className="flex items-center gap-3">
@@ -189,9 +194,8 @@ export const AppLayout = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
-              <Bell className="h-5 w-5 text-muted-foreground" />
-            </button>
+            <DemoSwitcher />
+            <NotificationBell />
 
             <div className="relative group">
               <button className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-muted transition-colors">
@@ -224,6 +228,7 @@ export const AppLayout = () => {
           <Outlet />
         </main>
       </div>
+      <CommandPalette />
     </div>
   );
 };

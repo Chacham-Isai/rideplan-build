@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { exportToCsv } from "@/lib/csvExport";
+const RouteMap = lazy(() => import("@/components/app/RouteMap"));
 
 type Route = {
   id: string; route_number: string; school: string; tier: number;
@@ -333,6 +334,9 @@ const AppRoutes = () => {
             <CreditCard className="h-4 w-4 mr-1" /> Bus Passes
             {busPasses.length > 0 && <Badge variant="secondary" className="ml-1.5 text-xs">{busPasses.length}</Badge>}
           </TabsTrigger>
+          <TabsTrigger value="map">
+            <Eye className="h-4 w-4 mr-1" /> Map
+          </TabsTrigger>
         </TabsList>
 
         {/* ===== ROUTES TAB ===== */}
@@ -631,6 +635,17 @@ const AppRoutes = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* ===== MAP TAB ===== */}
+        <TabsContent value="map">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          }>
+            <RouteMap />
+          </Suspense>
         </TabsContent>
       </Tabs>
 
