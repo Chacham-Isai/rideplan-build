@@ -1,150 +1,130 @@
 
 
-# Plan: Automate District Workflow Document in Dashboard
+# Plan: Demo-Ready Implementation (6 Tasks)
 
-## Workflow Document Analysis
+This is a large, multi-task implementation covering seed data, new UI features, and polish. Here is the breakdown.
 
-The uploaded PDF outlines 5 operational areas that a district transportation office handles daily. Here is a gap analysis mapping each workflow item to what currently exists and what needs to be built.
+---
 
-### Current Coverage vs Gaps
+## Task 1: Seed Oceanside UFSD (Full Second District)
 
-```text
-WORKFLOW AREA          | STATUS      | EXISTING MODULE
-───────────────────────┼─────────────┼──────────────────────────────
-I. SECRETARIAL
-  Calls/Emails/Texts   | MISSING     | No communication/ticket system
-  Stop Changes          | MISSING     | route_stops table exists, no request flow
-  Driver Issues         | PARTIAL     | driver_reports exists (public portal only)
-  Address Changes       | MISSING     | No change-request workflow
-  School Changes        | MISSING     | No change-request workflow
-  Appointments          | MISSING     | No scheduling system
-  Registration          | DONE        | RegisterWizard + Students page
-  Private School Reg    | PARTIAL     | Same wizard, no private school flag
-  Birth Cert / Docs     | DONE        | Document upload in registration
+**Single SQL migration** using PL/pgSQL `DO $$ ... $$` block with idempotency check (`IF NOT EXISTS (SELECT 1 FROM districts WHERE slug = 'oceanside-ufsd')`).
 
-II. TRANSPORTATION
-  Route Efficiency      | DONE        | Routes page (utilization, ghost routes)
-  Ride Time / Looping   | DONE        | avg_ride_time, long ride filter
-  Special Ed / Homeless | DONE        | IEP/504/MV/FC flags + filters
-  Aides & Monitors      | MISSING     | No aide/monitor tracking
-  Bus Company Comms     | MISSING     | No communication log
-  GPS Tracking          | MISSING     | No GPS data integration
-  Bus Passes            | MISSING     | No bus pass generation
-  Eligibility           | MISSING     | No distance-based eligibility calc
-  Reregistration        | DONE        | Reapply flow exists
-  School Communication  | MISSING     | No school comms log
-  Other District Coord  | MISSING     | No inter-district module
-  Piggyback / Shared    | MISSING     | No shared services tracking
+Seeds all 34 tables for Oceanside with the exact data specified in the prompt:
+- District record (Oceanside UFSD, slug `oceanside-ufsd`, 5,179 students, professional tier)
+- 3 profiles (placeholder UUIDs — district_admin, staff, parent) + district_user_roles
+- ~5,179 student registrations across 10 schools using `generate_series()` with arrays of 120 first/last names, Oceanside streets, correct status/flag distributions
+- 85 routes (OC-001 to OC-085) with 3 contractors, realistic metrics
+- 850 route stops (~10 per route) with Oceanside geocoordinates (40.63-40.65, -73.62 to -73.66)
+- 12 route aides on SPED routes
+- 150 bus passes linked to approved registrations
+- 3 contracts (Nassau Student Transport, South Shore Bus Co., Island Transit Services)
+- 3 contractor insurance records (South Shore expiring within 30 days for alert)
+- 12 invoices with discrepancies
+- 9 contractor performance records (3 months × 3 contractors)
+- 15 service requests with notes
+- 10 communication log entries
+- 25 driver certifications (including 3 expiring, 2 expired)
+- 8 safety reports, 5 driver reports
+- 6 McKinney-Vento students (4 with transport, 2 without)
+- 3 Ed Law 2-d contractor records (South Shore non-compliant)
+- 8 compliance training records (2 overdue)
+- 1 breach incident (South Shore)
+- 2 bids with responses
+- 5 report alerts
+- Target: ~48% audit readiness
 
-III. BUSINESS
-  Bids & Contracts      | DONE        | Contracts page + Bids admin
-  State Forms           | DONE        | Compliance (BEDS/STAC)
-  Payments / Invoices   | DONE        | Invoice auditing in Contracts
-  19A Certifications    | MISSING     | No driver certification tracking
-  Insurance             | DONE        | contractor_insurance table + UI
-  STAC                  | DONE        | Compliance page
-  Legal / Regulation    | PARTIAL     | Ed Law 2-d tracked
+## Task 2: Tighten Lawrence UFSD Data
 
-IV. OTHER
-  NYSED                 | PARTIAL     | Compliance reports
-  Ed Law 2-d            | DONE        | Full Ed Law 2-d module
+**Same migration file** (or second migration). Inserts additional data using `INSERT ... ON CONFLICT DO NOTHING` or existence checks:
 
-V. FLEET (own fleet)
-  Fleet Management      | MISSING     | No fleet module (N/A for contracted)
-```
+- Contractor performance: 6 months (Jul 2025 - Jan 2026) for all 4 contractors with story arcs (Logan Bus declining)
+- Compliance: 12+ MV students, Ed Law 2-d for all 4 contractors (Logan non-compliant), training records, 1 breach incident
+- Route inefficiency patterns: ensure 5+ ghost routes at <50%, 3+ long rides >60 min, merge candidates
+- Invoice discrepancies: Logan Bus >$2K discrepancies, total >$10K
+- Safety reports: 10+ with variety
+- Bid data: 1 awarded, 1 open
+- Service requests: ensure all 6 types covered with notes
+- Communication log: 8+ with all channel/contact types
+- Driver certs: 2 expired + 4 expiring within 30 days
+- Target: ~68% audit readiness
 
-## Implementation Plan
+## Task 3: Parent Service Request Submission
 
-### Phase 1: Service Request Hub (covers Secretarial workflows)
+**Database changes:**
+- Add RLS policies on `service_requests`: parents can INSERT with their own `parent_user_id` and SELECT where `parent_user_id = auth.uid()`
+- Add RLS policy on `service_request_notes`: parents can SELECT notes linked to their requests
 
-Create a new `service_requests` table and a **"Requests"** page that acts as the central inbox for all secretarial tasks: stop changes, address changes, school changes, driver issues, and general inquiries.
+**UI changes in `src/pages/app/parent/ParentDashboard.tsx`:**
+- Add "Submit a Request" button in quick actions grid
+- Add request submission dialog with: type dropdown (stop_change, address_change, bus_pass, general_inquiry only), subject, description, student dropdown (from parent's children)
+- Auto-set priority to 'normal', status to 'open'
+- Add "My Requests" section below children cards showing parent's submitted requests with status badges
+- Click to see detail with staff notes
 
-**Database migration:**
-- New `service_requests` table with columns: `id`, `district_id`, `parent_user_id` (nullable), `request_type` (enum: `stop_change`, `address_change`, `school_change`, `driver_issue`, `general_inquiry`, `bus_pass`), `student_registration_id` (nullable FK), `subject`, `description`, `current_value`, `requested_value`, `priority`, `status` (open/in_progress/resolved/closed), `assigned_to`, `resolved_at`, `created_at`
-- RLS: parents can insert/view own requests; district staff can view/update all within their district
-- New `service_request_notes` table for threaded responses: `id`, `request_id`, `user_id`, `note`, `created_at`
+## Task 4: Bulk Bus Pass Generation
 
-**New page: `/app/requests`** (add to sidebar as "Requests" with `MessageSquare` icon)
-- Summary cards: Open Requests, Avg Resolution Time, By Type breakdown
-- Filterable table with type, priority, status, date, student name
-- Detail dialog with timeline of notes, status update buttons
-- Parents can submit requests from their portal
+**UI changes in `src/pages/app/AppRoutes.tsx`:**
+- Add "Generate Bus Passes" button (visible to district_admin role only)
+- Bulk generation dialog: scope selector (all approved or by school), school year dropdown, preview count, generate button
+- Queries approved students without active passes, bulk inserts bus_passes
+- Add "Bus Passes" tab with table: student name, school, route, bus #, status, issued date
+- Search, filter by school/status, revoke button, CSV export
 
-**Dashboard integration:**
-- Add "Open Requests" stat card linking to `/app/requests`
-- Add quick action: "View Requests"
+## Task 5: Cross-District Benchmarking
 
-### Phase 2: Bus Pass & Eligibility System
+**Database changes:**
+- Create `get_regional_benchmarks()` SQL function (SECURITY DEFINER) returning anonymized averages across all districts
 
-**Database migration:**
-- New `bus_passes` table: `id`, `registration_id`, `district_id`, `pass_number`, `school_year`, `status` (active/expired/revoked), `issued_at`, `expires_at`
-- New `eligibility_rules` table: `id`, `district_id`, `grade_range_start`, `grade_range_end`, `min_distance_miles`, `school_year`
+**UI changes in `src/pages/app/Contracts.tsx`:**
+- Add "Regional Benchmark" card showing your district vs regional average for rate/route, on-time %, utilization
+- Green/red indicators for above/below average
+- "Based on N districts and M routes"
 
-**Students page enhancement:**
-- Add "Generate Bus Pass" button in student detail dialog
-- Add eligibility badge based on `distance_to_school` vs district rules
-- Bulk bus pass generation for approved students
+**UI changes in `src/pages/app/Dashboard.tsx`:**
+- Add benchmark line in Business workflow card
 
-**Dashboard integration:**
-- Add "Bus Passes Issued" to bottom stats row
+## Task 6: Data Quality Polish & Demo Readiness
 
-### Phase 3: 19A Driver Certification Tracking
+**A. Dashboard action items** — Already implemented; seed data ensures correct items appear per district.
 
-**Database migration:**
-- New `driver_certifications` table: `id`, `district_id`, `driver_name`, `contractor_id` (nullable), `certification_type` (19a_initial, 19a_biennial, cdl, medical), `issued_date`, `expiration_date`, `status`, `document_url`
+**B. Data leakage verification** — Include verification queries in the migration (informational, not blocking).
 
-**Contracts page enhancement:**
-- Add a "Drivers" tab showing all drivers with certification status
-- Expiration alerts (30/60/90 day warnings)
-- Compliance percentage per contractor
+**C. Sidebar badge counts in `src/components/app/AppLayout.tsx`:**
+- Fetch counts on mount for: open requests, pending registrations, expiring contracts/insurance
+- Store in component state, refresh every 5 minutes
+- Render small circular badges on sidebar nav icons
 
-**Dashboard integration:**
-- Add "Expiring Certifications" alert card
+**D. CSV export on all table pages:**
+- Add "Export CSV" button to: Students, Routes, Compliance MV tab, Requests, Communications
+- Client-side CSV generation from current query results using Blob + download pattern
 
-### Phase 4: Aide & Monitor Assignment
+**E. Empty state improvements:**
+- Create reusable `EmptyState` component with icon, message, and CTA button
+- Apply to all table pages (Students, Routes, Requests, Communications, etc.)
 
-**Database migration:**
-- New `route_aides` table: `id`, `route_id`, `district_id`, `aide_name`, `aide_type` (aide/monitor), `certification`, `assigned_date`, `status`
+---
 
-**Routes page enhancement:**
-- Add aide/monitor column to route table
-- Detail dialog shows assigned aides
-- Add/remove aide from route detail
+## Implementation Order
 
-### Phase 5: Communication Log
+1. **Migration file** (Tasks 1 + 2) — single large SQL migration
+2. **Task 3** — Parent request submission (RLS + ParentDashboard.tsx)
+3. **Task 5** — Benchmarking function + Contracts/Dashboard UI
+4. **Task 4** — Bus pass generation UI in Routes page
+5. **Task 6C** — Sidebar badges in AppLayout
+6. **Task 6D** — CSV export buttons on all table pages
+7. **Task 6E** — Empty state component + integration
 
-**Database migration:**
-- New `communication_log` table: `id`, `district_id`, `contact_type` (parent/school/contractor/other_district), `contact_name`, `direction` (inbound/outbound), `channel` (phone/email/text/in_person), `subject`, `notes`, `related_student_id`, `related_route_id`, `logged_by`, `created_at`
+## Files Modified
 
-**New page: `/app/communications`** or embedded in relevant pages
-- Log calls, emails, and texts with parent/school/contractor
-- Link communications to students or routes
-- Search and filter by contact, type, date
-
-### Phase 6: Dashboard Overhaul
-
-Redesign the dashboard to serve as the **operational command center** with sections mapping to all 5 workflow areas:
-
-1. **Action Items Banner** - Critical items needing attention (expiring certs, open requests, MV students without transport, expiring contracts, overdue compliance filings)
-2. **Secretarial Section** - Open service requests count, recent requests, quick-submit button
-3. **Transportation Section** - Route efficiency score, ghost routes, long rides, special ed stats, aide coverage
-4. **Business Section** - Contract status, pending invoices, insurance expirations, 19A cert status
-5. **Compliance Section** - Audit readiness score, filing deadlines, training completion, Ed Law 2-d status
-6. **Quick Actions** - Expanded to include: Add Student, New Request, Generate Bus Pass, Log Communication, Generate Report
-
-### Recommended Implementation Order
-
-1. **Phase 1 (Service Requests)** - Highest impact, covers the entire Secretarial section
-2. **Phase 6 (Dashboard Overhaul)** - Makes all data visible from one screen
-3. **Phase 2 (Bus Passes & Eligibility)** - Frequently requested by parents
-4. **Phase 3 (19A Certifications)** - Legal compliance requirement
-5. **Phase 4 (Aides & Monitors)** - Important for special ed compliance
-6. **Phase 5 (Communication Log)** - Nice-to-have for audit trails
-
-### Technical Notes
-
-- All new tables will include `district_id` with RLS policies matching the existing pattern (`get_user_district_id()` + `has_app_role()`)
-- New sidebar items will be added to `AppLayout.tsx` staffNav array
-- Each new page follows the existing pattern: stat cards at top, tabbed or filtered table, detail dialogs
-- Seed data will be added for Lawrence UFSD to demonstrate all features
+- `supabase/migrations/[new].sql` — Oceanside seed + Lawrence gap fill + benchmarking function + RLS policies
+- `src/pages/app/parent/ParentDashboard.tsx` — Request submission + My Requests section
+- `src/pages/app/AppRoutes.tsx` — Bus pass generation + Bus Passes tab
+- `src/pages/app/Contracts.tsx` — Regional benchmark card
+- `src/pages/app/Dashboard.tsx` — Benchmark summary line
+- `src/components/app/AppLayout.tsx` — Sidebar badge counts
+- `src/pages/app/Students.tsx` — CSV export + empty state
+- `src/pages/app/Requests.tsx` — CSV export + empty state
+- `src/pages/app/Communications.tsx` — CSV export + empty state
+- `src/components/app/EmptyState.tsx` — New reusable component
 
