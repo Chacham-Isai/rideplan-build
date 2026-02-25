@@ -12,9 +12,15 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Search, ChevronLeft, ChevronRight, Plus, Eye, Baby, GraduationCap, Loader2, Save, Pencil, Trash2, X, Download } from "lucide-react";
+import {
+  Search, ChevronLeft, ChevronRight, Plus, Eye, Baby, GraduationCap,
+  Loader2, Save, Pencil, Trash2, X, Download, FileText, ThumbsUp,
+  ThumbsDown, Flag, MessageSquare, User, MapPin, Calendar,
+  Shield, AlertTriangle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { exportToCsv } from "@/lib/csvExport";
+import { differenceInYears, parseISO } from "date-fns";
 
 type Registration = {
   id: string;
@@ -28,6 +34,7 @@ type Registration = {
   status: string;
   dob: string;
   created_at: string;
+  school_year: string;
   iep_flag: boolean;
   mckinney_vento_flag: boolean;
   foster_care_flag: boolean;
@@ -85,6 +92,15 @@ const Students = () => {
   const [editing, setEditing] = useState(false);
   const [editFlags, setEditFlags] = useState({ iep_flag: false, section_504_flag: false, mckinney_vento_flag: false, foster_care_flag: false });
   const [saving, setSaving] = useState(false);
+  // Residency detail
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [attestations, setAttestations] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [parentProfile, setParentProfile] = useState<any>(null);
+  const [actionNotes, setActionNotes] = useState("");
+  const [acting, setActing] = useState(false);
+  // Duplicate address detection
+  const [duplicateCount, setDuplicateCount] = useState(0);
 
   // Add student dialog
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -130,7 +146,7 @@ const Students = () => {
     setLoading(true);
     let query = supabase
       .from("student_registrations")
-      .select("id, student_name, grade, school, address_line, city, zip, state, status, dob, created_at, iep_flag, mckinney_vento_flag, foster_care_flag, section_504_flag, district_id, parent_user_id", { count: "exact" });
+      .select("id, student_name, grade, school, address_line, city, zip, state, status, dob, created_at, school_year, iep_flag, mckinney_vento_flag, foster_care_flag, section_504_flag, district_id, parent_user_id", { count: "exact" });
 
     if (statusFilter !== "all") query = query.eq("status", statusFilter as any);
     if (schoolFilter !== "all") query = query.eq("school", schoolFilter);
@@ -165,9 +181,55 @@ const Students = () => {
     setEditing(false);
     setEditFlags({ iep_flag: reg.iep_flag, section_504_flag: reg.section_504_flag, mckinney_vento_flag: reg.mckinney_vento_flag, foster_care_flag: reg.foster_care_flag });
     setDetailLoading(true);
-    const { data } = await supabase.from("childcare_requests").select("*").eq("registration_id", reg.id);
-    setChildcare((data as ChildcareRequest[]) ?? []);
+    setActionNotes("");
+
+    // Fetch all related data in parallel
+    const [childcareRes, docsRes, attestRes, logsRes, dupRes] = await Promise.all([
+      supabase.from("childcare_requests").select("*").eq("registration_id", reg.id),
+      supabase.from("residency_documents").select("*").eq("registration_id", reg.id),
+      supabase.from("residency_attestations").select("*").eq("registration_id", reg.id),
+      supabase.from("residency_audit_log").select("*").eq("registration_id", reg.id).order("created_at", { ascending: false }),
+      supabase.from("student_registrations").select("id", { count: "exact" })
+        .eq("address_line", reg.address_line).eq("city", reg.city).eq("zip", reg.zip),
+    ]);
+    setChildcare((childcareRes.data as ChildcareRequest[]) ?? []);
+    setDocuments(docsRes.data ?? []);
+    setAttestations(attestRes.data ?? []);
+    setAuditLogs(logsRes.data ?? []);
+    setDuplicateCount(dupRes.count ?? 0);
+
+    // Fetch parent profile
+    const { data: profile } = await supabase.from("profiles").select("full_name, email, phone").eq("id", reg.parent_user_id).maybeSingle();
+    setParentProfile(profile);
     setDetailLoading(false);
+  };
+
+  // Admin approve/deny/flag actions
+  const performAction = async (action: string) => {
+    if (!selected) return;
+    setActing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+      const statusMap: Record<string, string> = { approved: "approved", denied: "denied", flagged: "under_review", requested_info: "under_review" };
+      const newStatus = statusMap[action];
+      if (newStatus) {
+        await supabase.from("student_registrations").update({ status: newStatus as any }).eq("id", selected.id);
+      }
+      await supabase.from("residency_audit_log").insert({
+        registration_id: selected.id,
+        admin_user_id: session.user.id,
+        action: action as any,
+        notes: actionNotes || null,
+      });
+      toast.success(`Registration ${action}`);
+      setSelected(null);
+      fetchStudents();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setActing(false);
+    }
   };
 
   // Save edited flags
@@ -265,8 +327,8 @@ const Students = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Students</h1>
-          <p className="text-sm text-muted-foreground">{totalCount.toLocaleString()} total registrations</p>
+          <h1 className="text-2xl font-bold text-foreground">Registrations</h1>
+          <p className="text-sm text-muted-foreground">{totalCount.toLocaleString()} registrations</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => exportToCsv("students", students, [
@@ -314,12 +376,13 @@ const Students = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Student Name</TableHead>
+                  <TableHead>Student</TableHead>
                   <TableHead>Grade</TableHead>
                   <TableHead>School</TableHead>
                   <TableHead>Address</TableHead>
+                  <TableHead>Year</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Flags</TableHead>
+                  <TableHead>Submitted</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -327,29 +390,25 @@ const Students = () => {
                 {loading ? (
                   Array.from({ length: 8 }).map((_, i) => (
                     <TableRow key={i}>
-                      {Array.from({ length: 7 }).map((_, j) => (
+                      {Array.from({ length: 8 }).map((_, j) => (
                         <TableCell key={j}><div className="h-4 w-full animate-pulse rounded bg-muted" style={{ opacity: 1 - i * 0.08 }} /></TableCell>
                       ))}
                     </TableRow>
                   ))
                 ) : filteredStudents.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="h-32 text-center text-muted-foreground">No students found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={8} className="h-32 text-center text-muted-foreground">No registrations found</TableCell></TableRow>
                 ) : (
                   filteredStudents.map((s) => {
                     const st = STATUS_STYLES[s.status] ?? STATUS_STYLES.pending;
-                    const flags = [s.iep_flag && "IEP", s.section_504_flag && "504", s.mckinney_vento_flag && "MV", s.foster_care_flag && "FC"].filter(Boolean);
                     return (
                       <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openDetail(s)}>
                         <TableCell className="font-medium">{s.student_name}</TableCell>
                         <TableCell>{s.grade}</TableCell>
                         <TableCell className="max-w-[160px] truncate">{s.school}</TableCell>
-                        <TableCell className="max-w-[200px] truncate text-muted-foreground text-xs">{s.address_line}, {s.city} {s.zip}</TableCell>
+                        <TableCell className="max-w-[200px] truncate text-muted-foreground text-xs">{s.address_line}, {s.city}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{s.school_year ?? "—"}</TableCell>
                         <TableCell><span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${st.className}`}>{st.label}</span></TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            {flags.map((f) => (<span key={f as string} className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">{f}</span>))}
-                          </div>
-                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" })}</TableCell>
                         <TableCell><Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openDetail(s); }}><Eye className="h-4 w-4" /></Button></TableCell>
                       </TableRow>
                     );
@@ -373,28 +432,64 @@ const Students = () => {
 
       {/* ===== Student Detail Dialog ===== */}
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           {selected && (
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center justify-between">
-                  {selected.student_name}
-                  {!editing && (
-                    <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
-                      <Pencil className="h-4 w-4 mr-1" /> Edit
-                    </Button>
-                  )}
+                  <span>{selected.student_name}</span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className={STATUS_STYLES[selected.status]?.className}>{STATUS_STYLES[selected.status]?.label}</Badge>
+                    {!editing && (
+                      <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
+                        <Pencil className="h-4 w-4 mr-1" /> Edit
+                      </Button>
+                    )}
+                  </div>
                 </DialogTitle>
               </DialogHeader>
 
-              <div className="space-y-4 text-sm">
-                <div className="grid grid-cols-2 gap-2">
+              {detailLoading ? (
+                <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : (
+              <div className="space-y-5 text-sm">
+                {/* Fraud Alerts */}
+                {duplicateCount >= 4 && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-xs font-medium">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    Multi-Registration Alert: {duplicateCount} students registered at this address
+                  </div>
+                )}
+                {documents.length === 0 && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-xs font-medium">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    Missing residency documents — cannot verify address
+                  </div>
+                )}
+
+                {/* Student Info */}
+                <div className="grid grid-cols-2 gap-3">
                   <div><span className="text-muted-foreground">Grade:</span> {selected.grade}</div>
                   <div><span className="text-muted-foreground">School:</span> {selected.school}</div>
-                  <div><span className="text-muted-foreground">DOB:</span> {selected.dob}</div>
-                  <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={STATUS_STYLES[selected.status]?.className}>{STATUS_STYLES[selected.status]?.label}</Badge></div>
+                  <div><span className="text-muted-foreground">DOB:</span> {selected.dob} <span className="text-muted-foreground">(Age {differenceInYears(new Date(), parseISO(selected.dob))})</span></div>
+                  <div><span className="text-muted-foreground">Submitted:</span> {new Date(selected.created_at).toLocaleDateString()}</div>
+                  <div className="col-span-2 flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>{selected.address_line}, {selected.city}, {selected.state} {selected.zip}</span>
+                  </div>
                 </div>
-                <div><span className="text-muted-foreground">Address:</span> {selected.address_line}, {selected.city} {selected.zip}</div>
+
+                {/* Parent/Caller Info */}
+                {parentProfile && (
+                  <div className="p-3 rounded-lg bg-muted/50 space-y-1">
+                    <h3 className="font-semibold flex items-center gap-1"><User className="h-4 w-4" /> Parent / Guardian</h3>
+                    <div className="flex flex-wrap gap-4">
+                      <span className="font-medium">{parentProfile.full_name}</span>
+                      {parentProfile.email && <span className="text-muted-foreground">{parentProfile.email}</span>}
+                      {parentProfile.phone && <span className="text-muted-foreground">{parentProfile.phone}</span>}
+                    </div>
+                  </div>
+                )}
 
                 {/* Special Ed Flags - editable */}
                 <div>
@@ -431,15 +526,52 @@ const Students = () => {
                   )}
                 </div>
 
+                {/* Residency Documents */}
+                <div>
+                  <h3 className="font-semibold mb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4" /> Residency Documents ({documents.length})
+                  </h3>
+                  {documents.length === 0 ? (
+                    <Badge variant="outline" className="text-destructive border-destructive/30">No Documents Uploaded</Badge>
+                  ) : (
+                    <div className="space-y-2">
+                      {documents.map((doc: any) => (
+                        <div key={doc.id} className="flex items-center justify-between p-2 bg-secondary rounded">
+                          <span className="font-medium">{doc.document_type}</span>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="text-muted-foreground">{new Date(doc.uploaded_at).toLocaleDateString()}</span>
+                            <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="text-accent underline">View</a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Attestation / Signature */}
+                {attestations.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-2 flex items-center gap-2">
+                      <Shield className="h-4 w-4" /> Residency Attestation
+                    </h3>
+                    {attestations.map((att: any) => (
+                      <div key={att.id} className="p-3 bg-secondary rounded-lg text-xs space-y-1">
+                        <p className="text-muted-foreground">{att.attestation_text}</p>
+                        <p>Signed: <span className="font-display italic font-semibold">{att.signature_text}</span></p>
+                        <p className="text-muted-foreground">At: {new Date(att.signed_at).toLocaleString()}</p>
+                        {att.ip_address && <p className="text-muted-foreground">IP: {att.ip_address}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Childcare requests */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold flex items-center gap-1"><Baby className="h-4 w-4" /> Childcare Pickup Requests</h3>
                     <Button variant="outline" size="sm" onClick={() => setShowAddChildcare(true)}><Plus className="h-3 w-3 mr-1" /> Add</Button>
                   </div>
-                  {detailLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  ) : childcare.length === 0 ? (
+                  {childcare.length === 0 ? (
                     <p className="text-muted-foreground text-xs">No childcare pickup requests on file</p>
                   ) : (
                     <div className="space-y-2">
@@ -463,8 +595,46 @@ const Students = () => {
                   )}
                 </div>
 
-                <p className="text-xs text-muted-foreground">Registered: {new Date(selected.created_at).toLocaleDateString()}</p>
+                {/* Audit History */}
+                {auditLogs.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-2">Action History</h3>
+                    <div className="space-y-1">
+                      {auditLogs.map((log: any) => (
+                        <div key={log.id} className="text-xs p-2 bg-muted rounded flex justify-between">
+                          <span className="capitalize font-medium">{(log.action as string).replace("_", " ")}</span>
+                          <span className="text-muted-foreground">{new Date(log.created_at).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Admin Actions */}
+                <div className="border-t pt-4 space-y-3">
+                  <Textarea
+                    placeholder="Admin notes (optional)..."
+                    value={actionNotes}
+                    onChange={e => setActionNotes(e.target.value)}
+                    rows={2}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" onClick={() => performAction("approved")} disabled={acting || selected.status === "approved"} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                      <ThumbsUp className="w-4 h-4 mr-1" /> Approve
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => performAction("requested_info")} disabled={acting}>
+                      <MessageSquare className="w-4 h-4 mr-1" /> Request Info
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => performAction("flagged")} disabled={acting} className="border-orange-300 text-orange-600 hover:bg-orange-50">
+                      <Flag className="w-4 h-4 mr-1" /> Flag
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => performAction("denied")} disabled={acting || selected.status === "denied"}>
+                      <ThumbsDown className="w-4 h-4 mr-1" /> Deny
+                    </Button>
+                  </div>
+                </div>
               </div>
+              )}
             </>
           )}
         </DialogContent>

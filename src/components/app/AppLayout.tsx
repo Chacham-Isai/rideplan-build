@@ -27,7 +27,7 @@ interface NavItem {
 
 const staffNav: NavItem[] = [
   { label: "Dashboard", href: "/app/dashboard", icon: LayoutDashboard },
-  { label: "Students", href: "/app/students", icon: Users, minRole: "staff" },
+  { label: "Registrations", href: "/app/students", icon: Users, minRole: "staff" },
   { label: "Routes", href: "/app/routes", icon: MapPin, minRole: "staff" },
   { label: "Requests", href: "/app/requests", icon: MessageSquare, minRole: "staff", badgeKey: "openRequests" },
   { label: "Communications", href: "/app/communications", icon: Phone, minRole: "staff" },
