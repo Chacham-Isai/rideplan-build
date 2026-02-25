@@ -6,7 +6,7 @@ import { AppBreadcrumb } from "./AppBreadcrumb";
 import {
   LayoutDashboard, Users, MapPin, FileText, Shield, BarChart3,
   Settings, Bus, UserPlus, Navigation, Bell, LogOut, Menu, X, ChevronLeft,
-  User, RefreshCw, ClipboardCheck,
+  User, RefreshCw, ClipboardCheck, MessageSquare, Phone,
 } from "lucide-react";
 import logoIcon from "@/assets/rideline-logo-icon.png";
 import logoHorizontal from "@/assets/rideline-logo-horizontal.png";
@@ -23,6 +23,8 @@ const staffNav: NavItem[] = [
   { label: "Dashboard", href: "/app/dashboard", icon: LayoutDashboard },
   { label: "Students", href: "/app/students", icon: Users, minRole: "staff" },
   { label: "Routes", href: "/app/routes", icon: MapPin, minRole: "staff" },
+  { label: "Requests", href: "/app/requests", icon: MessageSquare, minRole: "staff" },
+  { label: "Communications", href: "/app/communications", icon: Phone, minRole: "staff" },
   { label: "Reports", href: "/app/reports", icon: BarChart3, minRole: "staff" },
   { label: "Registrations", href: "/app/admin/residency", icon: ClipboardCheck, minRole: "staff" },
   { label: "Contracts", href: "/app/contracts", icon: FileText, minRole: "district_admin" },
