@@ -11,8 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   Search, Loader2, Eye, Plus, MessageSquare, Clock, CheckCircle,
-  AlertTriangle, MapPin, Home, School, Bus, HelpCircle, Send,
+  AlertTriangle, MapPin, Home, School, Bus, HelpCircle, Send, Download,
 } from "lucide-react";
+import { exportToCsv } from "@/lib/csvExport";
 import { toast } from "sonner";
 
 const TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
@@ -177,9 +178,18 @@ const Requests = () => {
           <h1 className="text-2xl font-bold text-foreground">Service Requests</h1>
           <p className="text-sm text-muted-foreground">Central inbox for stop changes, address changes, driver issues & more</p>
         </div>
-        <Button size="sm" onClick={() => setShowAdd(true)}>
-          <Plus className="h-4 w-4 mr-1" /> New Request
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => exportToCsv("requests", requests, [
+            { key: "request_type", label: "Type" }, { key: "subject", label: "Subject" },
+            { key: "priority", label: "Priority" }, { key: "status", label: "Status" },
+            { key: "created_at", label: "Created" }, { key: "description", label: "Description" },
+          ])}>
+            <Download className="h-4 w-4 mr-1" /> Export CSV
+          </Button>
+          <Button size="sm" onClick={() => setShowAdd(true)}>
+            <Plus className="h-4 w-4 mr-1" /> New Request
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}

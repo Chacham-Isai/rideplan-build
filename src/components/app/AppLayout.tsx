@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDistrict } from "@/contexts/DistrictContext";
+import { supabase } from "@/integrations/supabase/client";
 import { AppBreadcrumb } from "./AppBreadcrumb";
 import {
   LayoutDashboard, Users, MapPin, FileText, Shield, BarChart3,
@@ -17,17 +18,18 @@ interface NavItem {
   icon: React.ElementType;
   minRole?: string;
   parentOnly?: boolean;
+  badgeKey?: string;
 }
 
 const staffNav: NavItem[] = [
   { label: "Dashboard", href: "/app/dashboard", icon: LayoutDashboard },
   { label: "Students", href: "/app/students", icon: Users, minRole: "staff" },
   { label: "Routes", href: "/app/routes", icon: MapPin, minRole: "staff" },
-  { label: "Requests", href: "/app/requests", icon: MessageSquare, minRole: "staff" },
+  { label: "Requests", href: "/app/requests", icon: MessageSquare, minRole: "staff", badgeKey: "openRequests" },
   { label: "Communications", href: "/app/communications", icon: Phone, minRole: "staff" },
   { label: "Reports", href: "/app/reports", icon: BarChart3, minRole: "staff" },
-  { label: "Registrations", href: "/app/admin/residency", icon: ClipboardCheck, minRole: "staff" },
-  { label: "Contracts", href: "/app/contracts", icon: FileText, minRole: "district_admin" },
+  { label: "Registrations", href: "/app/admin/residency", icon: ClipboardCheck, minRole: "staff", badgeKey: "pendingRegistrations" },
+  { label: "Contracts", href: "/app/contracts", icon: FileText, minRole: "district_admin", badgeKey: "expiringContracts" },
   { label: "Compliance", href: "/app/compliance", icon: Shield, minRole: "district_admin" },
   { label: "Settings", href: "/app/settings", icon: Settings, minRole: "district_admin" },
 ];
@@ -52,6 +54,30 @@ export const AppLayout = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [badges, setBadges] = useState<Record<string, number>>({});
+
+  // Fetch badge counts
+  useEffect(() => {
+    if (isParent || loading) return;
+    const fetchBadges = async () => {
+      const [reqRes, regRes, contractsRes] = await Promise.all([
+        supabase.from("service_requests").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
+        supabase.from("student_registrations").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("contracts").select("contract_end, status").eq("status", "active"),
+      ]);
+      const now = new Date();
+      const in90 = new Date(now.getTime() + 90 * 86400000);
+      const expiring = (contractsRes.data ?? []).filter(c => new Date(c.contract_end) <= in90 && new Date(c.contract_end) > now).length;
+      setBadges({
+        openRequests: reqRes.count ?? 0,
+        pendingRegistrations: regRes.count ?? 0,
+        expiringContracts: expiring,
+      });
+    };
+    fetchBadges();
+    const interval = setInterval(fetchBadges, 300000); // 5 min
+    return () => clearInterval(interval);
+  }, [isParent, loading]);
 
   if (loading) {
     return (
@@ -90,6 +116,7 @@ export const AppLayout = () => {
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
         {filteredNav.map((item) => {
           const active = location.pathname === item.href || location.pathname.startsWith(item.href + "/");
+          const badgeCount = item.badgeKey ? (badges[item.badgeKey] ?? 0) : 0;
           return (
             <Link
               key={item.href}
@@ -102,7 +129,15 @@ export const AppLayout = () => {
               }`}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
+              {!collapsed && <span className="flex-1">{item.label}</span>}
+              {!collapsed && badgeCount > 0 && (
+                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
+                  {badgeCount > 99 ? "99+" : badgeCount}
+                </span>
+              )}
+              {collapsed && badgeCount > 0 && (
+                <span className="absolute right-1 top-0 h-2 w-2 rounded-full bg-primary" />
+              )}
             </Link>
           );
         })}

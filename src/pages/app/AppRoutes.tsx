@@ -15,9 +15,10 @@ import {
 } from "recharts";
 import {
   Search, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  Ghost, Clock, Fuel, AlertTriangle, Loader2, Eye, Merge, Save,
+  Ghost, Clock, Fuel, AlertTriangle, Loader2, Eye, Merge, Save, Download,
 } from "lucide-react";
 import { toast } from "sonner";
+import { exportToCsv } from "@/lib/csvExport";
 
 type Route = {
   id: string; route_number: string; school: string; tier: number;
@@ -197,9 +198,20 @@ const AppRoutes = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Routes</h1>
-        <p className="text-sm text-muted-foreground">{allRoutes.length} routes across {schools.length} schools</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Routes</h1>
+          <p className="text-sm text-muted-foreground">{allRoutes.length} routes across {schools.length} schools</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => exportToCsv("routes", allRoutes, [
+          { key: "route_number", label: "Route" }, { key: "school", label: "School" },
+          { key: "bus_number", label: "Bus" }, { key: "driver_name", label: "Driver" },
+          { key: "total_students", label: "Students" }, { key: "capacity", label: "Capacity" },
+          { key: "total_miles", label: "Miles" }, { key: "on_time_pct", label: "On-Time %" },
+          { key: "avg_ride_time_min", label: "Duration (min)" }, { key: "status", label: "Status" },
+        ])}>
+          <Download className="h-4 w-4 mr-1" /> Export CSV
+        </Button>
       </div>
 
       {/* Stats */}

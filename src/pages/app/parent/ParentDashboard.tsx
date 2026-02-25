@@ -6,7 +6,14 @@ import { useDistrict } from "@/contexts/DistrictContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, RefreshCw, Bus, Bell, GraduationCap, MapPin, Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  UserPlus, RefreshCw, Bus, Bell, GraduationCap, MapPin, Loader2,
+  MessageSquare, Send, Eye, Clock, CheckCircle,
+} from "lucide-react";
+import { toast } from "sonner";
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   approved: { label: "Approved", className: "bg-emerald-100 text-emerald-700 border-emerald-200" },
@@ -15,25 +22,73 @@ const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   under_review: { label: "Under Review", className: "bg-blue-100 text-blue-700 border-blue-200" },
 };
 
+const REQUEST_STATUS: Record<string, string> = {
+  open: "bg-amber-100 text-amber-700 border-amber-200",
+  in_progress: "bg-blue-100 text-blue-700 border-blue-200",
+  resolved: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  closed: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
 const ParentDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { profile } = useDistrict();
+  const { district, profile } = useDistrict();
   const [children, setChildren] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Requests
+  const [requests, setRequests] = useState<any[]>([]);
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [submitForm, setSubmitForm] = useState({
+    request_type: "general_inquiry", subject: "", description: "", student_id: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  // Request detail
+  const [selectedReq, setSelectedReq] = useState<any>(null);
+  const [reqNotes, setReqNotes] = useState<any[]>([]);
+
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("student_registrations")
-      .select("*")
-      .eq("parent_user_id", user.id)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setChildren(data ?? []);
-        setLoading(false);
-      });
+    Promise.all([
+      supabase.from("student_registrations").select("*").eq("parent_user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("service_requests").select("*").eq("parent_user_id", user.id).order("created_at", { ascending: false }),
+    ]).then(([childRes, reqRes]) => {
+      setChildren(childRes.data ?? []);
+      setRequests(reqRes.data ?? []);
+      setLoading(false);
+    });
   }, [user]);
+
+  const handleSubmitRequest = async () => {
+    if (!submitForm.subject || !district || !user) { toast.error("Subject is required"); return; }
+    setSubmitting(true);
+    const { error } = await supabase.from("service_requests").insert({
+      district_id: district.id,
+      parent_user_id: user.id,
+      request_type: submitForm.request_type as any,
+      subject: submitForm.subject,
+      description: submitForm.description,
+      student_registration_id: submitForm.student_id || null,
+      priority: "normal" as any,
+      status: "open" as any,
+    });
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Request submitted");
+      setShowSubmit(false);
+      setSubmitForm({ request_type: "general_inquiry", subject: "", description: "", student_id: "" });
+      const { data } = await supabase.from("service_requests").select("*").eq("parent_user_id", user.id).order("created_at", { ascending: false });
+      setRequests(data ?? []);
+    }
+    setSubmitting(false);
+  };
+
+  const openRequestDetail = async (req: any) => {
+    setSelectedReq(req);
+    const { data } = await supabase.from("service_request_notes").select("*").eq("request_id", req.id).order("created_at", { ascending: true });
+    setReqNotes(data ?? []);
+  };
 
   if (loading) {
     return (
@@ -55,7 +110,7 @@ const ParentDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <Button variant="outline" className="h-auto flex-col gap-2 py-4 hover:bg-muted/50" onClick={() => navigate("/app/parent/register")}>
           <UserPlus className="h-5 w-5 text-blue-600" />
           <span className="text-xs font-medium">Register Child</span>
@@ -67,6 +122,10 @@ const ParentDashboard = () => {
         <Button variant="outline" className="h-auto flex-col gap-2 py-4 hover:bg-muted/50" onClick={() => navigate("/app/parent/tracking")}>
           <Bus className="h-5 w-5 text-amber-600" />
           <span className="text-xs font-medium">Track Bus</span>
+        </Button>
+        <Button variant="outline" className="h-auto flex-col gap-2 py-4 hover:bg-muted/50" onClick={() => setShowSubmit(true)}>
+          <MessageSquare className="h-5 w-5 text-purple-600" />
+          <span className="text-xs font-medium">Submit Request</span>
         </Button>
         <Button variant="outline" className="h-auto flex-col gap-2 py-4 hover:bg-muted/50" disabled>
           <Bell className="h-5 w-5 text-purple-600" />
@@ -130,6 +189,37 @@ const ParentDashboard = () => {
         )}
       </div>
 
+      {/* My Requests */}
+      {requests.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-foreground mb-3">My Requests</h2>
+          <div className="space-y-2">
+            {requests.map((req) => (
+              <Card
+                key={req.id}
+                className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => openRequestDetail(req)}
+              >
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">{req.subject}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {req.request_type.replace("_", " ")} · {new Date(req.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={REQUEST_STATUS[req.status] ?? ""}>
+                    {req.status.replace("_", " ")}
+                  </Badge>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Recent Activity */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-2">
@@ -169,6 +259,104 @@ const ParentDashboard = () => {
           <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">Preview</span>
         </CardContent>
       </Card>
+
+      {/* Submit Request Dialog */}
+      <Dialog open={showSubmit} onOpenChange={setShowSubmit}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Submit a Request</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Type</label>
+              <select
+                value={submitForm.request_type}
+                onChange={e => setSubmitForm({ ...submitForm, request_type: e.target.value })}
+                className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="stop_change">Stop Change</option>
+                <option value="address_change">Address Change</option>
+                <option value="bus_pass">Bus Pass Request</option>
+                <option value="general_inquiry">General Inquiry</option>
+              </select>
+            </div>
+            {children.length > 0 && (
+              <div>
+                <label className="text-sm font-medium">Student (optional)</label>
+                <select
+                  value={submitForm.student_id}
+                  onChange={e => setSubmitForm({ ...submitForm, student_id: e.target.value })}
+                  className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">Select student...</option>
+                  {children.map(c => <option key={c.id} value={c.id}>{c.student_name}</option>)}
+                </select>
+              </div>
+            )}
+            <div>
+              <label className="text-sm font-medium">Subject *</label>
+              <Input
+                value={submitForm.subject}
+                onChange={e => setSubmitForm({ ...submitForm, subject: e.target.value })}
+                className="mt-1"
+                placeholder="Brief description of your request"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Details</label>
+              <Textarea
+                value={submitForm.description}
+                onChange={e => setSubmitForm({ ...submitForm, description: e.target.value })}
+                className="mt-1"
+                placeholder="Provide additional details..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSubmit(false)}>Cancel</Button>
+            <Button onClick={handleSubmitRequest} disabled={submitting}>
+              <Send className="h-4 w-4 mr-1" /> {submitting ? "Submitting..." : "Submit"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Request Detail Dialog */}
+      <Dialog open={!!selectedReq} onOpenChange={() => setSelectedReq(null)}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          {selectedReq && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selectedReq.subject}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 text-sm">
+                <div className="flex gap-2">
+                  <Badge variant="outline" className={REQUEST_STATUS[selectedReq.status] ?? ""}>
+                    {selectedReq.status.replace("_", " ")}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {selectedReq.request_type.replace("_", " ")} · {new Date(selectedReq.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                {selectedReq.description && (
+                  <p className="text-muted-foreground">{selectedReq.description}</p>
+                )}
+                <div className="border-t pt-3 space-y-2">
+                  <h4 className="font-semibold">Staff Notes</h4>
+                  {reqNotes.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No notes yet — staff will respond soon</p>
+                  ) : reqNotes.map(n => (
+                    <div key={n.id} className="rounded-lg bg-muted/50 p-3">
+                      <p className="text-sm">{n.note}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        {new Date(n.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

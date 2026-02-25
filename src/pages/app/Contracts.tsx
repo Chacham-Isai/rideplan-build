@@ -50,6 +50,7 @@ const Contracts = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [benchmarks, setBenchmarks] = useState<any>(null);
 
   // Detail dialog
   const [selected, setSelected] = useState<any>(null);
@@ -85,6 +86,8 @@ const Contracts = () => {
     setInsurance(insRes.data ?? []);
     setPerformance(pRes.data ?? []);
     setLoading(false);
+    // Fetch benchmarks
+    supabase.rpc("get_regional_benchmarks").then(({ data }) => setBenchmarks(data));
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
@@ -210,6 +213,42 @@ const Contracts = () => {
           <p className="mt-1 text-2xl font-bold">{fmt.format(avgRate)}</p>
         </CardContent></Card>
       </div>
+
+      {/* Regional Benchmark */}
+      {benchmarks && (
+        <Card className="border-0 shadow-sm border-l-4 border-l-blue-500">
+          <CardContent className="p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-blue-600" /> Regional Benchmark
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { label: "Rate/Route", yours: avgRate, regional: benchmarks.avg_rate_per_route, format: (v: number) => fmt.format(v), lower: true },
+                { label: "On-Time %", yours: activeContracts.length && performance.length ? Math.round(performance.reduce((s: number, p: any) => s + (p.on_time_pct ?? 0), 0) / performance.length * 10) / 10 : 0, regional: benchmarks.avg_on_time_pct, format: (v: number) => `${v}%`, lower: false },
+                { label: "Utilization", yours: 0, regional: benchmarks.avg_utilization, format: (v: number) => `${v}%`, lower: false },
+              ].map(b => {
+                const diff = b.yours && b.regional ? ((b.yours - b.regional) / b.regional * 100) : 0;
+                const isGood = b.lower ? diff <= 0 : diff >= 0;
+                return (
+                  <div key={b.label} className="text-center">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">{b.label}</p>
+                    <p className="text-lg font-bold mt-1">{b.yours ? b.format(b.yours) : "—"}</p>
+                    <p className="text-xs text-muted-foreground">Regional: {b.regional ? b.format(b.regional) : "—"}</p>
+                    {b.yours > 0 && b.regional > 0 && (
+                      <p className={`text-xs font-medium mt-0.5 ${isGood ? "text-emerald-600" : "text-red-600"}`}>
+                        {diff > 0 ? "+" : ""}{diff.toFixed(1)}%
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-3">
+              Based on {benchmarks.district_count} district{benchmarks.district_count !== 1 ? "s" : ""} and {benchmarks.route_count} routes
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="contracts">
         <TabsList>
