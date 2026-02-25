@@ -7,6 +7,7 @@ import { AppBreadcrumb } from "./AppBreadcrumb";
 import { NotificationBell } from "./NotificationBell";
 import { DemoSwitcher, DemoBanner } from "./DemoSwitcher";
 import { CommandPalette } from "./CommandPalette";
+import { ErrorBoundary } from "./ErrorBoundary";
 import {
   LayoutDashboard, Users, MapPin, FileText, Shield, BarChart3,
   Settings, Bus, UserPlus, Navigation, LogOut, Menu, X, ChevronLeft,
@@ -225,7 +226,9 @@ export const AppLayout = () => {
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <AppBreadcrumb />
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
       <CommandPalette />

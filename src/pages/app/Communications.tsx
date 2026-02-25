@@ -238,7 +238,13 @@ Write 2-3 concise paragraphs appropriate for the channel. Be helpful and profess
             </TableRow></TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={5} className="h-32 text-center"><Loader2 className="h-6 w-6 mx-auto animate-spin text-primary" /></TableCell></TableRow>
+                Array.from({ length: 6 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <TableCell key={j}><div className="h-4 w-full animate-pulse rounded bg-muted" style={{ opacity: 1 - i * 0.1 }} /></TableCell>
+                    ))}
+                  </TableRow>
+                ))
               ) : logs.length === 0 ? (
                 <TableRow><TableCell colSpan={5} className="h-32 text-center text-muted-foreground">No communications logged</TableCell></TableRow>
               ) : logs.map(l => {

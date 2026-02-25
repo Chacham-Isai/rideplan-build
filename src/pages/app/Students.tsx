@@ -325,7 +325,13 @@ const Students = () => {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={7} className="h-32 text-center"><Loader2 className="h-6 w-6 mx-auto animate-spin text-primary" /></TableCell></TableRow>
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <TableRow key={i}>
+                      {Array.from({ length: 7 }).map((_, j) => (
+                        <TableCell key={j}><div className="h-4 w-full animate-pulse rounded bg-muted" style={{ opacity: 1 - i * 0.08 }} /></TableCell>
+                      ))}
+                    </TableRow>
+                  ))
                 ) : filteredStudents.length === 0 ? (
                   <TableRow><TableCell colSpan={7} className="h-32 text-center text-muted-foreground">No students found</TableCell></TableRow>
                 ) : (

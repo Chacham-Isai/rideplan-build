@@ -136,7 +136,8 @@ section.bg-background + section.bg-secondary::before {
 
 /* Print styles */
 @media print {
-  aside, header, .demo-banner, [data-radix-popper-content-wrapper] {
+  aside, header, nav, .demo-banner, [data-radix-popper-content-wrapper],
+  button, .no-print {
     display: none !important;
   }
   main {
@@ -147,6 +148,30 @@ section.bg-background + section.bg-secondary::before {
   .flex.h-screen {
     display: block !important;
   }
+  body {
+    font-size: 12pt !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
   table { page-break-inside: avoid; }
   tr { page-break-inside: avoid; }
+  .shadow-sm, .shadow-md { box-shadow: none !important; }
+  @page {
+    margin: 1cm;
+  }
+}
+
+/* Accessibility: focus visible rings */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
