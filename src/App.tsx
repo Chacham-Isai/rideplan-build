@@ -68,7 +68,9 @@ import UsersAdmin from "./pages/app/admin/UsersAdmin";
 import AppResidencyAdmin from "./pages/app/admin/AppResidencyAdmin";
 import AppInvoicesAdmin from "./pages/app/admin/AppInvoicesAdmin";
 import AppBidsAdmin from "./pages/app/admin/AppBidsAdmin";
-
+import DemoLogin from "./pages/DemoLogin";
+import { lazy, Suspense } from "react";
+const ImportData = lazy(() => import("./pages/app/admin/ImportData"));
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -98,7 +100,7 @@ const App = () => (
               <Route path="/register" element={<Register />} />
               <Route path="/reapply" element={<Reapply />} />
               <Route path="/admin/login" element={<AdminLogin />} />
-
+              <Route path="/demo-login" element={<DemoLogin />} />
               {/* Existing admin routes (unchanged) */}
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<SafetyReportsAdmin />} />
@@ -147,6 +149,7 @@ const App = () => (
                   <Route path="admin/residency" element={<RoleGate requires="district_admin"><AppResidencyAdmin /></RoleGate>} />
                   <Route path="admin/invoices" element={<RoleGate requires="district_admin"><AppInvoicesAdmin /></RoleGate>} />
                   <Route path="admin/bids" element={<RoleGate requires="district_admin"><AppBidsAdmin /></RoleGate>} />
+                  <Route path="admin/import" element={<RoleGate requires="district_admin"><Suspense fallback={<div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}><ImportData /></Suspense></RoleGate>} />
                 </Route>
               </Route>
 

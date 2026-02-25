@@ -711,6 +711,44 @@ export type Database = {
           },
         ]
       }
+      demo_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          impersonating_district_id: string
+          impersonating_role: string
+          is_active: boolean
+          original_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          impersonating_district_id: string
+          impersonating_role?: string
+          is_active?: boolean
+          original_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          impersonating_district_id?: string
+          impersonating_role?: string
+          is_active?: boolean
+          original_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_sessions_impersonating_district_id_fkey"
+            columns: ["impersonating_district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       district_user_roles: {
         Row: {
           created_at: string | null
@@ -1044,6 +1082,53 @@ export type Database = {
           },
         ]
       }
+      import_log: {
+        Row: {
+          created_at: string
+          data_type: string
+          district_id: string
+          error_rows: number
+          file_name: string
+          id: string
+          imported_by: string
+          imported_rows: number
+          skipped_rows: number
+          total_rows: number
+        }
+        Insert: {
+          created_at?: string
+          data_type: string
+          district_id: string
+          error_rows?: number
+          file_name: string
+          id?: string
+          imported_by: string
+          imported_rows?: number
+          skipped_rows?: number
+          total_rows?: number
+        }
+        Update: {
+          created_at?: string
+          data_type?: string
+          district_id?: string
+          error_rows?: number
+          file_name?: string
+          id?: string
+          imported_by?: string
+          imported_rows?: number
+          skipped_rows?: number
+          total_rows?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_log_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mckinney_vento_students: {
         Row: {
           created_at: string
@@ -1109,6 +1194,53 @@ export type Database = {
             columns: ["route_id"]
             isOneToOne: false
             referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          category: string | null
+          created_at: string
+          district_id: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          district_id: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message: string
+          title: string
+          type?: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          district_id?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
             referencedColumns: ["id"]
           },
         ]
@@ -1645,6 +1777,8 @@ export type Database = {
       }
       service_requests: {
         Row: {
+          ai_suggested_priority: string | null
+          ai_suggested_type: string | null
           assigned_to: string | null
           created_at: string
           current_value: string | null
@@ -1661,6 +1795,8 @@ export type Database = {
           subject: string
         }
         Insert: {
+          ai_suggested_priority?: string | null
+          ai_suggested_type?: string | null
           assigned_to?: string | null
           created_at?: string
           current_value?: string | null
@@ -1677,6 +1813,8 @@ export type Database = {
           subject: string
         }
         Update: {
+          ai_suggested_priority?: string | null
+          ai_suggested_type?: string | null
           assigned_to?: string | null
           created_at?: string
           current_value?: string | null
@@ -1821,6 +1959,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_demo_district_id: { Args: never; Returns: string }
       get_regional_benchmarks: { Args: never; Returns: Json }
       get_user_district_id: { Args: never; Returns: string }
       get_user_role: { Args: never; Returns: string }

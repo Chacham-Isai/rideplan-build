@@ -133,3 +133,20 @@ section.bg-secondary + section.bg-background::before,
 section.bg-background + section.bg-secondary::before {
   display: none;
 }
+
+/* Print styles */
+@media print {
+  aside, header, .demo-banner, [data-radix-popper-content-wrapper] {
+    display: none !important;
+  }
+  main {
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .flex.h-screen {
+    display: block !important;
+  }
+  table { page-break-inside: avoid; }
+  tr { page-break-inside: avoid; }
+}
