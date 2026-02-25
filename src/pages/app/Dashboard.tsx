@@ -48,6 +48,7 @@ const Dashboard = () => {
   const [pendingInvoices, setPendingInvoices] = useState(0);
   const [expiringContracts, setExpiringContracts] = useState(0);
   const [actionItems, setActionItems] = useState<{ label: string; count: number; icon: React.ElementType; color: string; href: string }[]>([]);
+  const [benchmarks, setBenchmarks] = useState<any>(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -120,6 +121,9 @@ const Dashboard = () => {
       if ((pendingRes.count ?? 0) > 0) items.push({ label: "Pending Registrations", count: pendingRes.count ?? 0, icon: UserCheck, color: "text-blue-600 bg-blue-50", href: "/app/admin/residency" });
       if ((invoicesRes.count ?? 0) > 0) items.push({ label: "Pending Invoices", count: invoicesRes.count ?? 0, icon: CreditCard, color: "text-purple-600 bg-purple-50", href: "/app/contracts" });
       setActionItems(items);
+
+      // Fetch benchmarks
+      supabase.rpc("get_regional_benchmarks").then(({ data }) => setBenchmarks(data));
 
       // School breakdown
       const schoolMap = new Map<string, { students: number; routes: number }>();
@@ -306,6 +310,9 @@ const Dashboard = () => {
               <div className="flex justify-between"><span className="text-muted-foreground">Expiring Contracts</span><span className={`font-bold ${expiringContracts > 0 ? "text-amber-600" : ""}`}>{expiringContracts}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Expiring 19A Certs</span><span className={`font-bold ${expiringCerts > 0 ? "text-amber-600" : ""}`}>{expiringCerts}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Expired 19A Certs</span><span className={`font-bold ${expiredCerts > 0 ? "text-red-600" : ""}`}>{expiredCerts}</span></div>
+              {benchmarks?.avg_rate_per_route && (
+                <div className="flex justify-between border-t pt-1 mt-1"><span className="text-muted-foreground text-[10px]">Regional Avg Rate</span><span className="text-[10px] font-medium">{fmt.format(benchmarks.avg_rate_per_route)}</span></div>
+              )}
             </div>
           </CardContent>
         </Card>
