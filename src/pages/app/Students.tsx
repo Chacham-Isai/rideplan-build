@@ -112,7 +112,20 @@ const Students = () => {
     if (searchParams.get("action") === "add") setShowAddDialog(true);
   }, []);
 
+  // Fetch childcare registration IDs first when that filter is active
+  const [childcareRegIds, setChildcareRegIds] = useState<string[] | null>(null);
+  useEffect(() => {
+    if (specialFilter !== "childcare") { setChildcareRegIds(null); return; }
+    supabase.from("childcare_requests").select("registration_id").then(({ data }) => {
+      const ids = [...new Set((data ?? []).map(d => d.registration_id))];
+      setChildcareRegIds(ids);
+    });
+  }, [specialFilter]);
+
   const fetchStudents = useCallback(async () => {
+    // If childcare filter is active but IDs haven't loaded yet, wait
+    if (specialFilter === "childcare" && childcareRegIds === null) return;
+
     setLoading(true);
     let query = supabase
       .from("student_registrations")
@@ -123,6 +136,15 @@ const Students = () => {
     if (search) query = query.ilike("student_name", `%${search}%`);
     if (specialFilter === "special_ed") query = query.or("iep_flag.eq.true,section_504_flag.eq.true");
     if (specialFilter === "any_flag") query = query.or("iep_flag.eq.true,section_504_flag.eq.true,mckinney_vento_flag.eq.true,foster_care_flag.eq.true");
+    if (specialFilter === "childcare" && childcareRegIds) {
+      if (childcareRegIds.length === 0) {
+        setStudents([]);
+        setTotalCount(0);
+        setLoading(false);
+        return;
+      }
+      query = query.in("id", childcareRegIds);
+    }
 
     const { data, count } = await query
       .order("created_at", { ascending: false })
@@ -131,23 +153,11 @@ const Students = () => {
     setStudents((data as Registration[]) ?? []);
     setTotalCount(count ?? 0);
     setLoading(false);
-  }, [search, statusFilter, schoolFilter, specialFilter, page]);
+  }, [search, statusFilter, schoolFilter, specialFilter, page, childcareRegIds]);
 
   useEffect(() => { fetchStudents(); }, [fetchStudents]);
 
-  // Childcare filter
-  const [childcareIds, setChildcareIds] = useState<Set<string> | null>(null);
-  useEffect(() => {
-    if (specialFilter !== "childcare") { setChildcareIds(null); return; }
-    supabase.from("childcare_requests").select("registration_id").then(({ data }) => {
-      setChildcareIds(new Set((data ?? []).map(d => d.registration_id)));
-    });
-  }, [specialFilter]);
-
-  const filteredStudents = useMemo(() => {
-    if (specialFilter === "childcare" && childcareIds) return students.filter(s => childcareIds.has(s.id));
-    return students;
-  }, [students, specialFilter, childcareIds]);
+  const filteredStudents = students;
 
   const openDetail = async (reg: Registration) => {
     setSelected(reg);
