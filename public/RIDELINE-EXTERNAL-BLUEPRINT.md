@@ -18,7 +18,7 @@ RideLine is a **B2B SaaS platform** for K–12 school-district transportation ma
 
 **Key value propositions:**
 - Route optimization → saves districts $710K–$1.6M in Year 1
-- Real-time GPS tracking for parents
+- Real-time GPS tracking for parents (coming soon)
 - AI-powered safety reporting & driver management
 - Digital student registration & residency verification
 - Contract management, invoicing, bid/RFP solicitation
@@ -92,16 +92,23 @@ RideLine is a **B2B SaaS platform** for K–12 school-district transportation ma
 │   │   ├── 17 more public pages (Blog, Demo, About, Contact, etc.)
 │   │   ├── admin/              # 11 legacy admin pages
 │   │   └── app/                # Authenticated portal pages
-│   │       ├── Dashboard.tsx   # ✅ LIVE — stat cards, charts, quick actions
-│   │       ├── Students.tsx    # ✅ LIVE — CRUD, filters, detail dialog, childcare
-│   │       ├── AppRoutes.tsx   # Placeholder
-│   │       ├── Contracts.tsx   # Placeholder
-│   │       ├── Compliance.tsx  # Placeholder
-│   │       ├── Reports.tsx     # Placeholder
-│   │       ├── Settings.tsx    # Placeholder
-│   │       ├── parent/         # 4 parent portal pages (placeholder)
-│   │       └── admin/          # 4 in-app admin pages
-│   │           └── AppResidencyAdmin.tsx  # ✅ LIVE — debounced search, review
+│   │       ├── Dashboard.tsx   # ✅ LIVE
+│   │       ├── Students.tsx    # ✅ LIVE
+│   │       ├── AppRoutes.tsx   # ✅ LIVE — routes, inefficiency detection, consolidation sim
+│   │       ├── Contracts.tsx   # ✅ LIVE — 3 tabs (contracts, invoices, performance)
+│   │       ├── Compliance.tsx  # ✅ LIVE — 4 tabs (BEDS/STAC, MV, Ed Law, Audit)
+│   │       ├── Reports.tsx     # ✅ LIVE — 4 tabs (safety, driver, alerts, analytics)
+│   │       ├── Settings.tsx    # ✅ LIVE — 4 tabs (district, subscription, users, privacy)
+│   │       ├── parent/
+│   │       │   ├── ParentDashboard.tsx  # ✅ LIVE — children cards, quick actions
+│   │       │   ├── ParentRegister.tsx   # ✅ LIVE — in-app registration wizard
+│   │       │   ├── ParentReapply.tsx    # ✅ LIVE — returning-family reapply
+│   │       │   └── ParentTracking.tsx   # ✅ LIVE — coming soon preview w/ bus assignments
+│   │       └── admin/
+│   │           ├── AppResidencyAdmin.tsx # ✅ LIVE — residency review
+│   │           ├── UsersAdmin.tsx        # ✅ LIVE — user/role management
+│   │           ├── AppInvoicesAdmin.tsx   # ✅ LIVE — invoice verification + CSV export
+│   │           └── AppBidsAdmin.tsx       # ✅ LIVE — bid management + scoring
 │   ├── App.tsx                 # All routing definitions
 │   ├── index.css               # Design system tokens (HSL)
 │   └── main.tsx
@@ -153,19 +160,19 @@ All wrapped in: `ProtectedRoute` → `DistrictProvider` → `AppLayout`
 | `/app` | → redirect `/app/dashboard` | any | ✅ |
 | `/app/dashboard` | `Dashboard` | any | ✅ **LIVE** — stat cards, charts, quick actions |
 | `/app/students` | `Students` | any | ✅ **LIVE** — full CRUD, filters, detail/edit dialog |
-| `/app/routes` | `AppRoutes` | any | 🔲 placeholder |
-| `/app/reports` | `Reports` | any | 🔲 placeholder |
-| `/app/contracts` | `Contracts` | district_admin | 🔲 placeholder |
-| `/app/compliance` | `Compliance` | district_admin | 🔲 placeholder |
-| `/app/settings` | `Settings` | district_admin | 🔲 placeholder |
-| `/app/parent` | `ParentDashboard` | parent | 🔲 placeholder |
-| `/app/parent/register` | `ParentRegister` | parent | 🔲 placeholder |
-| `/app/parent/reapply` | `ParentReapply` | parent | 🔲 placeholder |
-| `/app/parent/tracking` | `ParentTracking` | parent | 🔲 placeholder |
-| `/app/admin/users` | `UsersAdmin` | district_admin | 🔲 placeholder |
-| `/app/admin/residency` | `AppResidencyAdmin` | district_admin | ✅ **LIVE** — debounced search, approve/deny |
-| `/app/admin/invoices` | `AppInvoicesAdmin` | district_admin | 🔲 placeholder |
-| `/app/admin/bids` | `AppBidsAdmin` | district_admin | 🔲 placeholder |
+| `/app/routes` | `AppRoutes` | any | ✅ **LIVE** — stats, inefficiency cards, route table, consolidation simulator |
+| `/app/reports` | `Reports` | any | ✅ **LIVE** — 4 tabs: safety reports, driver reports, alerts, analytics charts |
+| `/app/contracts` | `Contracts` | district_admin | ✅ **LIVE** — 3 tabs: contracts w/ detail dialog, invoices w/ approve/dispute, performance leaderboard |
+| `/app/compliance` | `Compliance` | district_admin | ✅ **LIVE** — 4 tabs: BEDS/STAC generation, McKinney-Vento tracker, Ed Law 2-d, audit readiness |
+| `/app/settings` | `AppSettings` | district_admin | ✅ **LIVE** — 4 tabs: district info, subscription, users, data & privacy |
+| `/app/parent` | `ParentDashboard` | parent | ✅ **LIVE** — welcome, children cards, quick actions, activity timeline |
+| `/app/parent/register` | `ParentRegister` | parent | ✅ **LIVE** — in-app registration wizard |
+| `/app/parent/reapply` | `ParentReapply` | parent | ✅ **LIVE** — returning-family reapply with grade auto-increment |
+| `/app/parent/tracking` | `ParentTracking` | parent | ✅ **LIVE** — coming soon page with animated bus, bus assignments |
+| `/app/admin/users` | `UsersAdmin` | district_admin | ✅ **LIVE** — user table, role editing, invite flow, role distribution |
+| `/app/admin/residency` | `AppResidencyAdmin` | district_admin | ✅ **LIVE** — debounced search, approve/deny with audit log |
+| `/app/admin/invoices` | `AppInvoicesAdmin` | district_admin | ✅ **LIVE** — stats, filters, bulk approve, CSV export |
+| `/app/admin/bids` | `AppBidsAdmin` | district_admin | ✅ **LIVE** — bid CRUD, response scoring, award workflow |
 
 ### Legacy Admin Routes (`/admin/*`)
 
@@ -296,7 +303,7 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 |---|---|
 | `contracts` | Contractor contracts |
 | `contractor_insurance` | Insurance tracking |
-| `contract_invoices` | Invoice verification |
+| `contract_invoices` | Invoice verification (17 invoices, $5M+ total) |
 | `contractor_performance` | Performance scorecards |
 | `bids` | Bid/RFP solicitations |
 | `bid_responses` | Contractor bid responses |
@@ -307,7 +314,7 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 |---|---|
 | `routes` | Route data & metrics (575 routes) |
 | `route_stops` | Stop-level data with geocoding |
-| `route_scenarios` | Simulation scenarios |
+| `route_scenarios` | Consolidation simulation scenarios |
 
 ### Compliance
 
@@ -337,7 +344,7 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 
 ---
 
-## 8. Current Build State — What's Done vs. What's Not
+## 8. Current Build State — All Pages Live
 
 ### ✅ Fully Built & Functional
 
@@ -355,25 +362,91 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 - Role-based redirect: parent → /app/parent, staff/admin → /app/dashboard
 - Auth-aware navigation (Login/Dashboard button with outlined style)
 
-**App Portal (`/app/*`):**
-- App shell with collapsible sidebar, breadcrumbs, role-filtered nav
+**App Portal (`/app/*`) — ALL 16 PAGES LIVE:**
+
 - **Dashboard** (`/app/dashboard`):
   - 4 clickable stat cards (Total Students, Active Routes, On-Time Rate, Pending Registrations)
   - Quick Actions bar (Add Student, Childcare Requests, Special Ed Pickups, Edit Requests)
   - Students by School bar chart + Route Tiers pie chart
   - Bottom stats (Total Daily Miles, Avg Ride Time, Avg Cost/Student)
-  - All stat cards navigate to relevant pages
+
 - **Students** (`/app/students`):
   - Paginated table (50/page, 9,000+ records) with debounced search
-  - Filters: status, school, special type (Special Ed, Childcare, Any Flag)
-  - Clickable rows → detail dialog showing student metadata
-  - Edit mode: toggle IEP, Section 504, McKinney-Vento, Foster Care flags
-  - Add Student form (full registration creation)
-  - Add Childcare Pickup Request (provider, address, transport type, days, within-district)
-  - URL param integration (`?filter=childcare`, `?action=add`, etc.)
-- **Residency Admin** (`/app/admin/residency`):
-  - Searchable registration review table with debounced search (350ms)
+  - Filters: status, school, special type
+  - Clickable rows → detail dialog with edit mode for IEP/504/MV/FC flags
+  - Add Student form, Add Childcare Pickup Request
+
+- **Routes** (`/app/routes`):
+  - Stats bar (Total Routes, Active, Avg Utilization, Total Miles, Avg Duration)
+  - 4 inefficiency detection cards (Ghost Routes, Long Rides, High Dead Miles, Low Efficiency)
+  - Route table with utilization progress bars, efficiency grades (A-F)
+  - Filter by school, AM/PM, contractor, utilization level
+  - Route detail dialog with capacity chart
+  - Consolidation simulator: select 2+ routes → simulate merge → save scenario
+
+- **Contracts** (`/app/contracts`) — 3 tabs:
+  - **Contracts tab:** Stats bar, filterable contractor table with insurance/performance badges, contract detail dialog (terms, insurance, performance scorecard, rate comparison), Add Contract form
+  - **Invoices tab:** Invoice table with approve/dispute workflow, monthly bar chart (invoiced vs verified)
+  - **Performance tab:** Contractor leaderboard with on-time trend line chart
+
+- **Compliance** (`/app/compliance`) — 4 tabs:
+  - **BEDS/STAC Reports:** Generate report buttons, report history table
+  - **McKinney-Vento:** Student tracker with compliance toggle switches, alert banner
+  - **Ed Law §2-d:** Contractor dashboard, training tracker, breach log
+  - **Audit Readiness:** 5 radial progress indicators + overall score, action items list
+
+- **Reports** (`/app/reports`) — 4 tabs:
+  - **Safety Reports:** Stats bar, filterable table, detail dialog with status update workflow
+  - **Driver Reports:** Same pattern for driver-submitted reports
+  - **Alerts:** Alert cards with dismiss functionality
+  - **Analytics:** Line chart (trends), pie chart (type breakdown), bar chart (resolution time), top locations table
+
+- **Settings** (`/app/settings`) — 4 tabs:
+  - **District Info:** Profile editor + read-only district information display
+  - **Subscription:** Current plan badge, trial info, tier comparison
+  - **Users:** User table with role editing, invite flow, active toggles
+  - **Data & Privacy:** Ed Law §2-d compliance status, Parents' Bill of Rights accordion
+
+- **Parent Dashboard** (`/app/parent`):
+  - Welcome message with parent name
+  - Quick action buttons: Register Child, Reapply Next Year, Track Bus, Notifications
+  - My Children cards: student name, grade, school, status badge, address, school year
+  - Shows all registered children (approved, pending, denied)
+
+- **Parent Register** (`/app/parent/register`):
+  - In-app registration wizard (reuses RegisterWizard pattern)
+  - Pre-populated with parent profile data
+
+- **Parent Reapply** (`/app/parent/reapply`):
+  - Fetches previous year registrations
+  - Auto-increments grade, "same address?" toggle
+  - Single attestation e-signature for all children
+
+- **Parent Tracking** (`/app/parent/tracking`):
+  - "GPS Tracking Launching Soon" with animated bus illustration (Framer Motion)
+  - Bus assignment cards for each approved child
+  - Feature preview cards (Live Map, ETA Updates, Notifications)
+
+- **Admin Users** (`/app/admin/users`):
+  - Full user table with search, role distribution badges
+  - Role editing via dropdown, active toggle
+  - Invite User dialog
+
+- **Admin Residency** (`/app/admin/residency`):
+  - Searchable registration review with debounced search (350ms)
   - Approve/deny with audit logging
+
+- **Admin Invoices** (`/app/admin/invoices`):
+  - Stats: Total Invoiced ($5M+), Total Verified, Discrepancies, Pending count
+  - Full invoice table with status filters
+  - Bulk approve with checkboxes
+  - CSV export (client-side Blob download)
+
+- **Admin Bids** (`/app/admin/bids`):
+  - Bid CRUD with status summary cards (Draft, Open, Closed, Awarded)
+  - Create Bid form dialog
+  - Bid detail with responses table, scoring system
+  - Award workflow
 
 **Legacy Admin (`/admin/*`):**
 - 11 fully functional sub-pages (safety reports, driver reports, residency audit, tips, alerts, analytics, contracts, invoices, bids, routes, compliance)
@@ -384,31 +457,13 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 - Hierarchical role system with SQL helper functions
 - File storage bucket for residency documents
 
-### 🔲 Placeholder (Coming Soon — Not Yet Built)
-
-| Page | What It Needs |
-|---|---|
-| `/app/routes` | Route list/detail view, map integration, tier management, stop editing |
-| `/app/contracts` | Contract CRUD, insurance tracking, performance scorecards |
-| `/app/compliance` | BEDS/STAC filing, McKinney-Vento tracking, Ed Law 2-d, training |
-| `/app/reports` | Safety/driver report management, AI analysis integration |
-| `/app/settings` | District settings, user management, subscription info |
-| `/app/parent` | Parent dashboard (my children, bus tracking, registration status) |
-| `/app/parent/register` | In-app registration flow |
-| `/app/parent/reapply` | Re-registration for returning families |
-| `/app/parent/tracking` | Real-time bus GPS tracking |
-| `/app/admin/users` | User/role management for district |
-| `/app/admin/invoices` | Invoice verification with GPS cross-reference |
-| `/app/admin/bids` | Bid/RFP creation and scoring |
-
-### 🔲 Not Yet Built (New Features)
+### 🔲 Not Yet Built (Future Features)
 
 - Password reset flow (`/reset-password`)
 - Profile onboarding for new users
+- Real-time GPS bus tracking (ParentTracking page is a "coming soon" preview)
 - Real-time subscriptions (Supabase Realtime)
-- Notification system (bell icon in top bar)
-- Export/CSV download for tables
-- Bulk approve/deny on residency
+- Push notification system
 - Dark mode (not planned — navy sections provide contrast)
 
 ---
@@ -454,25 +509,24 @@ Every user belongs to exactly ONE district. Every data table includes `district_
 │      │ ...                                          │
 │      │ Showing 1-50 of 9,000        < 1/180 >      │
 └──────┴──────────────────────────────────────────────┘
+```
 
-Click row → Student Detail Dialog:
-┌──────────────────────────────────────┐
-│ Sophia Nelson              [✏ Edit] │
-│ Grade: 5    School: LECC            │
-│ DOB: 2010-01-07   Status: Denied    │
-│ Address: 16 Atlantic Ave, 11559     │
-│                                     │
-│ 🎓 Special Education & Flags       │
-│ [No IEP] [No 504] [No MV] [No FC] │
-│                                     │
-│ 🧒 Childcare Pickup Requests [+Add]│
-│ No childcare pickup requests        │
-│                                     │
-│ Registered: 2/24/2026              │
-└──────────────────────────────────────┘
-
-Edit mode → toggles for IEP, 504, MV, FC with Save/Cancel
-Add Childcare → form with provider, address, transport type, days
+### Parent Dashboard Layout
+```
+┌──────┬──────────────────────────────────────────────┐
+│      │ Welcome back, A.                             │
+│      │ Manage your children's transportation        │
+│      │                                              │
+│      │ [Register] [Reapply] [Track Bus] [Notifs]   │
+│      │                                              │
+│      │ My Children                                  │
+│      │ ┌─────────────────────┐┌────────────────────┐│
+│      │ │ Sophia Nelson       ││ Liam Davis         ││
+│      │ │ Grade 5 · LECC     ││ Grade K · LMS      ││
+│      │ │ 16 Atlantic Ave    ││ 11 Central Ave     ││
+│      │ │ 2025-2026  Denied  ││ 2025-2026 Approved ││
+│      │ └─────────────────────┘└────────────────────┘│
+└──────┴──────────────────────────────────────────────┘
 ```
 
 ### Navigation (Public Site)
@@ -519,6 +573,22 @@ User logs in → auth.uid() available
   → Staff+: can see all district data
 ```
 
+### Contract/Invoice Flow
+```
+/app/contracts → Contracts tab → table with insurance/performance badges
+  → Click row → detail dialog (terms, insurance, scorecard, rate comparison)
+  → Invoices tab → approve/dispute updates status + reviewed_by
+  → Performance tab → leaderboard + on-time trend chart
+```
+
+### Compliance Flow
+```
+/app/compliance → BEDS/STAC tab → "Generate" button
+  → Queries student_registrations + routes → creates compliance_reports record
+  → McKinney-Vento tab → toggle switches update transportation_provided
+  → Audit Readiness tab → calculates % scores from all compliance data
+```
+
 ---
 
 ## 11. Key Technical Decisions
@@ -533,6 +603,9 @@ User logs in → auth.uid() available
 8. **HSL design tokens** — All colors defined as HSL in index.css, referenced via Tailwind semantic classes
 9. **Supabase types are auto-generated** — Never edit `src/integrations/supabase/types.ts`
 10. **Edge functions auto-deploy** — No manual deployment needed
+11. **Direct Supabase queries** — Pages use `useCallback` + `useEffect` pattern (not React Query hooks) for data fetching, matching established codebase conventions
+12. **Currency formatting** — `Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })`
+13. **Pagination** — 50 records per page with offset-based pagination
 
 ---
 
@@ -540,12 +613,15 @@ User logs in → auth.uid() available
 
 ### DO:
 - Use Tailwind semantic tokens (`text-foreground`, `bg-primary`, etc.) — never hardcode colors
-- Follow the existing component patterns (shadcn/ui Card, Dialog, Table, Button, etc.)
+- Follow the existing component patterns (shadcn/ui Card, Dialog, Table, Button, Badge, Tabs, etc.)
 - Use `supabase` client from `@/integrations/supabase/client`
 - Use `useDistrict()` for district/profile/role context
 - Use `useAuth()` for session/user
+- Include `district_id` from `useDistrict().district.id` in all INSERT calls
 - Add RLS policies for any new tables
 - Use the existing design system fonts (Playfair Display headings, DM Sans body)
+- Use sonner toast notifications for success/error feedback
+- Use Recharts for any charts
 
 ### DON'T:
 - Edit `src/integrations/supabase/client.ts` or `types.ts` (auto-generated)
@@ -553,7 +629,8 @@ User logs in → auth.uid() available
 - Edit `.env` or `supabase/config.toml` (auto-managed)
 - Use raw colors in components — always use design tokens
 - Create tables without district_id (breaks multi-tenancy)
-- Assume all /app/* pages are built — check the status table above
+- Manually filter by district_id in SELECT queries (RLS handles it)
+- Replace the existing auth, routing, or app shell architecture
 
 ### Current Live District Data:
 - **District:** Lawrence Union Free School District
@@ -564,6 +641,9 @@ User logs in → auth.uid() available
 - **Total Daily Miles:** 7,111
 - **Avg Ride Time:** 30 min
 - **Avg Cost/Student:** $1,099
+- **Contracts:** Multiple active contractors (Atlantic Express, Logan Bus, Varsity Transit, Baumann & Sons)
+- **Invoices:** 17 invoices totaling $5M+, with $11.9K in discrepancies found
+- **Users:** 1 district admin (A. Blumstein)
 
 ---
 
