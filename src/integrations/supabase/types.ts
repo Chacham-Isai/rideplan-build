@@ -405,6 +405,7 @@ export type Database = {
           data_types_affected: string | null
           description: string
           discovered_date: string
+          district_id: string
           id: string
           incident_date: string
           notification_date: string | null
@@ -420,6 +421,7 @@ export type Database = {
           data_types_affected?: string | null
           description: string
           discovered_date: string
+          district_id: string
           id?: string
           incident_date: string
           notification_date?: string | null
@@ -435,6 +437,7 @@ export type Database = {
           data_types_affected?: string | null
           description?: string
           discovered_date?: string
+          district_id?: string
           id?: string
           incident_date?: string
           notification_date?: string | null
@@ -450,6 +453,20 @@ export type Database = {
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "ed_law_2d_contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "breach_incidents_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "breach_incidents_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts_public"
             referencedColumns: ["id"]
           },
         ]
