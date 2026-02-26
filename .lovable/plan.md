@@ -1,90 +1,44 @@
 
 
-## NYSED Transportation Law Expert — Dashboard Widget
+## Rename and Upgrade the NYSED Advisor to "Sam"
 
-### Summary
+The user wants to rebrand the NYSED Law Advisor widget, name it "Sam", and expand its knowledge to include the full RideLine platform/website information alongside the NYSED transportation law expertise.
 
-There is no NYSED transportation law skill currently built into the app dashboard. The existing `chat` edge function powers the public-facing RideLine marketing chatbot. This plan creates a dedicated **in-app legal compliance assistant** with the full NYSED transportation law knowledge base, accessible from the dashboard as a collapsible widget.
+### Changes
 
-### Architecture
+#### 1. Update the Edge Function System Prompt (`supabase/functions/nysed-advisor/index.ts`)
 
-```text
-┌─────────────────────────────────────────────┐
-│  New Edge Function: nysed-advisor           │
-│  - NYSED law system prompt (full reference) │
-│  - JWT-authenticated (reuses chat pattern)  │
-│  - Streams via Lovable AI gateway           │
-│  - Model: gemini-3-flash-preview            │
-└──────────────────┬──────────────────────────┘
-                   │ SSE stream
-┌──────────────────▼──────────────────────────┐
-│  New Component: NysedAdvisorWidget.tsx       │
-│  - Collapsible card on Dashboard            │
-│  - Chat-style interface with markdown       │
-│  - Suggested questions for common topics    │
-│  - Session-scoped conversation history      │
-│  - Also accessible from Compliance page     │
-└─────────────────────────────────────────────┘
-```
+- Change the persona from "NYSED Transportation Law Advisor" to **"Sam"** — RideLine's in-app compliance and platform expert
+- Merge the RideLine platform knowledge from the `chat` edge function's system prompt into Sam's system prompt. This gives Sam full knowledge of:
+  - All 6 RideLine platform modules (Student Assignment, Route Optimization, Contractor Oversight, Parent Communication, Compliance & Reporting, AI Analytics)
+  - Pricing ($75K–$100K/year), ROI stats ($710K–$1.6M savings), market data
+  - How RideLine works (Connect → Analyze → Optimize → Save)
+  - Free Route Audit offering
+  - Common school transportation challenges
+- Keep the entire existing NYSED legal framework (Ed Law §3635, §2-d, Part 156, Part 121, etc.)
+- Update response guidelines: Sam should introduce itself as "Sam" and be warm/conversational while still citing statutes accurately
 
-### Implementation Steps
+#### 2. Update the Widget Component (`src/components/app/NysedAdvisorWidget.tsx`)
 
-#### 1. Create Edge Function `supabase/functions/nysed-advisor/index.ts`
-
-- Clone the authenticated streaming pattern from `chat/index.ts`
-- Replace the system prompt with the complete NYSED transportation law reference from the user's message (Ed Law §3635, §2-d, Part 156, Part 121, BEDS/STAC, McKinney-Vento, IDEA/504, childcare routing, residency verification, contractor compliance, deadlines)
-- Add a `context` field in the request body so the widget can optionally pass the user's district name/state for personalized answers
-- Keep JWT auth, input validation, rate limit/402 handling
-
-#### 2. Update `supabase/config.toml`
-
-Add the new function entry:
-```toml
-[functions.nysed-advisor]
-verify_jwt = false
-```
-
-#### 3. Create `src/components/app/NysedAdvisorWidget.tsx`
-
-- A `Card`-based collapsible chat panel (not a floating bubble — this is an in-app tool)
-- Header with `Scale` (gavel) icon and title "NYSED Law Advisor"
-- Suggested question chips for common queries:
+- Rename display title from "NYSED Law Advisor" to **"Sam"**
+- Update subtitle from "Ed Law §3635, §2-d, compliance guidance" to something like "NYSED law, compliance & RideLine platform expert"
+- Update empty state text to reflect Sam's broader capabilities (law + platform knowledge)
+- Update input placeholder from "Ask about NYSED transportation law..." to "Ask Sam anything..."
+- Add suggested questions that cover both law AND platform, e.g.:
+  - "How does RideLine handle route optimization?"
   - "What are the mileage requirements under §3635?"
+  - "How can RideLine help with BEDS/STAC reporting?"
   - "What does Ed Law §2-d require for contractors?"
-  - "Can we digitize parent registration?"
-  - "What are McKinney-Vento transportation obligations?"
-  - "When is the April 1 deadline and what does it cover?"
-- Streaming chat with `ReactMarkdown` rendering (same pattern as `ChatWidget`)
-- Uses the authenticated Supabase session token (not the anon key) since this is an in-app feature for logged-in staff
-- Max 500 char input, 30 message session limit
-- Clear conversation button
+  - "How much can our district save with RideLine?"
+- Update the disclaimer text to cover both legal info and platform guidance
 
-#### 4. Integrate into Dashboard (`src/pages/app/Dashboard.tsx`)
+#### 3. Dashboard Integration (`src/pages/app/Dashboard.tsx`)
 
-- Add the `NysedAdvisorWidget` as a card in the dashboard layout
-- Position it in the right column or as a full-width section near the bottom
-
-#### 5. Integrate into Compliance page (`src/pages/app/Compliance.tsx`)
-
-- Add the widget as an additional tab or sidebar panel so compliance officers have quick access while working on BEDS/STAC/Ed Law 2-d tasks
-
-### System Prompt Content
-
-The edge function's system prompt will contain the entire NYSED transportation law reference provided, covering:
-- Ed Law §3635 (transportation mandates, mileage, childcare, nonpublic, standing passengers)
-- Ed Law §2-d (student data privacy, contractor obligations, penalties, Parents' Bill of Rights)
-- Commissioner's Regs Part 156 (driver safety) and Part 121 (data security)
-- BEDS/STAC reporting requirements
-- McKinney-Vento, IDEA/504, foster care transportation
-- Digital residency verification compliance framework
-- Contractor compliance requirements
-- Key deadlines table
-- Caveats (not legal advice, verify current statutes)
+- Update the comment from `{/* NYSED Law Advisor */}` to `{/* Sam — NYSED & Platform Advisor */}`
 
 ### Technical Details
 
-- **No database changes needed** — this is a stateless AI chat widget
-- **Authentication**: Uses the logged-in user's JWT session token via `supabase.functions.invoke` or direct fetch with auth header
-- **Streaming**: Same SSE line-by-line parsing pattern already proven in `ChatWidget.tsx`
-- **No new dependencies** — uses existing `react-markdown`, `framer-motion`, `lucide-react`
+- No new files, no new dependencies, no database changes
+- The edge function prompt grows by ~80 lines to incorporate the RideLine platform knowledge from the existing `chat` function's prompt
+- All existing streaming, authentication, and session logic remains unchanged
 
