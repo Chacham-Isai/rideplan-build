@@ -12,11 +12,11 @@ type Msg = { role: "user" | "assistant"; content: string };
 const ADVISOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/nysed-advisor`;
 
 const SUGGESTED_QUESTIONS = [
+  "How does RideLine handle route optimization?",
   "What are the mileage requirements under §3635?",
+  "How can RideLine help with BEDS/STAC reporting?",
   "What does Ed Law §2-d require for contractors?",
-  "Can we digitize parent registration?",
-  "What are McKinney-Vento transportation obligations?",
-  "When is the April 1 deadline and what does it cover?",
+  "How much can our district save with RideLine?",
 ];
 
 const MAX_INPUT_LENGTH = 500;
@@ -154,8 +154,8 @@ export const NysedAdvisorWidget = () => {
               <Scale className="h-4 w-4 text-amber-700" />
             </div>
             <div>
-              <CardTitle className="text-sm font-semibold">NYSED Law Advisor</CardTitle>
-              <p className="text-xs text-muted-foreground">Ed Law §3635, §2-d, compliance guidance</p>
+              <CardTitle className="text-sm font-semibold">Sam</CardTitle>
+              <p className="text-xs text-muted-foreground">NYSED law, compliance & RideLine platform expert</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -197,7 +197,7 @@ export const NysedAdvisorWidget = () => {
                 {messages.length === 0 && (
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      Ask me anything about NYS education law, transportation compliance, Ed Law §2-d, McKinney-Vento, or BEDS/STAC reporting.
+                      Hi, I'm Sam! Ask me about NYSED transportation law, compliance requirements, or how RideLine can help your district.
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {SUGGESTED_QUESTIONS.map((q) => (
@@ -254,7 +254,7 @@ export const NysedAdvisorWidget = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value.slice(0, MAX_INPUT_LENGTH))}
                   maxLength={MAX_INPUT_LENGTH}
-                  placeholder="Ask about NYSED transportation law..."
+                  placeholder="Ask Sam anything..."
                   className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   disabled={isLoading}
                 />
@@ -269,7 +269,7 @@ export const NysedAdvisorWidget = () => {
               </form>
 
               <p className="text-[10px] text-muted-foreground text-center">
-                Legal information only — not legal advice. Verify current statutes at nysed.gov.
+                Legal information only — not legal advice. Platform guidance is general. Verify statutes at nysed.gov.
               </p>
             </CardContent>
           </motion.div>
