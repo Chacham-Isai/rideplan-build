@@ -6,26 +6,65 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const jsonResponse = (body: Record<string, unknown>, status: number) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { bus_number, report_type, description } = await req.json();
+    // --- Authentication: require JWT ---
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+
+    // Use SERVICE_ROLE_KEY for DB operations (safety_reports may lack user-scoped RLS for public inserts)
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    const { bus_number, report_type, description, district_id } = await req.json();
+
+    if (!bus_number || typeof bus_number !== "string") {
+      return jsonResponse({ error: "bus_number is required" }, 400);
+    }
+
+    // Scope all queries to district_id when available
+    const buildQuery = (table: string) => {
+      let q = supabase.from(table).select("id");
+      q = q.eq("bus_number", bus_number);
+      if (district_id) q = q.eq("district_id", district_id);
+      return q;
+    };
+
     // 1. Auto-flag bullying as high priority
     if (report_type === "bullying") {
-      // Update the most recent report for this bus to high priority
-      const { data: recent } = await supabase
+      let q = supabase
         .from("safety_reports")
         .select("id")
         .eq("bus_number", bus_number)
         .eq("report_type", "bullying")
         .order("created_at", { ascending: false })
         .limit(1);
+      if (district_id) q = q.eq("district_id", district_id);
+
+      const { data: recent } = await q;
 
       if (recent && recent.length > 0) {
         await supabase
@@ -37,14 +76,16 @@ serve(async (req) => {
 
     // 2. Check for pattern — multiple reports on same bus
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: busReports, error: countError } = await supabase
+    let patternQuery = supabase
       .from("safety_reports")
       .select("id")
       .eq("bus_number", bus_number)
       .gte("created_at", thirtyDaysAgo);
+    if (district_id) patternQuery = patternQuery.eq("district_id", district_id);
+
+    const { data: busReports, error: countError } = await patternQuery;
 
     if (!countError && busReports && busReports.length >= 3) {
-      // Create or update alert
       const { data: existingAlert } = await supabase
         .from("report_alerts")
         .select("id, report_count")
@@ -93,12 +134,15 @@ serve(async (req) => {
           const aiData = await aiResponse.json();
           const severity = aiData.choices?.[0]?.message?.content?.trim()?.toLowerCase();
           if (["low", "medium", "high", "critical"].includes(severity)) {
-            const { data: latest } = await supabase
+            let latestQ = supabase
               .from("safety_reports")
               .select("id")
               .eq("bus_number", bus_number)
               .order("created_at", { ascending: false })
               .limit(1);
+            if (district_id) latestQ = latestQ.eq("district_id", district_id);
+
+            const { data: latest } = await latestQ;
             if (latest && latest.length > 0) {
               await supabase.from("safety_reports").update({ ai_priority: severity }).eq("id", latest[0].id);
             }
@@ -109,14 +153,9 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ success: true }, 200);
   } catch (e) {
     console.error("analyze-reports error:", e);
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ error: e.message }, 500);
   }
 });

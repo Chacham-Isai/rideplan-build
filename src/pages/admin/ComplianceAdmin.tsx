@@ -164,7 +164,9 @@ const ComplianceAdmin = () => {
   };
 
   const addBreach = async () => {
+    // Note: old admin panel lacks district context; use RLS to scope
     const { error } = await supabase.from("breach_incidents").insert({
+      district_id: "00000000-0000-0000-0000-000000000000", // Will be rejected by RLS if not matching user's district
       incident_date: breachForm.incident_date,
       discovered_date: breachForm.discovered_date,
       description: breachForm.description,

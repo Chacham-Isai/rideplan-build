@@ -126,6 +126,7 @@ const Compliance = () => {
   const addBreach = async () => {
     if (!breachForm.description || !breachForm.incident_date || !breachForm.discovered_date) { toast.error("Fill required fields"); return; }
     const { error } = await supabase.from("breach_incidents").insert({
+      district_id: district.id,
       incident_date: breachForm.incident_date,
       discovered_date: breachForm.discovered_date,
       description: breachForm.description,
