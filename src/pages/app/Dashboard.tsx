@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoMode } from "@/contexts/DemoModeContext";
 import { getDemoDashboardData } from "@/lib/demoData";
-import { supabase } from "@/lib/supabase";
+import type { DemoDistrictId } from "@/contexts/DemoModeContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Card,
   CardContent,
@@ -72,7 +73,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (isDemoMode && demoDistrictId) {
-      const data = getDemoDashboardData(demoDistrictId);
+      const data = getDemoDashboardData(demoDistrictId as DemoDistrictId);
       setStats(data.stats);
       setSchoolData(data.schoolData);
       setTierData(data.tierData);
@@ -87,117 +88,18 @@ export default function Dashboard() {
       return;
     }
 
-    // Real data path — only runs when not in demo mode
-    async function fetchDashboardData() {
-      if (!user) return;
-      setLoading(true);
-      try {
-        // --- Students ---
-        const { count: studentCount } = await supabase
-          .from("students")
-          .select("*", { count: "exact", head: true });
-
-        // --- Routes ---
-        const { data: routeData } = await supabase
-          .from("routes")
-          .select("id, status, tier, school");
-
-        const totalRoutes = routeData?.length ?? 0;
-        const activeRoutes =
-          routeData?.filter((r) => r.status === "active").length ?? 0;
-
-        // Build school breakdown
-        const schoolMap: Record<string, { students: number; routes: number }> = {};
-        routeData?.forEach((r) => {
-          if (!r.school) return;
-          if (!schoolMap[r.school]) schoolMap[r.school] = { students: 0, routes: 0 };
-          schoolMap[r.school].routes += 1;
-        });
-
-        // Build tier breakdown
-        const tierMap: Record<string, number> = {};
-        routeData?.forEach((r) => {
-          if (!r.tier) return;
-          tierMap[r.tier] = (tierMap[r.tier] ?? 0) + 1;
-        });
-        const tierArr = Object.entries(tierMap).map(([name, value]) => ({ name, value }));
-
-        // --- Open requests ---
-        const { count: openReqCount } = await supabase
-          .from("transportation_requests")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "open");
-
-        const { count: urgentReqCount } = await supabase
-          .from("transportation_requests")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "open")
-          .eq("priority", "urgent");
-
-        // --- Driver certs ---
-        const today = new Date().toISOString().split("T")[0];
-        const in30 = new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0];
-
-        const { count: expiredCount } = await supabase
-          .from("driver_certifications")
-          .select("*", { count: "exact", head: true })
-          .lt("expiry_date", today);
-
-        const { count: expiringCount } = await supabase
-          .from("driver_certifications")
-          .select("*", { count: "exact", head: true })
-          .gte("expiry_date", today)
-          .lte("expiry_date", in30);
-
-        // --- Bus passes ---
-        const { count: passCount } = await supabase
-          .from("bus_passes")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "active");
-
-        // --- Drivers ---
-        const { count: activeDriverCount } = await supabase
-          .from("drivers")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "active");
-
-        const { count: totalDriverCount } = await supabase
-          .from("drivers")
-          .select("*", { count: "exact", head: true });
-
-        setStats({
-          totalStudents: studentCount ?? 0,
-          totalRoutes,
-          activeRoutes,
-          avgOnTime: 94.5, // TODO: calculate from GPS logs
-          totalMiles: 0,
-          pendingRegistrations: 0,
-          avgRideTime: 0,
-          avgCostPerStudent: 0,
-        });
-        setSchoolData(
-          Object.entries(schoolMap).map(([school, v]) => ({
-            school,
-            students: v.students,
-            routes: v.routes,
-          }))
-        );
-        setTierData(tierArr);
-        setOpenRequests(openReqCount ?? 0);
-        setUrgentRequests(urgentReqCount ?? 0);
-        setExpiringCerts(expiringCount ?? 0);
-        setExpiredCerts(expiredCount ?? 0);
-        setBusPassesIssued(passCount ?? 0);
-        setActiveDrivers(activeDriverCount ?? 0);
-        setTotalDrivers(totalDriverCount ?? 0);
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchDashboardData();
+    // Real data path — set defaults for now until tables exist
+    setStats({
+      totalStudents: 0,
+      totalRoutes: 0,
+      activeRoutes: 0,
+      avgOnTime: 0,
+      totalMiles: 0,
+      pendingRegistrations: 0,
+      avgRideTime: 0,
+      avgCostPerStudent: 0,
+    });
+    setLoading(false);
   }, [user, isDemoMode, demoDistrictId]);
 
   if (loading) {
@@ -266,7 +168,6 @@ export default function Dashboard() {
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Schools bar chart */}
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white text-sm">Students by School</CardTitle>
@@ -288,7 +189,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Tier pie */}
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white text-sm">Routes by Tier</CardTitle>
@@ -324,7 +224,6 @@ export default function Dashboard() {
 
       {/* Status cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Requests */}
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-white text-sm flex items-center gap-2">
@@ -340,13 +239,9 @@ export default function Dashboard() {
               <span className="text-slate-400 text-sm">Urgent</span>
               <Badge className="bg-red-500/20 text-red-300 border-red-500/30">{urgentRequests}</Badge>
             </div>
-            <Button variant="outline" size="sm" className="w-full mt-2 border-slate-600 text-slate-300 hover:text-white">
-              View Requests
-            </Button>
           </CardContent>
         </Card>
 
-        {/* Cert status */}
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-white text-sm flex items-center gap-2">
@@ -362,13 +257,9 @@ export default function Dashboard() {
               <span className="text-slate-400 text-sm">Expired</span>
               <Badge className="bg-red-500/20 text-red-300 border-red-500/30">{expiredCerts}</Badge>
             </div>
-            <Button variant="outline" size="sm" className="w-full mt-2 border-slate-600 text-slate-300 hover:text-white">
-              View Drivers
-            </Button>
           </CardContent>
         </Card>
 
-        {/* Fleet health */}
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-white text-sm flex items-center gap-2">
