@@ -2,6 +2,7 @@ import { Clock } from "lucide-react";
 
 interface PlaceholderPageProps {
   title: string;
+  description?: string;
 }
 
 export const PlaceholderPage = ({ title }: PlaceholderPageProps) => (
