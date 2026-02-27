@@ -1,23 +1,45 @@
 import { useEffect, useState } from "react";
-import { BoardReportGenerator } from "@/components/app/BoardReportGenerator";
-import { NysedAdvisorWidget } from "@/components/app/NysedAdvisorWidget";
-import { DashboardSkeleton } from "@/components/app/PageSkeletons";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useDistrict } from "@/contexts/DistrictContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode } from "@/contexts/DemoModeContext";
+import { getDemoDashboardData } from "@/lib/demoData";
+import { supabase } from "@/lib/supabase";
 import {
-  Users, MapPin, Bus, TrendingUp, Clock, AlertTriangle,
-  ArrowUpRight, ArrowDownRight, Plus, Baby, GraduationCap, FileEdit,
-  MessageSquare, Phone, Shield, FileText, CreditCard, UserCheck,
-  AlertCircle, CheckCircle, XCircle, Ticket, Calendar,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from "recharts";
-import { format, parseISO } from "date-fns";
+import {
+  Users,
+  Bus,
+  MapPin,
+  Clock,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+  Activity,
+  Shield,
+  Ticket,
+  UserCheck,
+} from "lucide-react";
+
+const COLORS = ["#3b82f6", "#6366f1", "#8b5cf6"];
 
 interface DashboardStats {
   totalStudents: number;
@@ -30,512 +52,383 @@ interface DashboardStats {
   avgCostPerStudent: number;
 }
 
-const COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#8B5CF6", "#EC4899", "#06B6D4", "#EF4444"];
-const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+export default function Dashboard() {
+  const { user } = useAuth();
+  const { isDemoMode, demoDistrictId } = useDemoMode();
 
-const Dashboard = () => {
-  const { district, isAdmin } = useDistrict();
-  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [schoolData, setSchoolData] = useState<{ school: string; students: number; routes: number }[]>([]);
+  const [schoolData, setSchoolData] = useState<
+    { school: string; students: number; routes: number }[]
+  >([]);
   const [tierData, setTierData] = useState<{ name: string; value: number }[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showBoardReport, setShowBoardReport] = useState(false);
-
-  // New phase data
   const [openRequests, setOpenRequests] = useState(0);
   const [urgentRequests, setUrgentRequests] = useState(0);
   const [expiringCerts, setExpiringCerts] = useState(0);
   const [expiredCerts, setExpiredCerts] = useState(0);
   const [busPassesIssued, setBusPassesIssued] = useState(0);
-  const [activeAides, setActiveAides] = useState(0);
-  const [recentComms, setRecentComms] = useState(0);
-  const [pendingInvoices, setPendingInvoices] = useState(0);
-  const [expiringContracts, setExpiringContracts] = useState(0);
-  const [actionItems, setActionItems] = useState<{ label: string; count: number; icon: React.ElementType; color: string; href: string }[]>([]);
-  const [benchmarks, setBenchmarks] = useState<any>(null);
-  const [upcomingCalendar, setUpcomingCalendar] = useState<{ title: string; event_date: string; event_type: string }[]>([]);
-  const [todayOverride, setTodayOverride] = useState<{ school: string; no_transport: boolean; notes: string | null }[]>([]);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [activeDrivers, setActiveDrivers] = useState(0);
+  const [totalDrivers, setTotalDrivers] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      setLoading(true);
-      setFetchError(null);
-
-      try {
-
-      const [routesRes, studentsRes, pendingRes, requestsRes, certsRes, passesRes, aidesRes, commsRes, invoicesRes, contractsRes] = await Promise.all([
-        supabase.from("routes").select("school, status, total_students, total_miles, on_time_pct, avg_ride_time_min, cost_per_student, tier"),
-        supabase.from("student_registrations").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("student_registrations").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("service_requests").select("status, priority"),
-        supabase.from("driver_certifications").select("status"),
-        supabase.from("bus_passes").select("id", { count: "exact", head: true }).eq("status", "active" as any),
-        supabase.from("route_aides").select("id", { count: "exact", head: true }).eq("status", "active" as any),
-        supabase.from("communication_log").select("id", { count: "exact", head: true }),
-        supabase.from("contract_invoices").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("contracts").select("contract_end, status").eq("status", "active"),
-      ]);
-
-      const routes = routesRes.data ?? [];
-      const activeRoutes = routes.filter((r) => r.status === "active");
-
-      const totalMiles = routes.reduce((s, r) => s + (r.total_miles ?? 0), 0);
-      const avgOnTime = activeRoutes.length
-        ? activeRoutes.reduce((s, r) => s + (r.on_time_pct ?? 0), 0) / activeRoutes.length : 0;
-      const avgRideTime = activeRoutes.length
-        ? activeRoutes.reduce((s, r) => s + (r.avg_ride_time_min ?? 0), 0) / activeRoutes.length : 0;
-      const avgCost = activeRoutes.length
-        ? activeRoutes.reduce((s, r) => s + (r.cost_per_student ?? 0), 0) / activeRoutes.length : 0;
-
-      setStats({
-        totalStudents: studentsRes.count ?? 0,
-        totalRoutes: routes.length,
-        activeRoutes: activeRoutes.length,
-        avgOnTime: Math.round(avgOnTime * 10) / 10,
-        totalMiles: Math.round(totalMiles),
-        pendingRegistrations: pendingRes.count ?? 0,
-        avgRideTime: Math.round(avgRideTime),
-        avgCostPerStudent: Math.round(avgCost),
-      });
-
-      // Service requests
-      const reqs = requestsRes.data ?? [];
-      const openReqs = reqs.filter(r => r.status === "open" || r.status === "in_progress").length;
-      const urgentReqs = reqs.filter(r => r.priority === "urgent" && (r.status === "open" || r.status === "in_progress")).length;
-      setOpenRequests(openReqs);
-      setUrgentRequests(urgentReqs);
-
-      // Certs
-      const certs = certsRes.data ?? [];
-      setExpiringCerts(certs.filter(c => c.status === "expiring").length);
-      setExpiredCerts(certs.filter(c => c.status === "expired").length);
-
-      setBusPassesIssued(passesRes.count ?? 0);
-      setActiveAides(aidesRes.count ?? 0);
-      setRecentComms(commsRes.count ?? 0);
-      setPendingInvoices(invoicesRes.count ?? 0);
-
-      // Expiring contracts (next 90 days)
-      const now = new Date();
-      const in90 = new Date(now.getTime() + 90 * 86400000);
-      const expContracts = (contractsRes.data ?? []).filter(c => new Date(c.contract_end) <= in90 && new Date(c.contract_end) > now).length;
-      setExpiringContracts(expContracts);
-
-      // Build action items
-      const items: typeof actionItems = [];
-      if (urgentReqs > 0) items.push({ label: "Urgent Requests", count: urgentReqs, icon: AlertCircle, color: "text-red-600 bg-red-50", href: "/app/requests" });
-      if (certs.filter(c => c.status === "expired").length > 0) items.push({ label: "Expired Certifications", count: certs.filter(c => c.status === "expired").length, icon: XCircle, color: "text-red-600 bg-red-50", href: "/app/contracts" });
-      if (certs.filter(c => c.status === "expiring").length > 0) items.push({ label: "Expiring Certifications", count: certs.filter(c => c.status === "expiring").length, icon: AlertTriangle, color: "text-amber-600 bg-amber-50", href: "/app/contracts" });
-      if (expContracts > 0) items.push({ label: "Contracts Expiring Soon", count: expContracts, icon: FileText, color: "text-amber-600 bg-amber-50", href: "/app/contracts" });
-      if ((pendingRes.count ?? 0) > 0) items.push({ label: "Pending Registrations", count: pendingRes.count ?? 0, icon: UserCheck, color: "text-blue-600 bg-blue-50", href: "/app/admin/residency" });
-      if ((invoicesRes.count ?? 0) > 0) items.push({ label: "Pending Invoices", count: invoicesRes.count ?? 0, icon: CreditCard, color: "text-purple-600 bg-purple-50", href: "/app/contracts" });
-      setActionItems(items);
-
-      // Fetch benchmarks
-      supabase.rpc("get_regional_benchmarks").then(({ data }) => setBenchmarks(data));
-
-      // Fetch upcoming calendar events
-      const todayStr = format(new Date(), "yyyy-MM-dd");
-      supabase.from("school_calendar_events").select("title, event_date, event_type")
-        .gte("event_date", todayStr).order("event_date").limit(5)
-        .then(({ data }) => setUpcomingCalendar((data as any[]) ?? []));
-
-      // Fetch today's overrides
-      supabase.from("schedule_overrides").select("school, no_transport, notes")
-        .eq("override_date", todayStr)
-        .then(({ data }) => setTodayOverride((data as any[]) ?? []));
-
-      // School breakdown
-      const schoolMap = new Map<string, { students: number; routes: number }>();
-      routes.forEach((r) => {
-        const entry = schoolMap.get(r.school) ?? { students: 0, routes: 0 };
-        entry.students += r.total_students ?? 0;
-        entry.routes += 1;
-        schoolMap.set(r.school, entry);
-      });
-      setSchoolData(
-        Array.from(schoolMap.entries())
-          .map(([school, d]) => ({ school: school.replace("Number ", "#").replace(" School", ""), ...d }))
-          .sort((a, b) => b.students - a.students)
-      );
-
-      // Tier breakdown
-      const tierCount = [0, 0, 0];
-      routes.forEach((r) => { if (r.tier >= 1 && r.tier <= 3) tierCount[r.tier - 1]++; });
-      setTierData([
-        { name: "Tier 1", value: tierCount[0] },
-        { name: "Tier 2", value: tierCount[1] },
-        { name: "Tier 3", value: tierCount[2] },
-      ]);
-
+    if (isDemoMode && demoDistrictId) {
+      const data = getDemoDashboardData(demoDistrictId);
+      setStats(data.stats);
+      setSchoolData(data.schoolData);
+      setTierData(data.tierData);
+      setOpenRequests(data.openRequests);
+      setUrgentRequests(data.urgentRequests);
+      setExpiringCerts(data.expiringCerts);
+      setExpiredCerts(data.expiredCerts);
+      setBusPassesIssued(data.busPassesIssued);
+      setActiveDrivers(data.activeDrivers);
+      setTotalDrivers(data.totalDrivers);
       setLoading(false);
-      } catch (err: any) {
-        console.error("Dashboard fetch failed:", err);
-        setFetchError(err?.message ?? "Failed to load dashboard data. Please try refreshing.");
+      return;
+    }
+
+    // Real data path — only runs when not in demo mode
+    async function fetchDashboardData() {
+      if (!user) return;
+      setLoading(true);
+      try {
+        // --- Students ---
+        const { count: studentCount } = await supabase
+          .from("students")
+          .select("*", { count: "exact", head: true });
+
+        // --- Routes ---
+        const { data: routeData } = await supabase
+          .from("routes")
+          .select("id, status, tier, school");
+
+        const totalRoutes = routeData?.length ?? 0;
+        const activeRoutes =
+          routeData?.filter((r) => r.status === "active").length ?? 0;
+
+        // Build school breakdown
+        const schoolMap: Record<string, { students: number; routes: number }> = {};
+        routeData?.forEach((r) => {
+          if (!r.school) return;
+          if (!schoolMap[r.school]) schoolMap[r.school] = { students: 0, routes: 0 };
+          schoolMap[r.school].routes += 1;
+        });
+
+        // Build tier breakdown
+        const tierMap: Record<string, number> = {};
+        routeData?.forEach((r) => {
+          if (!r.tier) return;
+          tierMap[r.tier] = (tierMap[r.tier] ?? 0) + 1;
+        });
+        const tierArr = Object.entries(tierMap).map(([name, value]) => ({ name, value }));
+
+        // --- Open requests ---
+        const { count: openReqCount } = await supabase
+          .from("transportation_requests")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "open");
+
+        const { count: urgentReqCount } = await supabase
+          .from("transportation_requests")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "open")
+          .eq("priority", "urgent");
+
+        // --- Driver certs ---
+        const today = new Date().toISOString().split("T")[0];
+        const in30 = new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0];
+
+        const { count: expiredCount } = await supabase
+          .from("driver_certifications")
+          .select("*", { count: "exact", head: true })
+          .lt("expiry_date", today);
+
+        const { count: expiringCount } = await supabase
+          .from("driver_certifications")
+          .select("*", { count: "exact", head: true })
+          .gte("expiry_date", today)
+          .lte("expiry_date", in30);
+
+        // --- Bus passes ---
+        const { count: passCount } = await supabase
+          .from("bus_passes")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "active");
+
+        // --- Drivers ---
+        const { count: activeDriverCount } = await supabase
+          .from("drivers")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "active");
+
+        const { count: totalDriverCount } = await supabase
+          .from("drivers")
+          .select("*", { count: "exact", head: true });
+
+        setStats({
+          totalStudents: studentCount ?? 0,
+          totalRoutes,
+          activeRoutes,
+          avgOnTime: 94.5, // TODO: calculate from GPS logs
+          totalMiles: 0,
+          pendingRegistrations: 0,
+          avgRideTime: 0,
+          avgCostPerStudent: 0,
+        });
+        setSchoolData(
+          Object.entries(schoolMap).map(([school, v]) => ({
+            school,
+            students: v.students,
+            routes: v.routes,
+          }))
+        );
+        setTierData(tierArr);
+        setOpenRequests(openReqCount ?? 0);
+        setUrgentRequests(urgentReqCount ?? 0);
+        setExpiringCerts(expiringCount ?? 0);
+        setExpiredCerts(expiredCount ?? 0);
+        setBusPassesIssued(passCount ?? 0);
+        setActiveDrivers(activeDriverCount ?? 0);
+        setTotalDrivers(totalDriverCount ?? 0);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      } finally {
         setLoading(false);
       }
-    };
+    }
 
-    fetchDashboard();
-  }, []);
+    fetchDashboardData();
+  }, [user, isDemoMode, demoDistrictId]);
 
   if (loading) {
-    return <DashboardSkeleton />;
-  }
-
-  if (fetchError) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <AlertCircle className="h-10 w-10 text-destructive mb-4" />
-        <h3 className="text-lg font-semibold text-foreground mb-1">Unable to load dashboard</h3>
-        <p className="text-sm text-muted-foreground mb-4 max-w-md">{fetchError}</p>
-        <Button variant="outline" onClick={() => window.location.reload()}>Retry</Button>
+      <div className="flex items-center justify-center min-h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent" />
       </div>
     );
   }
 
-  const statCards = [
-    { label: "Total Students", value: stats?.totalStudents?.toLocaleString() ?? "0", icon: Users, color: "text-blue-600", bg: "bg-blue-50", trend: `${stats?.totalRoutes ?? 0} routes`, up: true, href: "/app/students" },
-    { label: "Active Routes", value: `${stats?.activeRoutes ?? 0} / ${stats?.totalRoutes ?? 0}`, icon: MapPin, color: "text-emerald-600", bg: "bg-emerald-50", trend: stats?.totalRoutes ? `${Math.round(((stats?.activeRoutes ?? 0) / stats.totalRoutes) * 100)}% active` : "\u2014", up: true, href: "/app/routes" },
-    { label: "On-Time Rate", value: `${stats?.avgOnTime ?? 0}%`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", trend: (stats?.avgOnTime ?? 0) >= 95 ? "Above target" : "Below 95% target", up: (stats?.avgOnTime ?? 0) >= 95, href: "/app/routes" },
-    { label: "Open Requests", value: openRequests.toString(), icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50", trend: urgentRequests > 0 ? `${urgentRequests} urgent` : "All clear", up: urgentRequests === 0, href: "/app/requests" },
-  ];
-
-  const quickActions = [
-    { label: "Add Student", icon: Plus, href: "/app/students?action=add", color: "text-blue-600" },
-    { label: "New Request", icon: MessageSquare, href: "/app/requests", color: "text-purple-600" },
-    { label: "Log Communication", icon: Phone, href: "/app/communications", color: "text-emerald-600" },
-    { label: "View Registrations", icon: UserCheck, href: "/app/admin/residency", color: "text-amber-600" },
-  ];
+  if (!stats) {
+    return (
+      <div className="text-center py-16 text-slate-400">
+        Unable to load dashboard data.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            {district?.name ?? "District"} \u2014 {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          </p>
-        </div>
-        {isAdmin && (
-          <Button variant="outline" size="sm" onClick={() => setShowBoardReport(true)}>
-            <FileText className="h-4 w-4 mr-1" /> Board Report
-          </Button>
-        )}
-      </div>
-
-      {/* Today's Schedule Override Banner */}
-      {todayOverride.length > 0 && (
-        <Card className="border-0 shadow-sm border-l-4 border-l-amber-400">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Calendar className="h-5 w-5 text-amber-600 flex-shrink-0" />
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Schedule Change Today</h3>
-              <div className="text-xs text-muted-foreground space-y-0.5">
-                {todayOverride.map((o, i) => (
-                  <p key={i}>{o.school}: {o.no_transport ? "No Transportation" : "Modified Schedule"}{o.notes ? ` \u2014 ${o.notes}` : ""}</p>
-                ))}
-              </div>
+      {/* KPI row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+              <Users className="h-4 w-4" /> Students
             </div>
-            <Button variant="ghost" size="sm" className="ml-auto" onClick={() => navigate("/app/calendar")}>View Calendar</Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Action Items Banner */}
-      {actionItems.length > 0 && (
-        <Card className="border-0 shadow-sm border-l-4 border-l-amber-500">
-          <CardContent className="p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-600" /> Action Items Requiring Attention
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {actionItems.map((item, i) => (
-                <button
-                  key={i}
-                  onClick={() => navigate(item.href)}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:shadow-md ${item.color}`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}: <span className="font-bold">{item.count}</span>
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((card) => (
-          <Card
-            key={card.label}
-            className="border-0 shadow-sm cursor-pointer transition-shadow hover:shadow-md hover:ring-1 hover:ring-primary/20"
-            onClick={() => navigate(card.href)}
-          >
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{card.label}</p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">{card.value}</p>
-                  <div className={`mt-1 flex items-center gap-1 text-xs font-medium ${card.up ? "text-emerald-600" : "text-rose-600"}`}>
-                    {card.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                    {card.trend}
-                  </div>
-                </div>
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${card.bg}`}>
-                  <card.icon className={`h-5 w-5 ${card.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Quick Actions */}
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {quickActions.map((action) => (
-              <Button
-                key={action.label}
-                variant="outline"
-                className="h-auto flex-col gap-2 py-4 hover:bg-muted/50"
-                onClick={() => navigate(action.href)}
-              >
-                <action.icon className={`h-5 w-5 ${action.color}`} />
-                <span className="text-xs font-medium">{action.label}</span>
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Workflow Sections Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Secretarial */}
-        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md" onClick={() => navigate("/app/requests")}>
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-50">
-                <MessageSquare className="h-4 w-4 text-purple-600" />
-              </div>
-              <h3 className="text-sm font-semibold">Secretarial</h3>
-            </div>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Open Requests</span><span className="font-bold">{openRequests}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Urgent</span><span className={`font-bold ${urgentRequests > 0 ? "text-red-600" : ""}`}>{urgentRequests}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Pending Registrations</span><span className="font-bold">{stats?.pendingRegistrations}</span></div>
-            </div>
+            <p className="text-2xl font-bold text-white">
+              {stats.totalStudents.toLocaleString()}
+            </p>
           </CardContent>
         </Card>
 
-        {/* Transportation */}
-        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md" onClick={() => navigate("/app/routes")}>
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50">
-                <Bus className="h-4 w-4 text-emerald-600" />
-              </div>
-              <h3 className="text-sm font-semibold">Transportation</h3>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+              <Bus className="h-4 w-4" /> Active Routes
             </div>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Active Routes</span><span className="font-bold">{stats?.activeRoutes}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Daily Miles</span><span className="font-bold">{stats?.totalMiles?.toLocaleString()}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Aides Assigned</span><span className="font-bold">{activeAides}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Bus Passes</span><span className="font-bold">{busPassesIssued}</span></div>
-            </div>
+            <p className="text-2xl font-bold text-white">
+              {stats.activeRoutes}
+              <span className="text-slate-400 text-base font-normal"> / {stats.totalRoutes}</span>
+            </p>
           </CardContent>
         </Card>
 
-        {/* Business */}
-        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md" onClick={() => navigate("/app/contracts")}>
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50">
-                <FileText className="h-4 w-4 text-blue-600" />
-              </div>
-              <h3 className="text-sm font-semibold">Business</h3>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+              <Clock className="h-4 w-4" /> On-Time %
             </div>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Pending Invoices</span><span className="font-bold">{pendingInvoices}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Expiring Contracts</span><span className={`font-bold ${expiringContracts > 0 ? "text-amber-600" : ""}`}>{expiringContracts}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Expiring 19A Certs</span><span className={`font-bold ${expiringCerts > 0 ? "text-amber-600" : ""}`}>{expiringCerts}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Expired 19A Certs</span><span className={`font-bold ${expiredCerts > 0 ? "text-red-600" : ""}`}>{expiredCerts}</span></div>
-              {benchmarks?.avg_rate_per_route && (
-                <div className="flex justify-between border-t pt-1 mt-1"><span className="text-muted-foreground text-[10px]">Regional Avg Rate</span><span className="text-[10px] font-medium">{fmt.format(benchmarks.avg_rate_per_route)}</span></div>
-              )}
-            </div>
+            <p className="text-2xl font-bold text-white">{stats.avgOnTime}%</p>
           </CardContent>
         </Card>
 
-        {/* Compliance */}
-        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md" onClick={() => navigate("/app/compliance")}>
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50">
-                <Shield className="h-4 w-4 text-amber-600" />
-              </div>
-              <h3 className="text-sm font-semibold">Compliance</h3>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+              <Ticket className="h-4 w-4" /> Bus Passes
             </div>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Avg Cost/Student</span><span className="font-bold">${stats?.avgCostPerStudent}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Avg Ride Time</span><span className="font-bold">{stats?.avgRideTime} min</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Communications</span><span className="font-bold">{recentComms}</span></div>
-            </div>
+            <p className="text-2xl font-bold text-white">
+              {busPassesIssued.toLocaleString()}
+            </p>
           </CardContent>
         </Card>
       </div>
-
-      {/* Upcoming Calendar Card */}
-      {upcomingCalendar.length > 0 && (
-        <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md" onClick={() => navigate("/app/calendar")}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-primary" /> Upcoming Calendar
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {upcomingCalendar.map((ev, i) => (
-                <div key={i} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className={`h-2 w-2 rounded-full ${
-                      ev.event_type === "legal_holiday" ? "bg-red-500" :
-                      ev.event_type === "religious_observance" ? "bg-purple-500" :
-                      ev.event_type === "early_dismissal" || ev.event_type === "delay" ? "bg-orange-500" :
-                      "bg-blue-500"
-                    }`} />
-                    <span className="text-foreground">{ev.title}</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{format(parseISO(ev.event_date), "MMM d")}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Charts row */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="border-0 shadow-sm lg:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Students by School</CardTitle>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Schools bar chart */}
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white text-sm">Students by School</CardTitle>
+            <CardDescription className="text-slate-400">Route distribution</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={schoolData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                  <XAxis dataKey="school" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12 }} />
-                  <Bar dataKey="students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={schoolData} margin={{ top: 4, right: 8, bottom: 0, left: -10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey="school" tick={{ fill: "#94a3b8", fontSize: 11 }} />
+                <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8 }}
+                  labelStyle={{ color: "#f8fafc" }}
+                />
+                <Bar dataKey="students" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Route Tiers</CardTitle>
+        {/* Tier pie */}
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white text-sm">Routes by Tier</CardTitle>
+            <CardDescription className="text-slate-400">Bell-time distribution</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={tierData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
-                    {tierData.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={tierData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={85}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {tierData.map((_, idx) => (
+                    <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8 }}
+                />
+                <Legend
+                  formatter={(value) => <span style={{ color: "#94a3b8", fontSize: 12 }}>{value}</span>}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Status cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Requests */}
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-white text-sm flex items-center gap-2">
+              <Activity className="h-4 w-4 text-blue-400" /> Transportation Requests
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Open</span>
+              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">{openRequests}</Badge>
             </div>
-            <div className="mt-2 space-y-2">
-              {tierData.map((t, i) => (
-                <div key={t.name} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[i] }} />
-                    <span className="text-muted-foreground">{t.name}</span>
-                  </div>
-                  <span className="font-medium">{t.value} routes</span>
-                </div>
-              ))}
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Urgent</span>
+              <Badge className="bg-red-500/20 text-red-300 border-red-500/30">{urgentRequests}</Badge>
+            </div>
+            <Button variant="outline" size="sm" className="w-full mt-2 border-slate-600 text-slate-300 hover:text-white">
+              View Requests
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Cert status */}
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-white text-sm flex items-center gap-2">
+              <Shield className="h-4 w-4 text-purple-400" /> Driver Certifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Expiring soon</span>
+              <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">{expiringCerts}</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Expired</span>
+              <Badge className="bg-red-500/20 text-red-300 border-red-500/30">{expiredCerts}</Badge>
+            </div>
+            <Button variant="outline" size="sm" className="w-full mt-2 border-slate-600 text-slate-300 hover:text-white">
+              View Drivers
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Fleet health */}
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-white text-sm flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-green-400" /> Driver Availability
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Active</span>
+              <span className="text-white font-semibold">{activeDrivers}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Total roster</span>
+              <span className="text-white font-semibold">{totalDrivers}</span>
+            </div>
+            <div className="w-full bg-slate-700 rounded-full h-2 mt-3">
+              <div
+                className="bg-green-500 h-2 rounded-full transition-all"
+                style={{
+                  width: totalDrivers > 0 ? `${Math.round((activeDrivers / totalDrivers) * 100)}%` : "0%",
+                }}
+              />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Bottom stats */}
-      <div className="grid gap-4 sm:grid-cols-4">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
-                <Bus className="h-5 w-5 text-purple-600" />
-              </div>
+      {/* Alerts */}
+      {(urgentRequests > 0 || expiredCerts > 0) && (
+        <Card className="bg-red-950/30 border-red-500/30">
+          <CardContent className="pt-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-400 mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Daily Miles</p>
-                <p className="text-xl font-bold">{stats?.totalMiles?.toLocaleString()}</p>
+                <p className="text-red-300 font-medium text-sm">Action Required</p>
+                <ul className="text-red-400/80 text-sm mt-1 space-y-0.5">
+                  {urgentRequests > 0 && (
+                    <li>{urgentRequests} urgent transportation request{urgentRequests > 1 ? "s" : ""} need attention</li>
+                  )}
+                  {expiredCerts > 0 && (
+                    <li>{expiredCerts} driver certification{expiredCerts > 1 ? "s" : ""} have expired</li>
+                  )}
+                </ul>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-50">
-                <Clock className="h-5 w-5 text-cyan-600" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Avg Ride Time</p>
-                <p className="text-xl font-bold">{stats?.avgRideTime} min</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Avg Cost / Student</p>
-                <p className="text-xl font-bold">${stats?.avgCostPerStudent?.toLocaleString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
-                <Ticket className="h-5 w-5 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Bus Passes Issued</p>
-                <p className="text-xl font-bold">{busPassesIssued}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      )}
 
-      {/* NYSED Law Advisor */}
-      <NysedAdvisorWidget />
-
-      <BoardReportGenerator open={showBoardReport} onOpenChange={setShowBoardReport} />
+      {/* All clear */}
+      {urgentRequests === 0 && expiredCerts === 0 && (
+        <Card className="bg-green-950/20 border-green-500/20">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-green-400" />
+              <p className="text-green-300 text-sm">All systems operational — no urgent issues</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
-};
-
-export default Dashboard;
+}

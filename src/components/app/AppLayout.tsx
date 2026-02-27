@@ -1,241 +1,186 @@
 import { useState, useEffect } from "react";
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { useDistrict } from "@/contexts/DistrictContext";
-import { supabase } from "@/integrations/supabase/client";
-import { AppBreadcrumb } from "./AppBreadcrumb";
-import { NotificationBell } from "./NotificationBell";
-import { DemoSwitcher, DemoBanner } from "./DemoSwitcher";
-import { CommandPalette } from "./CommandPalette";
-import { ErrorBoundary } from "./ErrorBoundary";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import DemoSwitcher from "@/components/app/DemoSwitcher";
 import {
-  LayoutDashboard, Users, MapPin, FileText, Shield, BarChart3,
-  Settings, Bus, UserPlus, Navigation, LogOut, Menu, X, ChevronLeft,
-  User, RefreshCw, ClipboardCheck, MessageSquare, Phone, Upload, Calendar,
-  AlertTriangle, Compass,
+  Bus,
+  LayoutDashboard,
+  Map,
+  Users,
+  UserCheck,
+  FileText,
+  Ticket,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  ChevronRight,
 } from "lucide-react";
-import logoIcon from "@/assets/rideline-logo-icon.png";
-import logoHorizontal from "@/assets/rideline-logo-horizontal.png";
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ElementType;
-  minRole?: string;
-  parentOnly?: boolean;
-  badgeKey?: string;
-}
-
-const staffNav: NavItem[] = [
-  { label: "Dashboard", href: "/app/dashboard", icon: LayoutDashboard },
-  { label: "Students", href: "/app/students", icon: Users, minRole: "staff" },
-  { label: "Routes", href: "/app/routes", icon: MapPin, minRole: "staff" },
-  { label: "Requests", href: "/app/requests", icon: MessageSquare, minRole: "staff", badgeKey: "openRequests" },
-  { label: "Communications", href: "/app/communications", icon: Phone, minRole: "staff" },
-  { label: "Reports", href: "/app/reports", icon: BarChart3, minRole: "staff" },
-  { label: "Accidents", href: "/app/accidents", icon: AlertTriangle, minRole: "staff" },
-  { label: "Field Trips", href: "/app/field-trips", icon: Compass, minRole: "staff" },
-  { label: "Calendar", href: "/app/calendar", icon: Calendar, minRole: "staff" },
-  { label: "Residency Review", href: "/app/admin/residency", icon: ClipboardCheck, minRole: "staff", badgeKey: "pendingRegistrations" },
-  { label: "Contracts", href: "/app/contracts", icon: FileText, minRole: "district_admin", badgeKey: "expiringContracts" },
-  { label: "Compliance", href: "/app/compliance", icon: Shield, minRole: "district_admin" },
-  { label: "Import Data", href: "/app/admin/import", icon: Upload, minRole: "district_admin" },
-  { label: "Settings", href: "/app/settings", icon: Settings, minRole: "district_admin" },
+const NAV_ITEMS = [
+  { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/app/routes", label: "Routes", icon: Map },
+  { to: "/app/students", label: "Students", icon: Users },
+  { to: "/app/drivers", label: "Drivers", icon: UserCheck },
+  { to: "/app/requests", label: "Requests", icon: FileText },
+  { to: "/app/bus-passes", label: "Bus Passes", icon: Ticket },
+  { to: "/app/settings", label: "Settings", icon: Settings },
 ];
 
-const parentNav: NavItem[] = [
-  { label: "Dashboard", href: "/app/parent", icon: LayoutDashboard, parentOnly: true },
-  { label: "My Students", href: "/app/students", icon: Users, parentOnly: true },
-  { label: "Register", href: "/app/parent/register", icon: UserPlus, parentOnly: true },
-  { label: "Reapply", href: "/app/parent/reapply", icon: RefreshCw, parentOnly: true },
-  { label: "Track Bus", href: "/app/parent/tracking", icon: Navigation, parentOnly: true },
-];
-
-const ROLE_LEVEL: Record<string, number> = {
-  super_admin: 6, district_admin: 5, transport_director: 4,
-  staff: 3, parent: 2, viewer: 1,
-};
-
-export const AppLayout = () => {
-  const { signOut } = useAuth();
-  const { district, profile, role, isParent, loading } = useDistrict();
-  const location = useLocation();
+export default function AppLayout() {
+  const { user, signOut } = useAuth();
+  const { isDemoMode, disableDemoMode } = useDemoMode();
+  const { district } = useDistrict();
   const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [badges, setBadges] = useState<Record<string, number>>({});
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Fetch badge counts
+  // Close sidebar on route change (mobile)
   useEffect(() => {
-    if (isParent || loading) return;
-    const fetchBadges = async () => {
-      const [reqRes, regRes, contractsRes] = await Promise.all([
-        supabase.from("service_requests").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
-        supabase.from("student_registrations").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("contracts").select("contract_end, status").eq("status", "active"),
-      ]);
-      const now = new Date();
-      const in90 = new Date(now.getTime() + 90 * 86400000);
-      const expiring = (contractsRes.data ?? []).filter(c => new Date(c.contract_end) <= in90 && new Date(c.contract_end) > now).length;
-      setBadges({
-        openRequests: reqRes.count ?? 0,
-        pendingRegistrations: regRes.count ?? 0,
-        expiringContracts: expiring,
-      });
-    };
-    fetchBadges();
-    const interval = setInterval(fetchBadges, 300000); // 5 min
-    return () => clearInterval(interval);
-  }, [isParent, loading]);
-
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-[#F7F8FA]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
-
-  const navItems = isParent ? parentNav : staffNav;
-  const userLevel = ROLE_LEVEL[role ?? "viewer"] ?? 0;
-
-  const filteredNav = navItems.filter((item) => {
-    if (item.parentOnly) return isParent;
-    if (!item.minRole) return true;
-    return userLevel >= (ROLE_LEVEL[item.minRole] ?? 99);
-  });
+    setSidebarOpen(false);
+  }, []);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
+    if (isDemoMode) {
+      disableDemoMode();
+      navigate("/demo", { replace: true });
+    } else {
+      await signOut();
+      navigate("/login", { replace: true });
+    }
   };
 
-  const SidebarContent = () => (
-    <>
-      {/* Logo */}
-      <div className="flex h-16 items-center justify-center border-b border-white/10 px-4">
-        {collapsed ? (
-          <img src={logoIcon} alt="RideLine" className="h-8 w-8" />
-        ) : (
-          <img src={logoHorizontal} alt="RideLine" className="h-10" />
-        )}
-      </div>
-
-      {/* Nav items */}
-      <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
-        {filteredNav.map((item) => {
-          const active = location.pathname === item.href || location.pathname.startsWith(item.href + "/");
-          const badgeCount = item.badgeKey ? (badges[item.badgeKey] ?? 0) : 0;
-          return (
-            <Link
-              key={item.href}
-              to={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                active
-                  ? "bg-white/10 text-white border-l-[3px] border-primary"
-                  : "text-white/60 hover:bg-white/5 hover:text-white border-l-[3px] border-transparent"
-              }`}
-            >
-              <item.icon className="h-5 w-5 flex-shrink-0" />
-              {!collapsed && <span className="flex-1">{item.label}</span>}
-              {!collapsed && badgeCount > 0 && (
-                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
-                  {badgeCount > 99 ? "99+" : badgeCount}
-                </span>
-              )}
-              {collapsed && badgeCount > 0 && (
-                <span className="absolute right-1 top-0 h-2 w-2 rounded-full bg-primary" />
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-    </>
-  );
+  const districtName = district?.name ?? (isDemoMode ? "Demo District" : "Your District");
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#F7F8FA]">
-      {/* Desktop sidebar */}
-      <aside
-        className={`hidden md:flex flex-col bg-[#151D33] transition-all duration-300 ${
-          collapsed ? "w-16" : "w-60"
-        }`}
-      >
-        <SidebarContent />
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center justify-center border-t border-white/10 py-3 text-white/40 hover:text-white transition-colors"
-        >
-          <ChevronLeft className={`h-4 w-4 transition-transform ${collapsed ? "rotate-180" : ""}`} />
-        </button>
-      </aside>
-
-      {/* Mobile sidebar overlay */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 h-full w-64 bg-[#151D33] flex flex-col">
-            <SidebarContent />
-          </aside>
-        </div>
+    <div className="min-h-screen bg-slate-900 flex">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/60 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
-      {/* Main area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <DemoBanner />
-        {/* Top bar */}
-        <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="md:hidden p-1.5 rounded-lg hover:bg-muted"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-            <h2 className="text-sm font-semibold text-foreground truncate">
-              {district?.name ?? "Loading..."}
-            </h2>
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed top-0 left-0 h-full w-64 bg-slate-900 border-r border-slate-800 z-30
+          transform transition-transform duration-200 ease-in-out
+          ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } lg:translate-x-0 lg:static lg:z-auto
+        `}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-800">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/30">
+            <Bus className="h-4 w-4 text-blue-400" />
           </div>
+          <span className="text-white font-semibold">RidePlan</span>
+          {isDemoMode && (
+            <Badge className="ml-auto text-xs bg-amber-500/20 text-amber-300 border-amber-500/30">
+              Demo
+            </Badge>
+          )}
+        </div>
 
-          <div className="flex items-center gap-3">
+        {/* District name */}
+        <div className="px-4 py-3 border-b border-slate-800">
+          <p className="text-slate-500 text-xs uppercase tracking-wide mb-0.5">District</p>
+          <p className="text-white text-sm font-medium truncate">{districtName}</p>
+        </div>
+
+        {/* Demo switcher */}
+        {isDemoMode && (
+          <div className="px-3 pt-3">
             <DemoSwitcher />
-            <NotificationBell />
+          </div>
+        )}
 
-            <div className="relative group">
-              <button className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-muted transition-colors">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-                  {profile?.full_name?.charAt(0) ?? "U"}
-                </div>
-              </button>
-              <div className="invisible group-hover:visible absolute right-0 top-full mt-1 w-48 rounded-lg border bg-card py-1 shadow-lg z-50">
-                <div className="px-3 py-2 border-b">
-                  <p className="text-sm font-medium truncate">{profile?.full_name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{profile?.email}</p>
-                </div>
-                <Link to="/app/settings" className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted">
-                  <User className="h-4 w-4" /> Profile
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
-                >
-                  <LogOut className="h-4 w-4" /> Log Out
-                </button>
-              </div>
-            </div>
+        {/* Nav */}
+        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  isActive
+                    ? "bg-blue-500/15 text-blue-300 font-medium"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800"
+                }`
+              }
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              {label}
+              {label === "Dashboard" && (
+                <ChevronRight className="h-3 w-3 ml-auto opacity-40" />
+              )}
+            </NavLink>
+          ))}
+        </nav>
+
+        <Separator className="bg-slate-800" />
+
+        {/* Footer */}
+        <div className="px-4 py-3">
+          <p className="text-slate-500 text-xs truncate mb-2">
+            {isDemoMode ? "Demo Mode" : (user?.email ?? "")}
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800 gap-2"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4" />
+            {isDemoMode ? "Exit Demo" : "Sign out"}
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 bg-slate-900 border-b border-slate-800">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="lg:hidden text-slate-400 hover:text-white p-1"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <span className="text-white font-medium text-sm">RidePlan</span>
+          {isDemoMode && (
+            <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-xs">
+              Demo
+            </Badge>
+          )}
+          <div className="ml-auto flex items-center gap-2">
+            {sidebarOpen && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden text-slate-400 hover:text-white p-1"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            )}
           </div>
         </header>
 
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <AppBreadcrumb />
-          <ErrorBoundary>
-            <Outlet />
-          </ErrorBoundary>
+        {/* Page content */}
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+          <Outlet />
         </main>
       </div>
-      <CommandPalette />
     </div>
   );
-};
+}

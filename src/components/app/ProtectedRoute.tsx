@@ -1,62 +1,30 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { DistrictProvider } from "@/contexts/DistrictContext";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 
-export const ProtectedRoute = () => {
-  const { session, user, loading } = useAuth();
+/**
+ * Renders child routes when the user is authenticated OR in demo mode.
+ * Otherwise redirects to /login.
+ */
+export default function ProtectedRoute() {
+  const { user, loading } = useAuth();
+  const { isDemoMode } = useDemoMode();
   const location = useLocation();
-  const [profileCheck, setProfileCheck] = useState<"loading" | "complete" | "incomplete">("loading");
 
-  useEffect(() => {
-    if (!user) {
-      setProfileCheck("loading");
-      return;
-    }
-
-    // Skip check if already on onboarding page
-    if (location.pathname === "/app/onboarding") {
-      setProfileCheck("complete");
-      return;
-    }
-
-    const check = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name, district_id")
-        .eq("id", user.id)
-        .single();
-
-      if (data?.full_name && data?.district_id) {
-        setProfileCheck("complete");
-      } else {
-        setProfileCheck("incomplete");
-      }
-    };
-
-    check();
-  }, [user, location.pathname]);
-
-  if (loading || (session && profileCheck === "loading")) {
+  // Still checking auth state — render nothing to avoid flash
+  if (loading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-[#F7F8FA]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent" />
       </div>
     );
   }
 
-  if (!session) {
-    return <Navigate to="/login" replace />;
+  // Allow access if authenticated OR in demo mode
+  if (user || isDemoMode) {
+    return <Outlet />;
   }
 
-  if (profileCheck === "incomplete") {
-    return <Navigate to="/app/onboarding" replace />;
-  }
-
-  return (
-    <DistrictProvider>
-      <Outlet />
-    </DistrictProvider>
-  );
-};
+  // Not authenticated — redirect to login, preserving intended destination
+  return <Navigate to="/login" state={{ from: location }} replace />;
+}
