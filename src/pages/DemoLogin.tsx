@@ -32,9 +32,8 @@ const DemoLogin = () => {
   }, []);
 
   const handleEnter = (districtId: string, role: string) => {
-    // Store demo intent in sessionStorage, redirect to login
-    sessionStorage.setItem("demo_intent", JSON.stringify({ districtId, role }));
-    navigate("/login");
+    // Pass demo intent via URL search params (sessionStorage blocked in sandboxed iframes)
+    navigate(`/login?demo_district=${districtId}&demo_role=${role}`);
   };
 
   return (

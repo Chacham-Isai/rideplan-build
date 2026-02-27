@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,13 +14,50 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { session, loading: authLoading } = useAuth();
+  const demoHandled = useRef(false);
 
-  // Redirect authenticated users to the app
+  // Read demo intent from URL params (set by /demo-login page)
+  const demoDistrictId = searchParams.get("demo_district");
+  const demoRole = searchParams.get("demo_role");
+  const isDemoIntent = Boolean(demoDistrictId && demoRole);
+
+  // Redirect authenticated users to the app (with demo handling)
   useEffect(() => {
     if (session && !authLoading) {
       const redirectUser = async () => {
+        // If there's a demo intent, activate demo session before redirecting
+        if (isDemoIntent && !demoHandled.current) {
+          demoHandled.current = true;
+          try {
+            // Deactivate any existing demo sessions
+            await supabase
+              .from("demo_sessions")
+              .update({ is_active: false })
+              .eq("original_user_id", session.user.id)
+              .eq("is_active", true);
+
+            // Create new demo session
+            await supabase.from("demo_sessions").insert({
+              original_user_id: session.user.id,
+              impersonating_district_id: demoDistrictId,
+              impersonating_role: demoRole,
+              is_active: true,
+            });
+          } catch (err) {
+            console.error("Failed to start demo session:", err);
+          }
+
+          if (demoRole === "parent") {
+            navigate("/app/parent", { replace: true });
+          } else {
+            navigate("/app/dashboard", { replace: true });
+          }
+          return;
+        }
+
         const { data: roleData } = await supabase
           .from("district_user_roles")
           .select("role")
@@ -35,7 +72,7 @@ const Login = () => {
       };
       redirectUser();
     }
-  }, [session, authLoading, navigate]);
+  }, [session, authLoading, navigate, isDemoIntent, demoDistrictId, demoRole]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +83,33 @@ const Login = () => {
     if (error) {
       toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
       setLoading(false);
+      return;
+    }
+
+    // If there's a demo intent, activate demo session before redirecting
+    if (isDemoIntent) {
+      try {
+        await supabase
+          .from("demo_sessions")
+          .update({ is_active: false })
+          .eq("original_user_id", data.user.id)
+          .eq("is_active", true);
+
+        await supabase.from("demo_sessions").insert({
+          original_user_id: data.user.id,
+          impersonating_district_id: demoDistrictId,
+          impersonating_role: demoRole,
+          is_active: true,
+        });
+      } catch (err) {
+        console.error("Failed to start demo session:", err);
+      }
+
+      if (demoRole === "parent") {
+        navigate("/app/parent", { replace: true });
+      } else {
+        navigate("/app/dashboard", { replace: true });
+      }
       return;
     }
 
@@ -84,6 +148,14 @@ const Login = () => {
           <p className="mb-6 text-center text-sm text-white/50">
             Sign in to your district dashboard
           </p>
+
+          {/* Demo mode banner */}
+          {isDemoIntent && (
+            <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center">
+              <p className="text-sm font-medium text-amber-300">Demo Mode</p>
+              <p className="text-xs text-amber-300/70 mt-0.5">Sign in to explore the platform as a {demoRole === "parent" ? "parent" : "district admin"}</p>
+            </div>
+          )}
 
           {/* Social login buttons */}
           <div className="space-y-3 mb-6">

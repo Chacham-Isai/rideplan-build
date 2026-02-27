@@ -28,7 +28,7 @@ interface NavItem {
 
 const staffNav: NavItem[] = [
   { label: "Dashboard", href: "/app/dashboard", icon: LayoutDashboard },
-  { label: "Registrations", href: "/app/students", icon: Users, minRole: "staff" },
+  { label: "Students", href: "/app/students", icon: Users, minRole: "staff" },
   { label: "Routes", href: "/app/routes", icon: MapPin, minRole: "staff" },
   { label: "Requests", href: "/app/requests", icon: MessageSquare, minRole: "staff", badgeKey: "openRequests" },
   { label: "Communications", href: "/app/communications", icon: Phone, minRole: "staff" },
@@ -36,7 +36,7 @@ const staffNav: NavItem[] = [
   { label: "Accidents", href: "/app/accidents", icon: AlertTriangle, minRole: "staff" },
   { label: "Field Trips", href: "/app/field-trips", icon: Compass, minRole: "staff" },
   { label: "Calendar", href: "/app/calendar", icon: Calendar, minRole: "staff" },
-  { label: "Registrations", href: "/app/admin/residency", icon: ClipboardCheck, minRole: "staff", badgeKey: "pendingRegistrations" },
+  { label: "Residency Review", href: "/app/admin/residency", icon: ClipboardCheck, minRole: "staff", badgeKey: "pendingRegistrations" },
   { label: "Contracts", href: "/app/contracts", icon: FileText, minRole: "district_admin", badgeKey: "expiringContracts" },
   { label: "Compliance", href: "/app/compliance", icon: Shield, minRole: "district_admin" },
   { label: "Import Data", href: "/app/admin/import", icon: Upload, minRole: "district_admin" },
