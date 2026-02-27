@@ -7,10 +7,11 @@ interface AnimatedStatProps {
   suffix?: string;
   label: string;
   divisor?: number;
+  startImmediately?: boolean;
 }
 
-export const AnimatedStat = ({ numericValue, prefix = "", suffix = "", label, divisor }: AnimatedStatProps) => {
-  const { count, ref } = useCountUp(numericValue, 2000);
+export const AnimatedStat = ({ numericValue, prefix = "", suffix = "", label, divisor, startImmediately = false }: AnimatedStatProps) => {
+  const { count, ref } = useCountUp(numericValue, 2000, !startImmediately);
   const display = divisor ? (count / divisor).toFixed(1) : count.toLocaleString();
 
   return (

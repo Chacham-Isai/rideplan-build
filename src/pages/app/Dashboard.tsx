@@ -56,10 +56,14 @@ const Dashboard = () => {
   const [benchmarks, setBenchmarks] = useState<any>(null);
   const [upcomingCalendar, setUpcomingCalendar] = useState<{ title: string; event_date: string; event_type: string }[]>([]);
   const [todayOverride, setTodayOverride] = useState<{ school: string; no_transport: boolean; notes: string | null }[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       setLoading(true);
+      setFetchError(null);
+
+      try {
 
       const [routesRes, studentsRes, pendingRes, requestsRes, certsRes, passesRes, aidesRes, commsRes, invoicesRes, contractsRes] = await Promise.all([
         supabase.from("routes").select("school, status, total_students, total_miles, on_time_pct, avg_ride_time_min, cost_per_student, tier"),
@@ -167,6 +171,11 @@ const Dashboard = () => {
       ]);
 
       setLoading(false);
+      } catch (err: any) {
+        console.error("Dashboard fetch failed:", err);
+        setFetchError(err?.message ?? "Failed to load dashboard data. Please try refreshing.");
+        setLoading(false);
+      }
     };
 
     fetchDashboard();
@@ -176,10 +185,21 @@ const Dashboard = () => {
     return <DashboardSkeleton />;
   }
 
+  if (fetchError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <AlertCircle className="h-10 w-10 text-destructive mb-4" />
+        <h3 className="text-lg font-semibold text-foreground mb-1">Unable to load dashboard</h3>
+        <p className="text-sm text-muted-foreground mb-4 max-w-md">{fetchError}</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
+
   const statCards = [
-    { label: "Total Students", value: stats?.totalStudents?.toLocaleString() ?? "0", icon: Users, color: "text-blue-600", bg: "bg-blue-50", trend: "+3.2%", up: true, href: "/app/students" },
-    { label: "Active Routes", value: `${stats?.activeRoutes ?? 0} / ${stats?.totalRoutes ?? 0}`, icon: MapPin, color: "text-emerald-600", bg: "bg-emerald-50", trend: "99%", up: true, href: "/app/routes" },
-    { label: "On-Time Rate", value: `${stats?.avgOnTime ?? 0}%`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", trend: "+1.4%", up: true, href: "/app/routes" },
+    { label: "Total Students", value: stats?.totalStudents?.toLocaleString() ?? "0", icon: Users, color: "text-blue-600", bg: "bg-blue-50", trend: `${stats?.totalRoutes ?? 0} routes`, up: true, href: "/app/students" },
+    { label: "Active Routes", value: `${stats?.activeRoutes ?? 0} / ${stats?.totalRoutes ?? 0}`, icon: MapPin, color: "text-emerald-600", bg: "bg-emerald-50", trend: stats?.totalRoutes ? `${Math.round(((stats?.activeRoutes ?? 0) / stats.totalRoutes) * 100)}% active` : "\u2014", up: true, href: "/app/routes" },
+    { label: "On-Time Rate", value: `${stats?.avgOnTime ?? 0}%`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", trend: (stats?.avgOnTime ?? 0) >= 95 ? "Above target" : "Below 95% target", up: (stats?.avgOnTime ?? 0) >= 95, href: "/app/routes" },
     { label: "Open Requests", value: openRequests.toString(), icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50", trend: urgentRequests > 0 ? `${urgentRequests} urgent` : "All clear", up: urgentRequests === 0, href: "/app/requests" },
   ];
 
@@ -196,7 +216,7 @@ const Dashboard = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            {district?.name ?? "District"} — {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            {district?.name ?? "District"} \u2014 {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
         {isAdmin && (
@@ -215,7 +235,7 @@ const Dashboard = () => {
               <h3 className="text-sm font-semibold text-foreground">Schedule Change Today</h3>
               <div className="text-xs text-muted-foreground space-y-0.5">
                 {todayOverride.map((o, i) => (
-                  <p key={i}>{o.school}: {o.no_transport ? "No Transportation" : "Modified Schedule"}{o.notes ? ` — ${o.notes}` : ""}</p>
+                  <p key={i}>{o.school}: {o.no_transport ? "No Transportation" : "Modified Schedule"}{o.notes ? ` \u2014 ${o.notes}` : ""}</p>
                 ))}
               </div>
             </div>

@@ -6,10 +6,10 @@ import parentSafetyImg from "@/assets/rideline-parent-safety.webp";
 import { AnimatedStat } from "@/components/AnimatedStat";
 
 const stats = [
-  { numericValue: 42, prefix: "$", suffix: "B+", label: "Annual U.S. Transp. Spend" },
-  { numericValue: 480, prefix: "", suffix: "K+", label: "School Buses Nationwide" },
+  { numericValue: 42, prefix: "$", suffix: "B+", label: "Annual U.S. Transp. Spend", divisor: undefined },
+  { numericValue: 480, prefix: "", suffix: "K+", label: "School Buses Nationwide", divisor: undefined },
   { numericValue: 59, prefix: "", suffix: "M+", label: "Students Served", divisor: 10 },
-  { numericValue: 25, prefix: "12–", suffix: "x", label: "Year 1 ROI" },
+  { numericValue: 25, prefix: "12\u2013", suffix: "x", label: "Year 1 ROI", divisor: undefined },
 ];
 
 export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
@@ -75,7 +75,7 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
               className="mt-6 max-w-2xl text-lg text-primary-foreground/70 md:text-xl lg:mx-0 mx-auto"
             >
               RideLine replaces spreadsheets, phone calls, and guesswork with a single command center for
-              your transportation office. Save <strong className="text-success">$710K–$1.6M</strong> in Year 1.
+              your transportation office. Save <strong className="text-success">$710K\u2013$1.6M</strong> in Year 1.
             </motion.p>
 
             <motion.div
@@ -110,7 +110,7 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
               <div className="absolute -inset-4 rounded-2xl bg-gradient-to-br from-accent/20 to-success/10 blur-2xl" />
               <img
                 src={dashboardImg}
-                alt="RideLine Dashboard — route management command center"
+                alt="RideLine Dashboard \u2014 route management command center"
                 className="relative rounded-2xl shadow-2xl shadow-black/40 border border-primary-foreground/10"
               />
               <img
@@ -134,7 +134,7 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
             <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-accent/15 to-success/10 blur-xl" />
             <img
               src={dashboardImg}
-              alt="RideLine Dashboard — route management command center"
+              alt="RideLine Dashboard \u2014 route management command center"
               className="relative rounded-xl shadow-2xl shadow-black/40 border border-primary-foreground/10"
             />
             <img
@@ -160,7 +160,8 @@ export const HeroSection = ({ onGetAudit }: { onGetAudit?: () => void }) => {
               prefix={s.prefix}
               suffix={s.suffix}
               label={s.label}
-              divisor={(s as any).divisor}
+              divisor={s.divisor}
+              startImmediately
             />
           ))}
         </motion.div>
