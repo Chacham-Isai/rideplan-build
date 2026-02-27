@@ -19,11 +19,12 @@ import {
 import {
   Search, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
   Ghost, Clock, Fuel, AlertTriangle, Loader2, Eye, Merge, Save, Download,
-  CreditCard, Plus, XCircle,
+  CreditCard, Plus, XCircle, Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { exportToCsv } from "@/lib/csvExport";
 const RouteMap = lazy(() => import("@/components/app/RouteMap"));
+const RouteOptimizer = lazy(() => import("@/components/app/RouteOptimizer"));
 
 type Route = {
   id: string; route_number: string; school: string; tier: number;
@@ -334,6 +335,9 @@ const AppRoutes = () => {
             <CreditCard className="h-4 w-4 mr-1" /> Bus Passes
             {busPasses.length > 0 && <Badge variant="secondary" className="ml-1.5 text-xs">{busPasses.length}</Badge>}
           </TabsTrigger>
+          <TabsTrigger value="optimize">
+            <Sparkles className="h-4 w-4 mr-1" /> Optimize
+          </TabsTrigger>
           <TabsTrigger value="map">
             <Eye className="h-4 w-4 mr-1" /> Map
           </TabsTrigger>
@@ -635,6 +639,18 @@ const AppRoutes = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* ===== MAP TAB ===== */}
+        {/* ===== OPTIMIZE TAB ===== */}
+        <TabsContent value="optimize">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          }>
+            <RouteOptimizer routes={allRoutes} districtId={district?.id} />
+          </Suspense>
         </TabsContent>
 
         {/* ===== MAP TAB ===== */}

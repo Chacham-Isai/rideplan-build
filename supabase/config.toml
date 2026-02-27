@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.nysed-advisor]
 verify_jwt = false
+
+[functions.optimize-routes]
+verify_jwt = false
