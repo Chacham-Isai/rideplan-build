@@ -393,3 +393,162 @@ const DEMO_REQUESTS: Record<DemoDistrictId, DemoServiceRequest[]> = {
 export function getDemoRequests(districtId: DemoDistrictId): DemoServiceRequest[] {
   return DEMO_REQUESTS[districtId];
 }
+
+// ═══════════════════════════════════════════════════════════════
+// DRIVERS — Demo data for Drivers page
+// ═══════════════════════════════════════════════════════════════
+
+export interface DemoDriver {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  bus_number: string;
+  contractor: string;
+  status: "active" | "inactive" | "on_leave";
+  hire_date: string;
+  cdl_expiry: string;
+  cdl_status: "valid" | "expiring_soon" | "expired";
+  medical_expiry: string;
+  medical_status: "valid" | "expiring_soon" | "expired";
+  cert_19a_expiry: string;
+  cert_19a_status: "valid" | "expiring_soon" | "expired";
+  routes_assigned: number;
+  on_time_pct: number;
+  safety_incidents: number;
+}
+
+const LAWRENCE_DRIVERS: DemoDriver[] = [
+  { id: "ld-01", name: "Michael Rodriguez", phone: "(516) 555-0101", email: "mrodriguez@acmetrans.com", bus_number: "B-101", contractor: "Acme Transport", status: "active", hire_date: "2019-08-15", cdl_expiry: "2027-03-15", cdl_status: "valid", medical_expiry: "2026-09-30", medical_status: "valid", cert_19a_expiry: "2026-06-15", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 96, safety_incidents: 0 },
+  { id: "ld-02", name: "Patricia Chen", phone: "(516) 555-0102", email: "pchen@acmetrans.com", bus_number: "B-102", contractor: "Acme Transport", status: "active", hire_date: "2020-01-10", cdl_expiry: "2026-07-20", cdl_status: "valid", medical_expiry: "2026-04-15", medical_status: "expiring_soon", cert_19a_expiry: "2026-08-20", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 98, safety_incidents: 0 },
+  { id: "ld-03", name: "James Wilson", phone: "(516) 555-0103", email: "jwilson@acmetrans.com", bus_number: "B-103", contractor: "Acme Transport", status: "active", hire_date: "2018-03-20", cdl_expiry: "2026-11-10", cdl_status: "valid", medical_expiry: "2026-05-30", medical_status: "valid", cert_19a_expiry: "2026-04-01", cert_19a_status: "expiring_soon", routes_assigned: 3, on_time_pct: 94, safety_incidents: 1 },
+  { id: "ld-04", name: "Maria Santos", phone: "(516) 555-0104", email: "msantos@acmetrans.com", bus_number: "B-104", contractor: "Acme Transport", status: "active", hire_date: "2021-09-01", cdl_expiry: "2027-01-15", cdl_status: "valid", medical_expiry: "2026-12-01", medical_status: "valid", cert_19a_expiry: "2026-09-15", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 97, safety_incidents: 0 },
+  { id: "ld-05", name: "Robert Thompson", phone: "(516) 555-0105", email: "rthompson@acmetrans.com", bus_number: "B-105", contractor: "Acme Transport", status: "active", hire_date: "2017-06-12", cdl_expiry: "2026-08-20", cdl_status: "valid", medical_expiry: "2026-03-15", medical_status: "expiring_soon", cert_19a_expiry: "2026-05-10", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 91, safety_incidents: 2 },
+  { id: "ld-06", name: "Linda Park", phone: "(516) 555-0106", email: "lpark@acmetrans.com", bus_number: "B-106", contractor: "Acme Transport", status: "active", hire_date: "2022-01-15", cdl_expiry: "2027-06-10", cdl_status: "valid", medical_expiry: "2026-11-20", medical_status: "valid", cert_19a_expiry: "2026-07-15", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 99, safety_incidents: 0 },
+  { id: "ld-07", name: "David Kim", phone: "(516) 555-0107", email: "dkim@acmetrans.com", bus_number: "B-107", contractor: "Acme Transport", status: "on_leave", hire_date: "2019-11-03", cdl_expiry: "2026-09-15", cdl_status: "valid", medical_expiry: "2026-06-30", medical_status: "valid", cert_19a_expiry: "2026-08-01", cert_19a_status: "valid", routes_assigned: 0, on_time_pct: 95, safety_incidents: 0 },
+  { id: "ld-08", name: "Jennifer Adams", phone: "(516) 555-0108", email: "jadams@acmetrans.com", bus_number: "B-108", contractor: "Acme Transport", status: "active", hire_date: "2020-08-20", cdl_expiry: "2026-04-05", cdl_status: "expiring_soon", medical_expiry: "2026-10-15", medical_status: "valid", cert_19a_expiry: "2026-11-30", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 93, safety_incidents: 1 },
+  { id: "ld-09", name: "Charles Brown", phone: "(516) 555-0109", email: "cbrown@saferoute.com", bus_number: "B-109", contractor: "SafeRoute LLC", status: "active", hire_date: "2018-05-10", cdl_expiry: "2026-12-01", cdl_status: "valid", medical_expiry: "2026-08-15", medical_status: "valid", cert_19a_expiry: "2026-03-20", cert_19a_status: "expiring_soon", routes_assigned: 2, on_time_pct: 96, safety_incidents: 0 },
+  { id: "ld-10", name: "Susan Martinez", phone: "(516) 555-0110", email: "smartinez@saferoute.com", bus_number: "B-110", contractor: "SafeRoute LLC", status: "active", hire_date: "2021-02-14", cdl_expiry: "2027-02-28", cdl_status: "valid", medical_expiry: "2026-07-10", medical_status: "valid", cert_19a_expiry: "2026-10-20", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 97, safety_incidents: 0 },
+  { id: "ld-11", name: "Thomas Garcia", phone: "(516) 555-0111", email: "tgarcia@saferoute.com", bus_number: "B-111", contractor: "SafeRoute LLC", status: "active", hire_date: "2019-07-22", cdl_expiry: "2026-06-15", cdl_status: "valid", medical_expiry: "2026-04-20", medical_status: "expiring_soon", cert_19a_expiry: "2026-12-10", cert_19a_status: "valid", routes_assigned: 3, on_time_pct: 92, safety_incidents: 1 },
+  { id: "ld-12", name: "Nancy Lee", phone: "(516) 555-0112", email: "nlee@saferoute.com", bus_number: "B-112", contractor: "SafeRoute LLC", status: "active", hire_date: "2022-03-01", cdl_expiry: "2027-05-15", cdl_status: "valid", medical_expiry: "2026-09-01", medical_status: "valid", cert_19a_expiry: "2026-06-25", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 98, safety_incidents: 0 },
+  { id: "ld-13", name: "Mark Johnson", phone: "(516) 555-0113", email: "mjohnson@saferoute.com", bus_number: "B-113", contractor: "SafeRoute LLC", status: "active", hire_date: "2020-10-15", cdl_expiry: "2026-10-30", cdl_status: "valid", medical_expiry: "2026-06-05", medical_status: "valid", cert_19a_expiry: "2026-09-30", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 95, safety_incidents: 0 },
+  { id: "ld-14", name: "Karen White", phone: "(516) 555-0114", email: "kwhite@saferoute.com", bus_number: "B-114", contractor: "SafeRoute LLC", status: "active", hire_date: "2017-12-01", cdl_expiry: "2026-03-10", cdl_status: "expiring_soon", medical_expiry: "2026-02-28", medical_status: "expired", cert_19a_expiry: "2026-05-15", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 90, safety_incidents: 2 },
+  { id: "ld-15", name: "Steven Davis", phone: "(516) 555-0115", email: "sdavis@saferoute.com", bus_number: "B-115", contractor: "SafeRoute LLC", status: "active", hire_date: "2021-06-20", cdl_expiry: "2027-04-10", cdl_status: "valid", medical_expiry: "2026-11-15", medical_status: "valid", cert_19a_expiry: "2026-08-05", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 97, safety_incidents: 0 },
+  { id: "ld-16", name: "Dorothy Clark", phone: "(516) 555-0116", email: "dclark@saferoute.com", bus_number: "B-116", contractor: "SafeRoute LLC", status: "active", hire_date: "2019-04-08", cdl_expiry: "2026-07-25", cdl_status: "valid", medical_expiry: "2026-05-20", medical_status: "valid", cert_19a_expiry: "2026-04-15", cert_19a_status: "expiring_soon", routes_assigned: 2, on_time_pct: 94, safety_incidents: 0 },
+  { id: "ld-17", name: "Paul Robinson", phone: "(516) 555-0117", email: "probinson@islandbus.com", bus_number: "B-117", contractor: "Island Bus Co", status: "active", hire_date: "2018-09-15", cdl_expiry: "2026-11-20", cdl_status: "valid", medical_expiry: "2026-08-30", medical_status: "valid", cert_19a_expiry: "2026-07-10", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 96, safety_incidents: 0 },
+  { id: "ld-18", name: "Lisa Anderson", phone: "(516) 555-0118", email: "landerson@islandbus.com", bus_number: "B-118", contractor: "Island Bus Co", status: "active", hire_date: "2020-05-12", cdl_expiry: "2027-01-20", cdl_status: "valid", medical_expiry: "2026-10-10", medical_status: "valid", cert_19a_expiry: "2026-11-15", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 98, safety_incidents: 0 },
+  { id: "ld-19", name: "Richard Taylor", phone: "(516) 555-0119", email: "rtaylor@islandbus.com", bus_number: "B-119", contractor: "Island Bus Co", status: "active", hire_date: "2022-02-01", cdl_expiry: "2027-08-15", cdl_status: "valid", medical_expiry: "2026-12-20", medical_status: "valid", cert_19a_expiry: "2026-10-01", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 95, safety_incidents: 0 },
+  { id: "ld-20", name: "Barbara Moore", phone: "(516) 555-0120", email: "bmoore@islandbus.com", bus_number: "B-120", contractor: "Island Bus Co", status: "active", hire_date: "2019-01-20", cdl_expiry: "2026-05-10", cdl_status: "valid", medical_expiry: "2026-03-25", medical_status: "expiring_soon", cert_19a_expiry: "2026-06-30", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 93, safety_incidents: 1 },
+  { id: "ld-21", name: "Daniel Harris", phone: "(516) 555-0121", email: "dharris@islandbus.com", bus_number: "B-121", contractor: "Island Bus Co", status: "active", hire_date: "2020-11-10", cdl_expiry: "2026-09-05", cdl_status: "valid", medical_expiry: "2026-07-15", medical_status: "valid", cert_19a_expiry: "2026-05-20", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 96, safety_incidents: 0 },
+  { id: "ld-22", name: "Sarah Miller", phone: "(516) 555-0122", email: "smiller@islandbus.com", bus_number: "B-122", contractor: "Island Bus Co", status: "active", hire_date: "2021-08-15", cdl_expiry: "2027-03-01", cdl_status: "valid", medical_expiry: "2026-11-05", medical_status: "valid", cert_19a_expiry: "2026-09-10", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 99, safety_incidents: 0 },
+  { id: "ld-23", name: "Joseph Wright", phone: "(516) 555-0123", email: "jwright@islandbus.com", bus_number: "B-123", contractor: "Island Bus Co", status: "active", hire_date: "2018-07-01", cdl_expiry: "2026-06-20", cdl_status: "valid", medical_expiry: "2026-04-30", medical_status: "expiring_soon", cert_19a_expiry: "2026-03-15", cert_19a_status: "expiring_soon", routes_assigned: 2, on_time_pct: 91, safety_incidents: 1 },
+  { id: "ld-24", name: "Margaret Scott", phone: "(516) 555-0124", email: "mscott@islandbus.com", bus_number: "B-124", contractor: "Island Bus Co", status: "active", hire_date: "2020-03-10", cdl_expiry: "2026-12-15", cdl_status: "valid", medical_expiry: "2026-09-20", medical_status: "valid", cert_19a_expiry: "2026-08-10", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 95, safety_incidents: 0 },
+  { id: "ld-25", name: "George Nelson", phone: "(516) 555-0125", email: "gnelson@islandbus.com", bus_number: "B-125", contractor: "Island Bus Co", status: "active", hire_date: "2019-10-20", cdl_expiry: "2026-08-05", cdl_status: "valid", medical_expiry: "2026-06-10", medical_status: "valid", cert_19a_expiry: "2026-11-25", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 97, safety_incidents: 0 },
+  { id: "ld-26", name: "Betty Campbell", phone: "(516) 555-0126", email: "bcampbell@islandbus.com", bus_number: "B-126", contractor: "Island Bus Co", status: "active", hire_date: "2021-04-05", cdl_expiry: "2027-02-10", cdl_status: "valid", medical_expiry: "2026-10-25", medical_status: "valid", cert_19a_expiry: "2026-07-20", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 96, safety_incidents: 0 },
+  { id: "ld-27", name: "Edward Mitchell", phone: "(516) 555-0127", email: "emitchell@islandbus.com", bus_number: "B-127", contractor: "Island Bus Co", status: "active", hire_date: "2017-11-15", cdl_expiry: "2026-04-20", cdl_status: "expiring_soon", medical_expiry: "2026-05-10", medical_status: "valid", cert_19a_expiry: "2026-06-05", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 92, safety_incidents: 1 },
+  { id: "ld-28", name: "Helen Cooper", phone: "(516) 555-0128", email: "hcooper@islandbus.com", bus_number: "B-128", contractor: "Island Bus Co", status: "active", hire_date: "2022-06-01", cdl_expiry: "2027-07-20", cdl_status: "valid", medical_expiry: "2026-12-15", medical_status: "valid", cert_19a_expiry: "2026-10-30", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 98, safety_incidents: 0 },
+  { id: "ld-29", name: "Frank Perez", phone: "(516) 555-0129", email: "fperez@islandbus.com", bus_number: "B-129", contractor: "Island Bus Co", status: "active", hire_date: "2019-06-15", cdl_expiry: "2026-10-10", cdl_status: "valid", medical_expiry: "2026-07-25", medical_status: "valid", cert_19a_expiry: "2026-12-05", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 94, safety_incidents: 0 },
+  { id: "ld-30", name: "Ruth Howard", phone: "(516) 555-0130", email: "rhoward@islandbus.com", bus_number: "B-130", contractor: "Island Bus Co", status: "active", hire_date: "2020-07-20", cdl_expiry: "2026-11-30", cdl_status: "valid", medical_expiry: "2026-08-05", medical_status: "valid", cert_19a_expiry: "2026-05-25", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 97, safety_incidents: 0 },
+  { id: "ld-31", name: "Walter Green", phone: "(516) 555-0131", email: "wgreen@islandbus.com", bus_number: "B-131", contractor: "Island Bus Co", status: "active", hire_date: "2021-01-10", cdl_expiry: "2027-01-05", cdl_status: "valid", medical_expiry: "2026-09-15", medical_status: "valid", cert_19a_expiry: "2026-08-15", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 96, safety_incidents: 0 },
+  { id: "ld-32", name: "Carol Evans", phone: "(516) 555-0132", email: "cevans@islandbus.com", bus_number: "B-132", contractor: "Island Bus Co", status: "active", hire_date: "2019-09-01", cdl_expiry: "2026-07-15", cdl_status: "valid", medical_expiry: "2026-05-25", medical_status: "valid", cert_19a_expiry: "2026-04-10", cert_19a_status: "expiring_soon", routes_assigned: 2, on_time_pct: 93, safety_incidents: 0 },
+  { id: "ld-33", name: "Raymond Hill", phone: "(516) 555-0133", email: "rhill@acmetrans.com", bus_number: "B-133", contractor: "Acme Transport", status: "active", hire_date: "2018-12-10", cdl_expiry: "2026-09-25", cdl_status: "valid", medical_expiry: "2026-06-20", medical_status: "valid", cert_19a_expiry: "2026-07-30", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 95, safety_incidents: 0 },
+  { id: "ld-34", name: "Virginia Young", phone: "(516) 555-0134", email: "vyoung@acmetrans.com", bus_number: "B-134", contractor: "Acme Transport", status: "active", hire_date: "2020-04-15", cdl_expiry: "2026-12-20", cdl_status: "valid", medical_expiry: "2026-10-01", medical_status: "valid", cert_19a_expiry: "2026-11-10", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 98, safety_incidents: 0 },
+  { id: "ld-35", name: "Eugene King", phone: "(516) 555-0135", email: "eking@saferoute.com", bus_number: "B-135", contractor: "SafeRoute LLC", status: "active", hire_date: "2021-07-01", cdl_expiry: "2027-04-25", cdl_status: "valid", medical_expiry: "2026-11-30", medical_status: "valid", cert_19a_expiry: "2026-09-05", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 96, safety_incidents: 0 },
+  { id: "ld-36", name: "Gloria Baker", phone: "(516) 555-0136", email: "gbaker@saferoute.com", bus_number: "B-136", contractor: "SafeRoute LLC", status: "active", hire_date: "2019-03-15", cdl_expiry: "2026-06-10", cdl_status: "valid", medical_expiry: "2026-04-05", medical_status: "expiring_soon", cert_19a_expiry: "2026-06-20", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 94, safety_incidents: 0 },
+  { id: "ld-37", name: "Roy Gonzalez", phone: "(516) 555-0137", email: "rgonzalez@saferoute.com", bus_number: "B-137", contractor: "SafeRoute LLC", status: "inactive", hire_date: "2017-08-20", cdl_expiry: "2025-12-15", cdl_status: "expired", medical_expiry: "2025-11-01", medical_status: "expired", cert_19a_expiry: "2025-10-30", cert_19a_status: "expired", routes_assigned: 0, on_time_pct: 88, safety_incidents: 3 },
+  { id: "ld-38", name: "Judith Rivera", phone: "(516) 555-0138", email: "jrivera@acmetrans.com", bus_number: "B-138", contractor: "Acme Transport", status: "active", hire_date: "2022-08-01", cdl_expiry: "2027-06-30", cdl_status: "valid", medical_expiry: "2026-12-10", medical_status: "valid", cert_19a_expiry: "2026-10-15", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 97, safety_incidents: 0 },
+  { id: "ld-39", name: "Alan Murphy", phone: "(516) 555-0139", email: "amurphy@acmetrans.com", bus_number: "B-139", contractor: "Acme Transport", status: "active", hire_date: "2020-09-10", cdl_expiry: "2026-08-15", cdl_status: "valid", medical_expiry: "2026-07-01", medical_status: "valid", cert_19a_expiry: "2026-05-15", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 95, safety_incidents: 0 },
+  { id: "ld-40", name: "Diana Foster", phone: "(516) 555-0140", email: "dfoster@saferoute.com", bus_number: "B-140", contractor: "SafeRoute LLC", status: "on_leave", hire_date: "2018-11-05", cdl_expiry: "2026-10-20", cdl_status: "valid", medical_expiry: "2026-08-10", medical_status: "valid", cert_19a_expiry: "2026-07-05", cert_19a_status: "valid", routes_assigned: 0, on_time_pct: 96, safety_incidents: 0 },
+  { id: "ld-41", name: "Peter Brooks", phone: "(516) 555-0141", email: "pbrooks@islandbus.com", bus_number: "B-141", contractor: "Island Bus Co", status: "active", hire_date: "2021-11-20", cdl_expiry: "2027-05-10", cdl_status: "valid", medical_expiry: "2026-11-25", medical_status: "valid", cert_19a_expiry: "2026-08-30", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 98, safety_incidents: 0 },
+  { id: "ld-42", name: "Shirley Reed", phone: "(516) 555-0142", email: "sreed@islandbus.com", bus_number: "B-142", contractor: "Island Bus Co", status: "inactive", hire_date: "2016-05-01", cdl_expiry: "2026-01-15", cdl_status: "expired", medical_expiry: "2025-09-30", medical_status: "expired", cert_19a_expiry: "2025-08-20", cert_19a_status: "expired", routes_assigned: 0, on_time_pct: 85, safety_incidents: 4 },
+];
+
+const OCEANSIDE_DRIVERS: DemoDriver[] = [
+  { id: "od-01", name: "Anthony Rossi", phone: "(516) 555-0201", email: "arossi@coastaltrans.com", bus_number: "O-201", contractor: "Coastal Transport", status: "active", hire_date: "2019-06-10", cdl_expiry: "2027-02-15", cdl_status: "valid", medical_expiry: "2026-08-20", medical_status: "valid", cert_19a_expiry: "2026-06-10", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 97, safety_incidents: 0 },
+  { id: "od-02", name: "Catherine Walsh", phone: "(516) 555-0202", email: "cwalsh@coastaltrans.com", bus_number: "O-202", contractor: "Coastal Transport", status: "active", hire_date: "2020-03-15", cdl_expiry: "2026-09-10", cdl_status: "valid", medical_expiry: "2026-05-15", medical_status: "valid", cert_19a_expiry: "2026-08-25", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 98, safety_incidents: 0 },
+  { id: "od-03", name: "William Brennan", phone: "(516) 555-0203", email: "wbrennan@coastaltrans.com", bus_number: "O-203", contractor: "Coastal Transport", status: "active", hire_date: "2018-08-20", cdl_expiry: "2026-07-05", cdl_status: "valid", medical_expiry: "2026-04-10", medical_status: "expiring_soon", cert_19a_expiry: "2026-09-15", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 95, safety_incidents: 1 },
+  { id: "od-04", name: "Elizabeth Duffy", phone: "(516) 555-0204", email: "eduffy@coastaltrans.com", bus_number: "O-204", contractor: "Coastal Transport", status: "active", hire_date: "2021-01-10", cdl_expiry: "2027-03-20", cdl_status: "valid", medical_expiry: "2026-11-01", medical_status: "valid", cert_19a_expiry: "2026-07-30", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 97, safety_incidents: 0 },
+  { id: "od-05", name: "Christopher Quinn", phone: "(516) 555-0205", email: "cquinn@coastaltrans.com", bus_number: "O-205", contractor: "Coastal Transport", status: "active", hire_date: "2019-10-05", cdl_expiry: "2026-11-15", cdl_status: "valid", medical_expiry: "2026-06-25", medical_status: "valid", cert_19a_expiry: "2026-05-10", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 96, safety_incidents: 0 },
+  { id: "od-06", name: "Amanda O'Brien", phone: "(516) 555-0206", email: "aobrien@coastaltrans.com", bus_number: "O-206", contractor: "Coastal Transport", status: "active", hire_date: "2020-07-20", cdl_expiry: "2026-12-30", cdl_status: "valid", medical_expiry: "2026-09-15", medical_status: "valid", cert_19a_expiry: "2026-10-20", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 99, safety_incidents: 0 },
+  { id: "od-07", name: "Kevin McCarthy", phone: "(516) 555-0207", email: "kmccarthy@coastaltrans.com", bus_number: "O-207", contractor: "Coastal Transport", status: "active", hire_date: "2022-04-01", cdl_expiry: "2027-06-15", cdl_status: "valid", medical_expiry: "2026-12-05", medical_status: "valid", cert_19a_expiry: "2026-11-10", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 97, safety_incidents: 0 },
+  { id: "od-08", name: "Michelle Sullivan", phone: "(516) 555-0208", email: "msullivan@coastaltrans.com", bus_number: "O-208", contractor: "Coastal Transport", status: "active", hire_date: "2018-12-15", cdl_expiry: "2026-05-20", cdl_status: "valid", medical_expiry: "2026-03-30", medical_status: "expiring_soon", cert_19a_expiry: "2026-04-05", cert_19a_status: "expiring_soon", routes_assigned: 2, on_time_pct: 93, safety_incidents: 1 },
+  { id: "od-09", name: "Brian Kelly", phone: "(516) 555-0209", email: "bkelly@shorelinebus.com", bus_number: "O-209", contractor: "Shoreline Bus", status: "active", hire_date: "2019-05-10", cdl_expiry: "2026-08-25", cdl_status: "valid", medical_expiry: "2026-07-10", medical_status: "valid", cert_19a_expiry: "2026-06-15", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 96, safety_incidents: 0 },
+  { id: "od-10", name: "Laura Fitzgerald", phone: "(516) 555-0210", email: "lfitzgerald@shorelinebus.com", bus_number: "O-210", contractor: "Shoreline Bus", status: "active", hire_date: "2020-11-15", cdl_expiry: "2027-01-10", cdl_status: "valid", medical_expiry: "2026-10-20", medical_status: "valid", cert_19a_expiry: "2026-09-25", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 98, safety_incidents: 0 },
+  { id: "od-11", name: "Patrick Doyle", phone: "(516) 555-0211", email: "pdoyle@shorelinebus.com", bus_number: "O-211", contractor: "Shoreline Bus", status: "active", hire_date: "2021-09-01", cdl_expiry: "2027-04-05", cdl_status: "valid", medical_expiry: "2026-11-15", medical_status: "valid", cert_19a_expiry: "2026-08-10", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 97, safety_incidents: 0 },
+  { id: "od-12", name: "Sharon Murray", phone: "(516) 555-0212", email: "smurray@shorelinebus.com", bus_number: "O-212", contractor: "Shoreline Bus", status: "active", hire_date: "2019-02-20", cdl_expiry: "2026-06-30", cdl_status: "valid", medical_expiry: "2026-04-15", medical_status: "expiring_soon", cert_19a_expiry: "2026-05-20", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 94, safety_incidents: 0 },
+  { id: "od-13", name: "Timothy Ryan", phone: "(516) 555-0213", email: "tryan@shorelinebus.com", bus_number: "O-213", contractor: "Shoreline Bus", status: "active", hire_date: "2020-06-10", cdl_expiry: "2026-10-15", cdl_status: "valid", medical_expiry: "2026-08-05", medical_status: "valid", cert_19a_expiry: "2026-07-25", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 95, safety_incidents: 0 },
+  { id: "od-14", name: "Angela Burns", phone: "(516) 555-0214", email: "aburns@shorelinebus.com", bus_number: "O-214", contractor: "Shoreline Bus", status: "active", hire_date: "2022-01-15", cdl_expiry: "2027-05-20", cdl_status: "valid", medical_expiry: "2026-12-25", medical_status: "valid", cert_19a_expiry: "2026-10-10", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 98, safety_incidents: 0 },
+  { id: "od-15", name: "Sean Gallagher", phone: "(516) 555-0215", email: "sgallagher@shorelinebus.com", bus_number: "O-215", contractor: "Shoreline Bus", status: "on_leave", hire_date: "2018-10-01", cdl_expiry: "2026-09-05", cdl_status: "valid", medical_expiry: "2026-06-30", medical_status: "valid", cert_19a_expiry: "2026-08-15", cert_19a_status: "valid", routes_assigned: 0, on_time_pct: 96, safety_incidents: 0 },
+  { id: "od-16", name: "Colleen Byrne", phone: "(516) 555-0216", email: "cbyrne@shorelinebus.com", bus_number: "O-216", contractor: "Shoreline Bus", status: "active", hire_date: "2021-03-20", cdl_expiry: "2027-02-25", cdl_status: "valid", medical_expiry: "2026-10-30", medical_status: "valid", cert_19a_expiry: "2026-09-05", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 97, safety_incidents: 0 },
+  { id: "od-17", name: "Dennis Flynn", phone: "(516) 555-0217", email: "dflynn@coastaltrans.com", bus_number: "O-217", contractor: "Coastal Transport", status: "active", hire_date: "2019-07-15", cdl_expiry: "2026-04-10", cdl_status: "expiring_soon", medical_expiry: "2026-05-01", medical_status: "valid", cert_19a_expiry: "2026-06-20", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 94, safety_incidents: 0 },
+  { id: "od-18", name: "Maureen Casey", phone: "(516) 555-0218", email: "mcasey@coastaltrans.com", bus_number: "O-218", contractor: "Coastal Transport", status: "inactive", hire_date: "2017-04-10", cdl_expiry: "2025-11-20", cdl_status: "expired", medical_expiry: "2025-08-15", medical_status: "expired", cert_19a_expiry: "2025-07-10", cert_19a_status: "expired", routes_assigned: 0, on_time_pct: 87, safety_incidents: 3 },
+  { id: "od-19", name: "Gregory Nolan", phone: "(516) 555-0219", email: "gnolan@coastaltrans.com", bus_number: "O-219", contractor: "Coastal Transport", status: "active", hire_date: "2020-09-05", cdl_expiry: "2026-11-25", cdl_status: "valid", medical_expiry: "2026-08-15", medical_status: "valid", cert_19a_expiry: "2026-07-10", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 96, safety_incidents: 0 },
+  { id: "od-20", name: "Eileen Flanagan", phone: "(516) 555-0220", email: "eflanagan@coastaltrans.com", bus_number: "O-220", contractor: "Coastal Transport", status: "active", hire_date: "2021-05-15", cdl_expiry: "2027-03-10", cdl_status: "valid", medical_expiry: "2026-12-01", medical_status: "valid", cert_19a_expiry: "2026-10-25", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 97, safety_incidents: 0 },
+  { id: "od-21", name: "Raymond Connolly", phone: "(516) 555-0221", email: "rconnolly@shorelinebus.com", bus_number: "O-221", contractor: "Shoreline Bus", status: "active", hire_date: "2019-12-10", cdl_expiry: "2026-08-10", cdl_status: "valid", medical_expiry: "2026-05-25", medical_status: "valid", cert_19a_expiry: "2026-04-20", cert_19a_status: "expiring_soon", routes_assigned: 2, on_time_pct: 95, safety_incidents: 0 },
+  { id: "od-22", name: "Theresa Maguire", phone: "(516) 555-0222", email: "tmaguire@shorelinebus.com", bus_number: "O-222", contractor: "Shoreline Bus", status: "active", hire_date: "2022-07-01", cdl_expiry: "2027-07-15", cdl_status: "valid", medical_expiry: "2026-12-20", medical_status: "valid", cert_19a_expiry: "2026-11-05", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 99, safety_incidents: 0 },
+  { id: "od-23", name: "Francis Doherty", phone: "(516) 555-0223", email: "fdoherty@shorelinebus.com", bus_number: "O-223", contractor: "Shoreline Bus", status: "active", hire_date: "2018-06-20", cdl_expiry: "2026-03-25", cdl_status: "expiring_soon", medical_expiry: "2026-03-10", medical_status: "expiring_soon", cert_19a_expiry: "2026-05-05", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 92, safety_incidents: 1 },
+  { id: "od-24", name: "Bridget Hogan", phone: "(516) 555-0224", email: "bhogan@coastaltrans.com", bus_number: "O-224", contractor: "Coastal Transport", status: "active", hire_date: "2020-12-01", cdl_expiry: "2026-12-05", cdl_status: "valid", medical_expiry: "2026-09-10", medical_status: "valid", cert_19a_expiry: "2026-08-20", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 97, safety_incidents: 0 },
+  { id: "od-25", name: "Martin Sheridan", phone: "(516) 555-0225", email: "msheridan@coastaltrans.com", bus_number: "O-225", contractor: "Coastal Transport", status: "active", hire_date: "2021-08-10", cdl_expiry: "2027-04-20", cdl_status: "valid", medical_expiry: "2026-11-10", medical_status: "valid", cert_19a_expiry: "2026-09-15", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 96, safety_incidents: 0 },
+  { id: "od-26", name: "Siobhan Hennessy", phone: "(516) 555-0226", email: "shennessy@coastaltrans.com", bus_number: "O-226", contractor: "Coastal Transport", status: "active", hire_date: "2019-04-15", cdl_expiry: "2026-07-20", cdl_status: "valid", medical_expiry: "2026-05-05", medical_status: "valid", cert_19a_expiry: "2026-06-25", cert_19a_status: "valid", routes_assigned: 2, on_time_pct: 95, safety_incidents: 0 },
+  { id: "od-27", name: "Declan Foley", phone: "(516) 555-0227", email: "dfoley@shorelinebus.com", bus_number: "O-227", contractor: "Shoreline Bus", status: "active", hire_date: "2020-02-10", cdl_expiry: "2026-10-25", cdl_status: "valid", medical_expiry: "2026-07-20", medical_status: "valid", cert_19a_expiry: "2026-06-05", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 98, safety_incidents: 0 },
+  { id: "od-28", name: "Niamh Kavanagh", phone: "(516) 555-0228", email: "nkavanagh@shorelinebus.com", bus_number: "O-228", contractor: "Shoreline Bus", status: "active", hire_date: "2022-09-01", cdl_expiry: "2027-08-10", cdl_status: "valid", medical_expiry: "2026-12-30", medical_status: "valid", cert_19a_expiry: "2026-11-20", cert_19a_status: "valid", routes_assigned: 1, on_time_pct: 97, safety_incidents: 0 },
+];
+
+const DEMO_DRIVERS: Record<DemoDistrictId, DemoDriver[]> = {
+  lawrence: LAWRENCE_DRIVERS,
+  oceanside: OCEANSIDE_DRIVERS,
+};
+
+export function getDemoDrivers(districtId: DemoDistrictId): DemoDriver[] {
+  return DEMO_DRIVERS[districtId];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUS PASSES — Demo data for Bus Passes page
+// ═══════════════════════════════════════════════════════════════
+
+export interface DemoBusPass {
+  id: string;
+  pass_number: string;
+  student_name: string;
+  grade: string;
+  school: string;
+  route_number: string;
+  status: "active" | "suspended" | "revoked" | "expired";
+  issued_at: string;
+  expires_at: string;
+  school_year: string;
+}
+
+function generateBusPasses(districtId: DemoDistrictId): DemoBusPass[] {
+  const students = getDemoStudents(districtId);
+  const routes = getDemoRoutes(districtId);
+  const prefix = districtId === "lawrence" ? "BP-L" : "BP-O";
+
+  return students.map((s, i) => {
+    const route = routes[i % routes.length];
+    const num = String(i + 1).padStart(4, "0");
+    const statusPool: DemoBusPass["status"][] = ["active", "active", "active", "active", "active", "active", "active", "active", "suspended", "active"];
+    return {
+      id: `${districtId}-bp-${i}`,
+      pass_number: `${prefix}-2025-${num}`,
+      student_name: s.student_name,
+      grade: s.grade,
+      school: s.school,
+      route_number: route.route_number,
+      status: statusPool[i % statusPool.length],
+      issued_at: "2025-08-25",
+      expires_at: "2026-06-30",
+      school_year: "2025-2026",
+    };
+  });
+}
+
+const DEMO_BUS_PASSES: Record<DemoDistrictId, DemoBusPass[]> = {
+  lawrence: generateBusPasses("lawrence"),
+  oceanside: generateBusPasses("oceanside"),
+};
+
+export function getDemoBusPasses(districtId: DemoDistrictId): DemoBusPass[] {
+  return DEMO_BUS_PASSES[districtId];
+}
