@@ -23,6 +23,12 @@ import Drivers from "@/pages/app/Drivers";
 import Requests from "@/pages/app/Requests";
 import BusPasses from "@/pages/app/BusPasses";
 import Settings from "@/pages/app/Settings";
+import Communications from "@/pages/app/Communications";
+import SchoolCalendar from "@/pages/app/SchoolCalendar";
+import FieldTrips from "@/pages/app/FieldTrips";
+import Contracts from "@/pages/app/Contracts";
+import Compliance from "@/pages/app/Compliance";
+import AccidentReports from "@/pages/app/AccidentReports";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,6 +66,12 @@ export default function App() {
                       <Route path="/app/drivers" element={<Drivers />} />
                       <Route path="/app/requests" element={<Requests />} />
                       <Route path="/app/bus-passes" element={<BusPasses />} />
+                      <Route path="/app/communications" element={<Communications />} />
+                      <Route path="/app/calendar" element={<SchoolCalendar />} />
+                      <Route path="/app/field-trips" element={<FieldTrips />} />
+                      <Route path="/app/contracts" element={<Contracts />} />
+                      <Route path="/app/compliance" element={<Compliance />} />
+                      <Route path="/app/accidents" element={<AccidentReports />} />
                       <Route path="/app/settings" element={<Settings />} />
                     </Route>
                   </Route>
