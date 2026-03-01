@@ -1,44 +1,41 @@
 
 
-## Rename and Upgrade the NYSED Advisor to "Sam"
+## Plan: Add Demo Data to Routes, Students & Requests Pages
 
-The user wants to rebrand the NYSED Law Advisor widget, name it "Sam", and expand its knowledge to include the full RideLine platform/website information alongside the NYSED transportation law expertise.
+### Files to modify (4 total)
 
-### Changes
+**1. `src/lib/demoData.ts`** — Add ~2,200 lines of mock data
+- Add `DemoRoute` type alias and `getDemoRoutes()` with 47 Lawrence routes + 32 Oceanside routes
+- Add `DemoRegistration` type alias and `getDemoStudents()` with 60 Lawrence + 40 Oceanside student registrations
+- Add `DemoServiceRequest` type alias and `getDemoRequests()` with 20 Lawrence (14 open + 6 resolved) + 14 Oceanside (8 open + 6 resolved) service requests
+- All data keyed by `DemoDistrictId`, matching existing patterns
 
-#### 1. Update the Edge Function System Prompt (`supabase/functions/nysed-advisor/index.ts`)
+**2. `src/pages/app/AppRoutes.tsx`** — Surgical demo mode insertion
+- Import `useDemoMode`, `DemoDistrictId`, `getDemoRoutes`
+- Add `const { isDemoMode, demoDistrictId } = useDemoMode()` in component
+- Add demo early-return at top of `fetchRoutes` callback (with client-side filter/sort/pagination logic)
+- Add demo early-return in the `allRoutes` useEffect (line 109-111)
+- Add demo early-return in `fetchBusPasses` callback
+- Add `isDemoMode`, `demoDistrictId` to relevant dependency arrays
 
-- Change the persona from "NYSED Transportation Law Advisor" to **"Sam"** — RideLine's in-app compliance and platform expert
-- Merge the RideLine platform knowledge from the `chat` edge function's system prompt into Sam's system prompt. This gives Sam full knowledge of:
-  - All 6 RideLine platform modules (Student Assignment, Route Optimization, Contractor Oversight, Parent Communication, Compliance & Reporting, AI Analytics)
-  - Pricing ($75K–$100K/year), ROI stats ($710K–$1.6M savings), market data
-  - How RideLine works (Connect → Analyze → Optimize → Save)
-  - Free Route Audit offering
-  - Common school transportation challenges
-- Keep the entire existing NYSED legal framework (Ed Law §3635, §2-d, Part 156, Part 121, etc.)
-- Update response guidelines: Sam should introduce itself as "Sam" and be warm/conversational while still citing statutes accurately
+**3. `src/pages/app/Students.tsx`** — Surgical demo mode insertion
+- Import `useDemoMode`, `DemoDistrictId`, `getDemoStudents`
+- Add demo early-return at top of `fetchStudents` callback with client-side search/filter/pagination
+- Add demo guards on mutation functions (`performAction`, `saveFlags`, `handleAddStudent`, etc.) showing "disabled in demo mode" toast
+- Add demo early-return for childcare reg IDs useEffect
 
-#### 2. Update the Widget Component (`src/components/app/NysedAdvisorWidget.tsx`)
+**4. `src/pages/app/Requests.tsx`** — Surgical demo mode insertion
+- Import `useDemoMode`, `DemoDistrictId`, `getDemoRequests`
+- Add demo early-return at top of `fetchRequests` callback with client-side search/filter
+- Add demo early-return in student options useEffect
+- Add demo guards on `addNote`, `updateStatus`, `handleAdd` showing "disabled in demo mode" toast
+- Add demo early-return for `openDetail` (show request details without Supabase notes query)
 
-- Rename display title from "NYSED Law Advisor" to **"Sam"**
-- Update subtitle from "Ed Law §3635, §2-d, compliance guidance" to something like "NYSED law, compliance & RideLine platform expert"
-- Update empty state text to reflect Sam's broader capabilities (law + platform knowledge)
-- Update input placeholder from "Ask about NYSED transportation law..." to "Ask Sam anything..."
-- Add suggested questions that cover both law AND platform, e.g.:
-  - "How does RideLine handle route optimization?"
-  - "What are the mileage requirements under §3635?"
-  - "How can RideLine help with BEDS/STAC reporting?"
-  - "What does Ed Law §2-d require for contractors?"
-  - "How much can our district save with RideLine?"
-- Update the disclaimer text to cover both legal info and platform guidance
+### Technical details
 
-#### 3. Dashboard Integration (`src/pages/app/Dashboard.tsx`)
-
-- Update the comment from `{/* NYSED Law Advisor */}` to `{/* Sam — NYSED & Platform Advisor */}`
-
-### Technical Details
-
-- No new files, no new dependencies, no database changes
-- The edge function prompt grows by ~80 lines to incorporate the RideLine platform knowledge from the existing `chat` function's prompt
-- All existing streaming, authentication, and session logic remains unchanged
+- All mock data generators will be pure functions returning static arrays (no randomization at runtime)
+- Route distribution follows existing `tierData` counts exactly (Lawrence: 18/17/12, Oceanside: 13/11/8)
+- Request counts match dashboard's `openRequests` and `urgentRequests` values
+- Student names, addresses, and demographics are realistic Long Island data
+- No files from the "DO NOT TOUCH" list will be modified
 
