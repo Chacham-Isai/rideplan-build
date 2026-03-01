@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEOHead } from "@/components/SEOHead";
 import { Navigation } from "@/components/sections/Navigation";
 import { Footer } from "@/components/sections/Footer";
 import { ContactFormModal } from "@/components/ContactFormModal";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import {
   Users, Route, ClipboardCheck, MessageSquare, Shield, Brain,
-  ArrowRight, ArrowLeft, CheckCircle, Monitor, Smartphone, BarChart3
+  ArrowRight, ArrowLeft, CheckCircle, Monitor, Smartphone, BarChart3, Play
 } from "lucide-react";
 import dashboardImg from "@/assets/rideline-dashboard.png";
 import parentTrackingImg from "@/assets/rideline-parent-tracking.webp";
@@ -105,6 +107,8 @@ const tourSteps = [
 const Demo = () => {
   const [contactOpen, setContactOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const { enableDemoMode } = useDemoMode();
+  const navigate = useNavigate();
   const step = tourSteps[activeStep];
 
   return (
@@ -142,6 +146,22 @@ const Demo = () => {
             >
               Click through each module to explore how districts save $710K–$1.6M in Year 1.
             </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-8"
+            >
+              <button
+                onClick={() => {
+                  enableDemoMode("lawrence");
+                  navigate("/app/dashboard");
+                }}
+                className="inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-bold text-accent-foreground hover:bg-gold-light transition shadow-md"
+              >
+                <Play className="h-4 w-4" /> Try the Live Dashboard
+              </button>
+            </motion.div>
           </div>
         </section>
 
