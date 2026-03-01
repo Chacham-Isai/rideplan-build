@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode, type DemoDistrictId } from "@/contexts/DemoModeContext";
+import { getDemoCompliance } from "@/lib/demoDataExtra";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +29,7 @@ const statusStyle = (s: string) => {
 const Compliance = () => {
   const { district, profile } = useDistrict();
   const { user } = useAuth();
+  const { isDemoMode, demoDistrictId } = useDemoMode();
   const [reports, setReports] = useState<any[]>([]);
   const [training, setTraining] = useState<any[]>([]);
   const [mvStudents, setMvStudents] = useState<any[]>([]);
@@ -48,6 +51,16 @@ const Compliance = () => {
   const [breachForm, setBreachForm] = useState({ incident_date: "", discovered_date: "", description: "", severity: "low", students_affected: "" });
 
   const fetchAll = useCallback(async () => {
+    if (isDemoMode && demoDistrictId) {
+      const demo = getDemoCompliance(demoDistrictId as DemoDistrictId);
+      setReports(demo.reports);
+      setTraining(demo.training);
+      setMvStudents(demo.mvStudents);
+      setEdLaw(demo.edLaw);
+      setBreaches(demo.breaches);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const [rRes, tRes, mvRes, elRes, bRes] = await Promise.all([
       supabase.from("compliance_reports").select("*").order("created_at", { ascending: false }),
@@ -62,7 +75,7 @@ const Compliance = () => {
     setEdLaw(elRes.data ?? []);
     setBreaches(bRes.data ?? []);
     setLoading(false);
-  }, []);
+  }, [isDemoMode, demoDistrictId]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 

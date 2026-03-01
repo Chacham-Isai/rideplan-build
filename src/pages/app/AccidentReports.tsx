@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode, type DemoDistrictId } from "@/contexts/DemoModeContext";
+import { getDemoAccidents } from "@/lib/demoDataExtra";
 import { differenceInYears, parseISO, format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -95,6 +97,7 @@ const DOC_TYPES = [
 const AccidentReports = () => {
   const { district } = useDistrict();
   const { user } = useAuth();
+  const { isDemoMode, demoDistrictId } = useDemoMode();
 
   const [reports, setReports] = useState<AccidentReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,16 +135,31 @@ const AccidentReports = () => {
   const [busNumbers, setBusNumbers] = useState<string[]>([]);
 
   useEffect(() => {
+    if (isDemoMode) {
+      setBusNumbers(["B-105","B-118","B-127","B-133","B-141"]);
+      return;
+    }
     if (!district) return;
     supabase.from("routes").select("bus_number").eq("district_id", district.id).not("bus_number", "is", null)
       .then(({ data }) => {
         const nums = [...new Set((data ?? []).map(r => r.bus_number).filter(Boolean))] as string[];
         setBusNumbers(nums.sort());
       });
-  }, [district]);
+  }, [district, isDemoMode]);
 
   /* ─── Fetch reports ─── */
   const fetchReports = useCallback(async () => {
+    if (isDemoMode && demoDistrictId) {
+      let demoReports = getDemoAccidents(demoDistrictId as DemoDistrictId) as AccidentReport[];
+      if (statusFilter !== "all") demoReports = demoReports.filter(r => r.status === statusFilter);
+      if (search) {
+        const q = search.toLowerCase();
+        demoReports = demoReports.filter(r => r.bus_number.toLowerCase().includes(q) || (r.driver_name ?? "").toLowerCase().includes(q) || (r.location ?? "").toLowerCase().includes(q));
+      }
+      setReports(demoReports);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     let query = supabase.from("accident_reports").select("*").order("incident_date", { ascending: false });
     if (statusFilter !== "all") query = query.eq("status", statusFilter);
@@ -149,7 +167,7 @@ const AccidentReports = () => {
     const { data } = await query;
     setReports((data as AccidentReport[]) ?? []);
     setLoading(false);
-  }, [search, statusFilter]);
+  }, [search, statusFilter, isDemoMode, demoDistrictId]);
 
   useEffect(() => { fetchReports(); }, [fetchReports]);
 

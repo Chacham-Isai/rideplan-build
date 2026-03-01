@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode, type DemoDistrictId } from "@/contexts/DemoModeContext";
+import { getDemoContracts } from "@/lib/demoDataExtra";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +45,7 @@ const gradeFromPct = (pct: number) => {
 const Contracts = () => {
   const { district, profile } = useDistrict();
   const { user } = useAuth();
+  const { isDemoMode, demoDistrictId } = useDemoMode();
   const [contracts, setContracts] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [insurance, setInsurance] = useState<any[]>([]);
@@ -74,6 +77,15 @@ const Contracts = () => {
   }, [searchInput]);
 
   const fetchAll = useCallback(async () => {
+    if (isDemoMode && demoDistrictId) {
+      const demo = getDemoContracts(demoDistrictId as DemoDistrictId);
+      setContracts(demo.contracts);
+      setInvoices(demo.invoices);
+      setInsurance(demo.insurance);
+      setPerformance([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const [cRes, iRes, insRes, pRes] = await Promise.all([
       supabase.from("contracts").select("*").order("annual_value", { ascending: false }),
@@ -86,9 +98,8 @@ const Contracts = () => {
     setInsurance(insRes.data ?? []);
     setPerformance(pRes.data ?? []);
     setLoading(false);
-    // Fetch benchmarks
     supabase.rpc("get_regional_benchmarks").then(({ data }) => setBenchmarks(data));
-  }, []);
+  }, [isDemoMode, demoDistrictId]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
