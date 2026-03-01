@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { differenceInYears, parseISO } from "date-fns";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode } from "@/contexts/DemoModeContext";
+import type { DemoDistrictId } from "@/contexts/DemoModeContext";
+import { getDemoRequests } from "@/lib/demoData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -76,6 +79,7 @@ type Note = {
 const Requests = () => {
   const { district } = useDistrict();
   const { user } = useAuth();
+  const { isDemoMode, demoDistrictId } = useDemoMode();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -101,13 +105,31 @@ const Requests = () => {
 
   // Fetch students for linking
   useEffect(() => {
+    if (isDemoMode) {
+      setStudentOptions([]);
+      return;
+    }
     if (!district) return;
     supabase.from("student_registrations").select("id, student_name, school, grade")
       .eq("status", "approved").order("student_name").limit(500)
       .then(({ data }) => setStudentOptions((data as any[]) ?? []));
-  }, [district]);
+  }, [district, isDemoMode]);
 
   const fetchRequests = useCallback(async () => {
+    if (isDemoMode && demoDistrictId) {
+      setLoading(true);
+      let filtered = getDemoRequests(demoDistrictId as DemoDistrictId);
+      if (typeFilter !== "all") filtered = filtered.filter(r => r.request_type === typeFilter);
+      if (statusFilter !== "all") filtered = filtered.filter(r => r.status === statusFilter);
+      if (priorityFilter !== "all") filtered = filtered.filter(r => r.priority === priorityFilter);
+      if (search) {
+        const s = search.toLowerCase();
+        filtered = filtered.filter(r => r.subject.toLowerCase().includes(s));
+      }
+      setRequests(filtered);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     let query = supabase.from("service_requests")
       .select("*, student_registrations!service_requests_student_registration_id_fkey(student_name, school, grade, dob)")
@@ -126,12 +148,16 @@ const Requests = () => {
     }));
     setRequests(mapped);
     setLoading(false);
-  }, [search, typeFilter, statusFilter, priorityFilter]);
+  }, [search, typeFilter, statusFilter, priorityFilter, isDemoMode, demoDistrictId]);
 
   useEffect(() => { fetchRequests(); }, [fetchRequests]);
 
   const openDetail = async (req: ServiceRequest) => {
     setSelected(req);
+    if (isDemoMode) {
+      setNotes([]);
+      return;
+    }
     const { data } = await supabase
       .from("service_request_notes")
       .select("*")
@@ -141,6 +167,7 @@ const Requests = () => {
   };
 
   const addNote = async () => {
+    if (isDemoMode) { toast.info("Editing is disabled in demo mode"); return; }
     if (!newNote.trim() || !selected || !user) return;
     setNoteSaving(true);
     const { error } = await supabase.from("service_request_notes").insert({
@@ -158,6 +185,7 @@ const Requests = () => {
   };
 
   const updateStatus = async (newStatus: string) => {
+    if (isDemoMode) { toast.info("Editing is disabled in demo mode"); return; }
     if (!selected) return;
     const updates: any = { status: newStatus };
     if (newStatus === "resolved") updates.resolved_at = new Date().toISOString();
@@ -193,6 +221,7 @@ const Requests = () => {
   };
 
   const handleAdd = async () => {
+    if (isDemoMode) { toast.info("Editing is disabled in demo mode"); return; }
     if (!addForm.subject || !district) { toast.error("Subject is required"); return; }
     setAddSaving(true);
     const { data: inserted, error } = await supabase.from("service_requests").insert({

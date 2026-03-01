@@ -3,6 +3,9 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode } from "@/contexts/DemoModeContext";
+import type { DemoDistrictId } from "@/contexts/DemoModeContext";
+import { getDemoStudents } from "@/lib/demoData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -76,6 +79,7 @@ const Students = () => {
   const [searchParams] = useSearchParams();
   const { district } = useDistrict();
   const { user } = useAuth();
+  const { isDemoMode, demoDistrictId } = useDemoMode();
   const [students, setStudents] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -133,15 +137,36 @@ const Students = () => {
   const [childcareRegIds, setChildcareRegIds] = useState<string[] | null>(null);
   useEffect(() => {
     if (specialFilter !== "childcare") { setChildcareRegIds(null); return; }
+    if (isDemoMode) { setChildcareRegIds([]); return; }
     supabase.from("childcare_requests").select("registration_id").then(({ data }) => {
       const ids = [...new Set((data ?? []).map(d => d.registration_id))];
       setChildcareRegIds(ids);
     });
-  }, [specialFilter]);
+  }, [specialFilter, isDemoMode]);
 
   const fetchStudents = useCallback(async () => {
     // If childcare filter is active but IDs haven't loaded yet, wait
     if (specialFilter === "childcare" && childcareRegIds === null) return;
+
+    if (isDemoMode && demoDistrictId) {
+      setLoading(true);
+      let filtered = getDemoStudents(demoDistrictId as DemoDistrictId);
+      if (statusFilter !== "all") filtered = filtered.filter(s => s.status === statusFilter);
+      if (schoolFilter !== "all") filtered = filtered.filter(s => s.school === schoolFilter);
+      if (search) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(s => s.student_name.toLowerCase().includes(q));
+      }
+      if (specialFilter === "special_ed") filtered = filtered.filter(s => s.iep_flag || s.section_504_flag);
+      if (specialFilter === "any_flag") filtered = filtered.filter(s => s.iep_flag || s.section_504_flag || s.mckinney_vento_flag || s.foster_care_flag);
+      if (specialFilter === "childcare") { filtered = []; }
+      const total = filtered.length;
+      const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+      setStudents(paged as any);
+      setTotalCount(total);
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     let query = supabase
@@ -170,7 +195,7 @@ const Students = () => {
     setStudents((data as Registration[]) ?? []);
     setTotalCount(count ?? 0);
     setLoading(false);
-  }, [search, statusFilter, schoolFilter, specialFilter, page, childcareRegIds]);
+  }, [search, statusFilter, schoolFilter, specialFilter, page, childcareRegIds, isDemoMode, demoDistrictId]);
 
   useEffect(() => { fetchStudents(); }, [fetchStudents]);
 
@@ -182,6 +207,17 @@ const Students = () => {
     setEditFlags({ iep_flag: reg.iep_flag, section_504_flag: reg.section_504_flag, mckinney_vento_flag: reg.mckinney_vento_flag, foster_care_flag: reg.foster_care_flag });
     setDetailLoading(true);
     setActionNotes("");
+
+    if (isDemoMode) {
+      setChildcare([]);
+      setDocuments([]);
+      setAttestations([]);
+      setAuditLogs([]);
+      setDuplicateCount(0);
+      setParentProfile({ full_name: "Demo Parent", email: "parent@demo.rideplan.app", phone: null });
+      setDetailLoading(false);
+      return;
+    }
 
     // Fetch all related data in parallel
     const [childcareRes, docsRes, attestRes, logsRes, dupRes] = await Promise.all([
@@ -206,6 +242,7 @@ const Students = () => {
 
   // Admin approve/deny/flag actions
   const performAction = async (action: string) => {
+    if (isDemoMode) { toast.info("Editing is disabled in demo mode"); return; }
     if (!selected) return;
     setActing(true);
     try {
@@ -234,6 +271,7 @@ const Students = () => {
 
   // Save edited flags
   const saveFlags = async () => {
+    if (isDemoMode) { toast.info("Editing is disabled in demo mode"); return; }
     if (!selected) return;
     setSaving(true);
     const { error } = await supabase.from("student_registrations").update(editFlags).eq("id", selected.id);
@@ -249,6 +287,7 @@ const Students = () => {
 
   // Add student
   const handleAddStudent = async () => {
+    if (isDemoMode) { toast.info("Editing is disabled in demo mode"); return; }
     if (!addForm.student_name || !addForm.dob || !addForm.address_line || !addForm.city || !addForm.zip) {
       toast.error("Please fill in all required fields"); return;
     }
@@ -284,6 +323,7 @@ const Students = () => {
 
   // Add childcare request
   const handleAddChildcare = async () => {
+    if (isDemoMode) { toast.info("Editing is disabled in demo mode"); return; }
     if (!selected || !childcareForm.provider_name || !childcareForm.provider_address) {
       toast.error("Please fill in provider name and address"); return;
     }
@@ -312,6 +352,7 @@ const Students = () => {
 
   // Delete childcare request
   const deleteChildcare = async (id: string) => {
+    if (isDemoMode) { toast.info("Editing is disabled in demo mode"); return; }
     // Note: RLS may not allow delete - will show error if so
     const { error } = await supabase.from("childcare_requests").delete().eq("id", id);
     if (error) toast.error("Cannot delete: " + error.message);

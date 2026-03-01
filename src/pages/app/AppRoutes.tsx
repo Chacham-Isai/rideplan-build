@@ -2,6 +2,9 @@ import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode } from "@/contexts/DemoModeContext";
+import type { DemoDistrictId } from "@/contexts/DemoModeContext";
+import { getDemoRoutes } from "@/lib/demoData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -65,6 +68,7 @@ const effGrade = (students: number | null, capacity: number | null) => {
 const AppRoutes = () => {
   const { district, profile, isAdmin } = useDistrict();
   const { user } = useAuth();
+  const { isDemoMode, demoDistrictId } = useDemoMode();
   const [routes, setRoutes] = useState<Route[]>([]);
   const [allRoutes, setAllRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,10 +111,52 @@ const AppRoutes = () => {
   }, [searchInput]);
 
   useEffect(() => {
+    if (isDemoMode && demoDistrictId) {
+      setAllRoutes(getDemoRoutes(demoDistrictId as DemoDistrictId));
+      return;
+    }
     supabase.from("routes").select("*").then(({ data }) => setAllRoutes((data as Route[]) ?? []));
-  }, []);
+  }, [isDemoMode, demoDistrictId]);
 
   const fetchRoutes = useCallback(async () => {
+    if (isDemoMode && demoDistrictId) {
+      setLoading(true);
+      const demoRoutes = getDemoRoutes(demoDistrictId as DemoDistrictId);
+      let filtered = [...demoRoutes];
+      if (schoolFilter !== "all") filtered = filtered.filter(r => r.school === schoolFilter);
+      if (statusFilter !== "all") filtered = filtered.filter(r => r.status === statusFilter);
+      if (search) {
+        const s = search.toLowerCase();
+        filtered = filtered.filter(r =>
+          r.route_number.toLowerCase().includes(s) ||
+          (r.driver_name ?? "").toLowerCase().includes(s) ||
+          (r.bus_number ?? "").toLowerCase().includes(s) ||
+          r.school.toLowerCase().includes(s)
+        );
+      }
+      if (utilizationFilter !== "all") {
+        filtered = filtered.filter(r => {
+          const pct = r.capacity && r.capacity > 0 ? ((r.total_students ?? 0) / r.capacity) * 100 : 0;
+          if (utilizationFilter === "high") return pct >= 80;
+          if (utilizationFilter === "mid") return pct >= 50 && pct < 80;
+          if (utilizationFilter === "low") return pct < 50;
+          return true;
+        });
+      }
+      if (ineffFilter === "ghost") filtered = filtered.filter(r => effGrade(r.total_students, r.capacity).pct < 50);
+      else if (ineffFilter === "long") filtered = filtered.filter(r => (r.avg_ride_time_min ?? 0) > 60);
+      else if (ineffFilter === "low_eff") filtered = filtered.filter(r => ["D", "F"].includes(effGrade(r.total_students, r.capacity).letter));
+      filtered.sort((a, b) => {
+        const aVal = (a as any)[sortCol] ?? "";
+        const bVal = (b as any)[sortCol] ?? "";
+        return sortAsc ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
+      });
+      const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+      setRoutes(paginated);
+      setTotalCount(filtered.length);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     let query = supabase.from("routes").select("*", { count: "exact" });
     if (schoolFilter !== "all") query = query.eq("school", schoolFilter);
@@ -133,12 +179,17 @@ const AppRoutes = () => {
     setRoutes(filtered);
     setTotalCount(ineffFilter || utilizationFilter !== "all" ? filtered.length : (count ?? 0));
     setLoading(false);
-  }, [search, schoolFilter, statusFilter, utilizationFilter, page, sortCol, sortAsc, ineffFilter]);
+  }, [search, schoolFilter, statusFilter, utilizationFilter, page, sortCol, sortAsc, ineffFilter, isDemoMode, demoDistrictId]);
 
   useEffect(() => { fetchRoutes(); }, [fetchRoutes]);
 
   // Fetch bus passes
   const fetchBusPasses = useCallback(async () => {
+    if (isDemoMode) {
+      setBusPasses([]);
+      setBpLoading(false);
+      return;
+    }
     if (!district) return;
     setBpLoading(true);
     // Fetch passes with registration join for student info
