@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoMode } from "@/contexts/DemoModeContext";
 import { getDemoDashboardData } from "@/lib/demoData";
@@ -12,7 +13,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   BarChart,
   Bar,
@@ -29,15 +29,14 @@ import {
 import {
   Users,
   Bus,
-  MapPin,
   Clock,
-  TrendingUp,
   AlertCircle,
   CheckCircle2,
   Activity,
   Shield,
   Ticket,
   UserCheck,
+  ChevronRight,
 } from "lucide-react";
 
 const COLORS = ["#3b82f6", "#6366f1", "#8b5cf6"];
@@ -56,6 +55,7 @@ interface DashboardStats {
 export default function Dashboard() {
   const { user } = useAuth();
   const { isDemoMode, demoDistrictId } = useDemoMode();
+  const navigate = useNavigate();
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [schoolData, setSchoolData] = useState<
@@ -88,7 +88,6 @@ export default function Dashboard() {
       return;
     }
 
-    // Real data path — set defaults for now until tables exist
     setStats({
       totalStudents: 0,
       totalRoutes: 0,
@@ -122,26 +121,42 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* KPI row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:border-blue-500/50 hover:bg-slate-750 transition-all group"
+          onClick={() => navigate("/app/students")}
+        >
           <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-              <Users className="h-4 w-4" /> Students
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+                  <Users className="h-4 w-4" /> Students
+                </div>
+                <p className="text-2xl font-bold text-white">
+                  {stats.totalStudents.toLocaleString()}
+                </p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-600 group-hover:text-blue-400 transition-colors" />
             </div>
-            <p className="text-2xl font-bold text-white">
-              {stats.totalStudents.toLocaleString()}
-            </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:border-blue-500/50 hover:bg-slate-750 transition-all group"
+          onClick={() => navigate("/app/routes")}
+        >
           <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-              <Bus className="h-4 w-4" /> Active Routes
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+                  <Bus className="h-4 w-4" /> Active Routes
+                </div>
+                <p className="text-2xl font-bold text-white">
+                  {stats.activeRoutes}
+                  <span className="text-slate-400 text-base font-normal"> / {stats.totalRoutes}</span>
+                </p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-600 group-hover:text-blue-400 transition-colors" />
             </div>
-            <p className="text-2xl font-bold text-white">
-              {stats.activeRoutes}
-              <span className="text-slate-400 text-base font-normal"> / {stats.totalRoutes}</span>
-            </p>
           </CardContent>
         </Card>
 
@@ -154,14 +169,22 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:border-blue-500/50 hover:bg-slate-750 transition-all group"
+          onClick={() => navigate("/app/bus-passes")}
+        >
           <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-              <Ticket className="h-4 w-4" /> Bus Passes
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+                  <Ticket className="h-4 w-4" /> Bus Passes
+                </div>
+                <p className="text-2xl font-bold text-white">
+                  {busPassesIssued.toLocaleString()}
+                </p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-600 group-hover:text-blue-400 transition-colors" />
             </div>
-            <p className="text-2xl font-bold text-white">
-              {busPassesIssued.toLocaleString()}
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -224,10 +247,14 @@ export default function Dashboard() {
 
       {/* Status cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:border-blue-500/50 hover:bg-slate-750 transition-all group"
+          onClick={() => navigate("/app/requests")}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-white text-sm flex items-center gap-2">
               <Activity className="h-4 w-4 text-blue-400" /> Transportation Requests
+              <ChevronRight className="h-4 w-4 ml-auto text-slate-600 group-hover:text-blue-400 transition-colors" />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -242,10 +269,14 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:border-purple-500/50 hover:bg-slate-750 transition-all group"
+          onClick={() => navigate("/app/drivers?filter=expiring")}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-white text-sm flex items-center gap-2">
               <Shield className="h-4 w-4 text-purple-400" /> Driver Certifications
+              <ChevronRight className="h-4 w-4 ml-auto text-slate-600 group-hover:text-purple-400 transition-colors" />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -260,10 +291,14 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:border-green-500/50 hover:bg-slate-750 transition-all group"
+          onClick={() => navigate("/app/drivers")}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-white text-sm flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-green-400" /> Driver Availability
+              <ChevronRight className="h-4 w-4 ml-auto text-slate-600 group-hover:text-green-400 transition-colors" />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -297,10 +332,20 @@ export default function Dashboard() {
                 <p className="text-red-300 font-medium text-sm">Action Required</p>
                 <ul className="text-red-400/80 text-sm mt-1 space-y-0.5">
                   {urgentRequests > 0 && (
-                    <li>{urgentRequests} urgent transportation request{urgentRequests > 1 ? "s" : ""} need attention</li>
+                    <li
+                      className="cursor-pointer hover:text-red-300 transition-colors"
+                      onClick={() => navigate("/app/requests")}
+                    >
+                      → {urgentRequests} urgent transportation request{urgentRequests > 1 ? "s" : ""} need attention
+                    </li>
                   )}
                   {expiredCerts > 0 && (
-                    <li>{expiredCerts} driver certification{expiredCerts > 1 ? "s" : ""} have expired</li>
+                    <li
+                      className="cursor-pointer hover:text-red-300 transition-colors"
+                      onClick={() => navigate("/app/drivers?filter=expired")}
+                    >
+                      → {expiredCerts} driver certification{expiredCerts > 1 ? "s" : ""} have expired
+                    </li>
                   )}
                 </ul>
               </div>

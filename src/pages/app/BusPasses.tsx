@@ -61,6 +61,12 @@ export default function BusPasses() {
   const activeCount = allPasses.filter(p => p.status === "active").length;
   const suspendedCount = allPasses.filter(p => p.status === "suspended").length;
 
+  // Toggle KPI filter
+  const toggleStatus = (val: string) => {
+    setStatusFilter(prev => prev === val ? "all" : val);
+    setPage(0);
+  };
+
   if (!isDemoMode) {
     return (
       <div className="text-center py-16 text-slate-400">
@@ -95,7 +101,7 @@ export default function BusPasses() {
         </div>
       </div>
 
-      {/* KPI cards */}
+      {/* KPI cards — clickable to filter */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-slate-800 border-slate-700">
           <CardContent className="pt-4">
@@ -103,13 +109,19 @@ export default function BusPasses() {
             <p className="text-2xl font-bold text-white">{allPasses.length}</p>
           </CardContent>
         </Card>
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className={`bg-slate-800 border-slate-700 cursor-pointer transition-all hover:bg-slate-750 ${statusFilter === "active" ? "ring-2 ring-emerald-500/50 border-emerald-500/40" : ""}`}
+          onClick={() => toggleStatus("active")}
+        >
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 text-slate-400 text-sm mb-1"><CheckCircle2 className="h-4 w-4" /> Active</div>
             <p className="text-2xl font-bold text-emerald-400">{activeCount}</p>
           </CardContent>
         </Card>
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className={`bg-slate-800 border-slate-700 cursor-pointer transition-all hover:bg-slate-750 ${statusFilter === "suspended" ? "ring-2 ring-amber-500/50 border-amber-500/40" : ""}`}
+          onClick={() => toggleStatus("suspended")}
+        >
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 text-slate-400 text-sm mb-1"><PauseCircle className="h-4 w-4" /> Suspended</div>
             <p className="text-2xl font-bold text-amber-300">{suspendedCount}</p>
@@ -122,6 +134,17 @@ export default function BusPasses() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Active filter indicator */}
+      {statusFilter !== "all" && (
+        <div className="flex items-center gap-2">
+          <span className="text-slate-400 text-sm">Filtered:</span>
+          <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 cursor-pointer" onClick={() => { setStatusFilter("all"); setPage(0); }}>
+            Status: {statusFilter} ✕
+          </Badge>
+          <span className="text-slate-500 text-sm">({filtered.length} results)</span>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="space-y-3">
