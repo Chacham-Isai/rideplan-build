@@ -88,17 +88,132 @@ export default function Dashboard() {
       return;
     }
 
-    setStats({
-      totalStudents: 0,
-      totalRoutes: 0,
-      activeRoutes: 0,
-      avgOnTime: 0,
-      totalMiles: 0,
-      pendingRegistrations: 0,
-      avgRideTime: 0,
-      avgCostPerStudent: 0,
-    });
-    setLoading(false);
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchLiveData() {
+      setLoading(true);
+      try {
+        // Parallel queries for all dashboard data
+        const [
+          studentsRes,
+          routesRes,
+          requestsRes,
+          certsRes,
+          passesRes,
+        ] = await Promise.all([
+          supabase.from("student_registrations").select("school", { count: "exact", head: false }),
+          supabase.from("routes").select("status, tier, on_time_pct, total_miles, total_students, school"),
+          supabase.from("service_requests").select("status, priority"),
+          supabase.from("driver_certifications").select("status, expiration_date"),
+          supabase.from("bus_passes").select("id", { count: "exact", head: true }),
+        ]);
+
+        if (cancelled) return;
+
+        // Students
+        const students = studentsRes.data ?? [];
+        const totalStudents = students.length;
+
+        // Routes
+        const routes = routesRes.data ?? [];
+        const totalRoutes = routes.length;
+        const activeRoutes = routes.filter((r: any) => r.status === "active").length;
+        const onTimePcts = routes.filter((r: any) => r.on_time_pct != null).map((r: any) => Number(r.on_time_pct));
+        const avgOnTime = onTimePcts.length > 0 ? Math.round(onTimePcts.reduce((a: number, b: number) => a + b, 0) / onTimePcts.length) : 0;
+        const totalMiles = routes.reduce((sum: number, r: any) => sum + (Number(r.total_miles) || 0), 0);
+
+        // School breakdown for bar chart
+        const schoolMap = new Map<string, { students: number; routes: number }>();
+        for (const s of students) {
+          const school = (s as any).school ?? "Unknown";
+          const entry = schoolMap.get(school) ?? { students: 0, routes: 0 };
+          entry.students++;
+          schoolMap.set(school, entry);
+        }
+        for (const r of routes) {
+          const school = (r as any).school ?? "Unknown";
+          const entry = schoolMap.get(school) ?? { students: 0, routes: 0 };
+          entry.routes++;
+          schoolMap.set(school, entry);
+        }
+        const schoolArr = Array.from(schoolMap.entries())
+          .map(([school, d]) => ({ school, ...d }))
+          .sort((a, b) => b.students - a.students)
+          .slice(0, 8);
+
+        // Tier breakdown for pie chart
+        const tierMap = new Map<string, number>();
+        for (const r of routes) {
+          const tier = (r as any).tier ?? "Unassigned";
+          tierMap.set(tier, (tierMap.get(tier) ?? 0) + 1);
+        }
+        const tierArr = Array.from(tierMap.entries()).map(([name, value]) => ({ name, value }));
+
+        // Requests
+        const requests = requestsRes.data ?? [];
+        const open = requests.filter((r: any) => r.status === "open" || r.status === "pending").length;
+        const urgent = requests.filter((r: any) => r.priority === "urgent" || r.priority === "emergency").length;
+
+        // Certifications
+        const certs = certsRes.data ?? [];
+        const now = new Date();
+        const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const expired = certs.filter((c: any) => c.status === "expired" || new Date(c.expiration_date) < now).length;
+        const expiring = certs.filter((c: any) => {
+          const exp = new Date(c.expiration_date);
+          return exp >= now && exp <= in30 && c.status !== "expired";
+        }).length;
+
+        // Drivers (unique names from certs)
+        const allDriverNames = new Set(certs.map((c: any) => c.driver_name));
+        const activeDriverNames = new Set(
+          certs.filter((c: any) => c.status === "valid" || new Date(c.expiration_date) >= now)
+            .map((c: any) => c.driver_name)
+        );
+
+        // Bus passes
+        const passCount = passesRes.count ?? 0;
+
+        if (cancelled) return;
+
+        setStats({
+          totalStudents,
+          totalRoutes,
+          activeRoutes,
+          avgOnTime,
+          totalMiles,
+          pendingRegistrations: 0,
+          avgRideTime: 0,
+          avgCostPerStudent: 0,
+        });
+        setSchoolData(schoolArr);
+        setTierData(tierArr);
+        setOpenRequests(open);
+        setUrgentRequests(urgent);
+        setExpiringCerts(expiring);
+        setExpiredCerts(expired);
+        setBusPassesIssued(passCount);
+        setActiveDrivers(activeDriverNames.size);
+        setTotalDrivers(allDriverNames.size);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+        // Fallback to zeros
+        setStats({
+          totalStudents: 0, totalRoutes: 0, activeRoutes: 0, avgOnTime: 0,
+          totalMiles: 0, pendingRegistrations: 0, avgRideTime: 0, avgCostPerStudent: 0,
+        });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchLiveData();
+    return () => { cancelled = true; };
   }, [user, isDemoMode, demoDistrictId]);
 
   if (loading) {
