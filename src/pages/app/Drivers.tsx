@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useDemoMode, type DemoDistrictId } from "@/contexts/DemoModeContext";
 import { getDemoDrivers, type DemoDriver } from "@/lib/demoData";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,11 +35,21 @@ const CERT_STYLES: Record<string, string> = {
 
 export default function Drivers() {
   const { isDemoMode, demoDistrictId } = useDemoMode();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [contractorFilter, setContractorFilter] = useState("all");
   const [certFilter, setCertFilter] = useState("all");
   const [selectedDriver, setSelectedDriver] = useState<DemoDriver | null>(null);
+
+  // Read filter from URL query params (from dashboard navigation)
+  useEffect(() => {
+    const f = searchParams.get("filter");
+    if (f === "expiring") { setCertFilter("expiring"); setSearchParams({}); }
+    else if (f === "expired") { setCertFilter("expired"); setSearchParams({}); }
+    else if (f === "on_leave") { setStatusFilter("on_leave"); setSearchParams({}); }
+    else if (f === "active") { setStatusFilter("active"); setSearchParams({}); }
+  }, [searchParams, setSearchParams]);
 
   const allDrivers = useMemo(() => {
     if (!isDemoMode || !demoDistrictId) return [];
@@ -74,6 +85,16 @@ export default function Drivers() {
   const expiredCount = allDrivers.filter(d => d.cdl_status === "expired" || d.medical_status === "expired" || d.cert_19a_status === "expired").length;
   const avgOnTime = allDrivers.length > 0 ? Math.round(allDrivers.reduce((s, d) => s + d.on_time_pct, 0) / allDrivers.length * 10) / 10 : 0;
 
+  // Toggle KPI filter helpers
+  const toggleStatus = (val: string) => {
+    setStatusFilter(prev => prev === val ? "all" : val);
+    setCertFilter("all");
+  };
+  const toggleCert = (val: string) => {
+    setCertFilter(prev => prev === val ? "all" : val);
+    setStatusFilter("all");
+  };
+
   if (!isDemoMode) {
     return (
       <div className="text-center py-16 text-slate-400">
@@ -104,27 +125,39 @@ export default function Drivers() {
         </Button>
       </div>
 
-      {/* KPI cards */}
+      {/* KPI cards — clickable to filter */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className={`bg-slate-800 border-slate-700 cursor-pointer transition-all hover:bg-slate-750 ${statusFilter === "active" ? "ring-2 ring-emerald-500/50 border-emerald-500/40" : ""}`}
+          onClick={() => toggleStatus("active")}
+        >
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 text-slate-400 text-sm mb-1"><UserCheck className="h-4 w-4" /> Active</div>
             <p className="text-2xl font-bold text-white">{activeCount}<span className="text-slate-400 text-base font-normal"> / {allDrivers.length}</span></p>
           </CardContent>
         </Card>
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className={`bg-slate-800 border-slate-700 cursor-pointer transition-all hover:bg-slate-750 ${statusFilter === "on_leave" ? "ring-2 ring-amber-500/50 border-amber-500/40" : ""}`}
+          onClick={() => toggleStatus("on_leave")}
+        >
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 text-slate-400 text-sm mb-1"><Users className="h-4 w-4" /> On Leave</div>
             <p className="text-2xl font-bold text-amber-300">{onLeaveCount}</p>
           </CardContent>
         </Card>
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className={`bg-slate-800 border-slate-700 cursor-pointer transition-all hover:bg-slate-750 ${certFilter === "expiring" ? "ring-2 ring-amber-500/50 border-amber-500/40" : ""}`}
+          onClick={() => toggleCert("expiring")}
+        >
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 text-slate-400 text-sm mb-1"><AlertTriangle className="h-4 w-4" /> Certs Expiring</div>
             <p className="text-2xl font-bold text-amber-300">{expiringCount}</p>
           </CardContent>
         </Card>
-        <Card className="bg-slate-800 border-slate-700">
+        <Card
+          className={`bg-slate-800 border-slate-700 cursor-pointer transition-all hover:bg-slate-750 ${certFilter === "expired" ? "ring-2 ring-red-500/50 border-red-500/40" : ""}`}
+          onClick={() => toggleCert("expired")}
+        >
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 text-slate-400 text-sm mb-1"><Shield className="h-4 w-4" /> Certs Expired</div>
             <p className="text-2xl font-bold text-red-400">{expiredCount}</p>
@@ -145,7 +178,7 @@ export default function Drivers() {
           <Input placeholder="Search drivers, buses, email..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); }}>
             <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue placeholder="All Statuses" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
@@ -171,6 +204,24 @@ export default function Drivers() {
           </Select>
         </div>
       </div>
+
+      {/* Active filter indicator */}
+      {(statusFilter !== "all" || certFilter !== "all") && (
+        <div className="flex items-center gap-2">
+          <span className="text-slate-400 text-sm">Filtered:</span>
+          {statusFilter !== "all" && (
+            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 cursor-pointer" onClick={() => setStatusFilter("all")}>
+              Status: {statusFilter.replace("_", " ")} ✕
+            </Badge>
+          )}
+          {certFilter !== "all" && (
+            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 cursor-pointer" onClick={() => setCertFilter("all")}>
+              Certs: {certFilter} ✕
+            </Badge>
+          )}
+          <span className="text-slate-500 text-sm">({filtered.length} results)</span>
+        </div>
+      )}
 
       {/* Table */}
       <Card className="bg-slate-800 border-slate-700">
