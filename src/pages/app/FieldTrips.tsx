@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode, type DemoDistrictId } from "@/contexts/DemoModeContext";
+import { getDemoFieldTrips } from "@/lib/demoDataExtra";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +61,7 @@ const emptyForm = {
 const FieldTrips = () => {
   const { district } = useDistrict();
   const { user } = useAuth();
+  const { isDemoMode, demoDistrictId } = useDemoMode();
   const [trips, setTrips] = useState<FieldTrip[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -74,6 +77,11 @@ const FieldTrips = () => {
 
   // Fetch trips
   const fetchTrips = async () => {
+    if (isDemoMode && demoDistrictId) {
+      setTrips(getDemoFieldTrips(demoDistrictId as DemoDistrictId) as FieldTrip[]);
+      setLoading(false);
+      return;
+    }
     if (!districtId) return;
     const { data } = await supabase
       .from("field_trips")
@@ -86,6 +94,7 @@ const FieldTrips = () => {
 
   // Fetch calendar events for conflict checking
   const fetchCalendarEvents = async () => {
+    if (isDemoMode) return;
     if (!districtId) return;
     const { data } = await supabase
       .from("school_calendar_events")
@@ -97,7 +106,7 @@ const FieldTrips = () => {
   useEffect(() => {
     fetchTrips();
     fetchCalendarEvents();
-  }, [districtId]);
+  }, [districtId, isDemoMode, demoDistrictId]);
 
   // Conflict checker
   const checkConflicts = async () => {

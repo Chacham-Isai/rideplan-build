@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode, type DemoDistrictId } from "@/contexts/DemoModeContext";
+import { getDemoComms } from "@/lib/demoDataExtra";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,6 +47,7 @@ type CommLog = {
 const Communications = () => {
   const { district } = useDistrict();
   const { user } = useAuth();
+  const { isDemoMode, demoDistrictId } = useDemoMode();
   const [logs, setLogs] = useState<CommLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -60,6 +63,18 @@ const Communications = () => {
   const [aiDrafting, setAiDrafting] = useState(false);
 
   const fetchLogs = useCallback(async () => {
+    if (isDemoMode && demoDistrictId) {
+      let demoLogs = getDemoComms(demoDistrictId as DemoDistrictId);
+      if (contactFilter !== "all") demoLogs = demoLogs.filter(l => l.contact_type === contactFilter);
+      if (channelFilter !== "all") demoLogs = demoLogs.filter(l => l.channel === channelFilter);
+      if (search) {
+        const q = search.toLowerCase();
+        demoLogs = demoLogs.filter(l => l.contact_name.toLowerCase().includes(q) || l.subject.toLowerCase().includes(q));
+      }
+      setLogs(demoLogs);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     let query = supabase.from("communication_log").select("*").order("created_at", { ascending: false });
     if (contactFilter !== "all") query = query.eq("contact_type", contactFilter as any);
@@ -68,7 +83,7 @@ const Communications = () => {
     const { data } = await query;
     setLogs((data as CommLog[]) ?? []);
     setLoading(false);
-  }, [search, contactFilter, channelFilter]);
+  }, [search, contactFilter, channelFilter, isDemoMode, demoDistrictId]);
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 

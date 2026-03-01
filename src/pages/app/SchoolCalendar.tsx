@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistrict } from "@/contexts/DistrictContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode, type DemoDistrictId } from "@/contexts/DemoModeContext";
+import { getDemoCalendarEvents, getDemoBellSchedules } from "@/lib/demoDataExtra";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -138,6 +140,7 @@ function getEventColor(type: string) {
 const SchoolCalendar = () => {
   const { district, isAdmin } = useDistrict();
   const { user } = useAuth();
+  const { isDemoMode, demoDistrictId } = useDemoMode();
   const [activeTab, setActiveTab] = useState("calendar");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -173,6 +176,13 @@ const SchoolCalendar = () => {
   });
 
   const fetchAll = useCallback(async () => {
+    if (isDemoMode && demoDistrictId) {
+      setEvents(getDemoCalendarEvents(demoDistrictId as DemoDistrictId) as any);
+      setBellSchedules(getDemoBellSchedules(demoDistrictId as DemoDistrictId) as any);
+      setOverrides([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const [evRes, bsRes, ovRes] = await Promise.all([
       supabase.from("school_calendar_events").select("*").order("event_date"),

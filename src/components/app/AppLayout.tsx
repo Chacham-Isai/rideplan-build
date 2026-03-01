@@ -19,17 +19,47 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronRight,
+  Phone,
+  Handshake,
+  ShieldCheck,
+  AlertTriangle,
+  MapPin,
+  Calendar,
 } from "lucide-react";
 
-const NAV_ITEMS = [
-  { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/app/routes", label: "Routes", icon: Map },
-  { to: "/app/students", label: "Students", icon: Users },
-  { to: "/app/drivers", label: "Drivers", icon: UserCheck },
-  { to: "/app/requests", label: "Requests", icon: FileText },
-  { to: "/app/bus-passes", label: "Bus Passes", icon: Ticket },
-  { to: "/app/settings", label: "Settings", icon: Settings },
+const NAV_SECTIONS = [
+  {
+    label: "Operations",
+    items: [
+      { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/app/requests", label: "Requests", icon: FileText },
+      { to: "/app/communications", label: "Communications", icon: Phone },
+    ],
+  },
+  {
+    label: "Transportation",
+    items: [
+      { to: "/app/students", label: "Students", icon: Users },
+      { to: "/app/routes", label: "Routes", icon: Map },
+      { to: "/app/drivers", label: "Drivers", icon: UserCheck },
+      { to: "/app/bus-passes", label: "Bus Passes", icon: Ticket },
+      { to: "/app/calendar", label: "Calendar", icon: Calendar },
+      { to: "/app/field-trips", label: "Field Trips", icon: MapPin },
+    ],
+  },
+  {
+    label: "Business",
+    items: [
+      { to: "/app/contracts", label: "Contracts & Bids", icon: Handshake },
+      { to: "/app/compliance", label: "Compliance", icon: ShieldCheck },
+    ],
+  },
+  {
+    label: "Safety",
+    items: [
+      { to: "/app/accidents", label: "Accident Reports", icon: AlertTriangle },
+    ],
+  },
 ];
 
 export default function AppLayout() {
@@ -39,7 +69,6 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Close sidebar on route change (mobile)
   useEffect(() => {
     setSidebarOpen(false);
   }, []);
@@ -58,7 +87,6 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-slate-900 flex">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-20 bg-black/60 lg:hidden"
@@ -66,14 +94,12 @@ export default function AppLayout() {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`
           fixed top-0 left-0 h-full w-64 bg-slate-900 border-r border-slate-800 z-30
           transform transition-transform duration-200 ease-in-out
-          ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } lg:translate-x-0 lg:static lg:z-auto
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 lg:static lg:z-auto
+          flex flex-col
         `}
       >
         {/* Logo */}
@@ -89,13 +115,12 @@ export default function AppLayout() {
           )}
         </div>
 
-        {/* District name */}
+        {/* District */}
         <div className="px-4 py-3 border-b border-slate-800">
           <p className="text-slate-500 text-xs uppercase tracking-wide mb-0.5">District</p>
           <p className="text-white text-sm font-medium truncate">{districtName}</p>
         </div>
 
-        {/* Demo switcher */}
         {isDemoMode && (
           <div className="px-3 pt-3">
             <DemoSwitcher />
@@ -103,31 +128,56 @@ export default function AppLayout() {
         )}
 
         {/* Nav */}
-        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                  isActive
-                    ? "bg-blue-500/15 text-blue-300 font-medium"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800"
-                }`
-              }
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {label}
-              {label === "Dashboard" && (
-                <ChevronRight className="h-3 w-3 ml-auto opacity-40" />
-              )}
-            </NavLink>
+        <nav className="flex-1 px-2 py-3 space-y-4 overflow-y-auto">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.label}>
+              <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+                {section.label}
+              </p>
+              <div className="space-y-0.5">
+                {section.items.map(({ to, label, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    onClick={() => setSidebarOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        isActive
+                          ? "bg-blue-500/15 text-blue-300 font-medium"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800"
+                      }`
+                    }
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {label}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
+
+          <div>
+            <div className="space-y-0.5">
+              <NavLink
+                to="/app/settings"
+                onClick={() => setSidebarOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    isActive
+                      ? "bg-blue-500/15 text-blue-300 font-medium"
+                      : "text-slate-400 hover:text-white hover:bg-slate-800"
+                  }`
+                }
+              >
+                <Settings className="h-4 w-4 shrink-0" />
+                Settings
+              </NavLink>
+            </div>
+          </div>
         </nav>
 
         <Separator className="bg-slate-800" />
 
-        {/* Footer */}
         <div className="px-4 py-3">
           <p className="text-slate-500 text-xs truncate mb-2">
             {isDemoMode ? "Demo Mode" : (user?.email ?? "")}
@@ -144,9 +194,7 @@ export default function AppLayout() {
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
         <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 bg-slate-900 border-b border-slate-800">
           <Button
             variant="ghost"
@@ -176,7 +224,6 @@ export default function AppLayout() {
           </div>
         </header>
 
-        {/* Page content */}
         <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           <Outlet />
         </main>
