@@ -11,21 +11,25 @@ const FEATURES = [
     icon: BarChart3,
     title: "Real-Time Dashboard",
     description: "Live fleet metrics, on-time performance, and route utilization",
+    path: "/app/dashboard",
   },
   {
     icon: MapPin,
     title: "Route Management",
     description: "Optimize routes, manage stops, and track efficiency",
+    path: "/app/routes",
   },
   {
     icon: Users,
     title: "Student Ridership",
     description: "Registration tracking, bus passes, and parent communications",
+    path: "/app/students",
   },
   {
     icon: Shield,
     title: "Driver Compliance",
     description: "CDL tracking, certifications, and safety monitoring",
+    path: "/app/drivers",
   },
 ];
 
@@ -160,7 +164,13 @@ export default function DemoLogin() {
             return (
               <div
                 key={feature.title}
-                className="flex flex-col items-center text-center p-4 rounded-xl bg-slate-800/30 border border-slate-700/50"
+                className="flex flex-col items-center text-center p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-blue-500/50 hover:bg-slate-800/60 transition-all cursor-pointer"
+                onClick={() => {
+                  if (!loading) {
+                    enableDemoMode("lawrence");
+                    navigate(feature.path, { replace: true });
+                  }
+                }}
               >
                 <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 mb-2">
                   <Icon className="h-4 w-4 text-blue-400" />
