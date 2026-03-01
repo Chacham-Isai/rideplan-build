@@ -7,37 +7,37 @@ import { DEMO_DISTRICTS, type DemoDistrictId } from "@/contexts/DemoModeContext"
 
 // School breakdowns per district
 const LAWRENCE_SCHOOLS = [
-  { school: "#2", students: 1420, routes: 8 },
-  { school: "#4", students: 1210, routes: 7 },
-  { school: "#5", students: 1080, routes: 6 },
-  { school: "#6", students: 990, routes: 6 },
-  { school: "#3", students: 870, routes: 5 },
-  { school: "#9", students: 810, routes: 4 },
-  { school: "#7", students: 740, routes: 4 },
-  { school: "LMHS", students: 680, routes: 4 },
-  { school: "#8", students: 502, routes: 3 },
+  { school: "#2", students: 1420, routes: 98 },
+  { school: "#4", students: 1210, routes: 84 },
+  { school: "#5", students: 1080, routes: 75 },
+  { school: "#6", students: 990, routes: 69 },
+  { school: "#3", students: 870, routes: 62 },
+  { school: "#9", students: 810, routes: 56 },
+  { school: "#7", students: 740, routes: 52 },
+  { school: "LMHS", students: 680, routes: 58 },
+  { school: "#8", students: 502, routes: 46 },
 ];
 
 const OCEANSIDE_SCHOOLS = [
-  { school: "#1", students: 980, routes: 6 },
-  { school: "#3", students: 870, routes: 5 },
-  { school: "#4", students: 810, routes: 5 },
-  { school: "#6", students: 740, routes: 4 },
-  { school: "#5", students: 690, routes: 4 },
-  { school: "OHS", students: 580, routes: 4 },
-  { school: "#2", students: 454, routes: 4 },
+  { school: "#1", students: 980, routes: 72 },
+  { school: "#3", students: 870, routes: 64 },
+  { school: "#4", students: 810, routes: 60 },
+  { school: "#6", students: 740, routes: 54 },
+  { school: "#5", students: 690, routes: 50 },
+  { school: "OHS", students: 580, routes: 48 },
+  { school: "#2", students: 454, routes: 52 },
 ];
 
 const LAWRENCE_TIER = [
-  { name: "Tier 1", value: 18 },
-  { name: "Tier 2", value: 17 },
-  { name: "Tier 3", value: 12 },
+  { name: "Tier 1", value: 230 },
+  { name: "Tier 2", value: 210 },
+  { name: "Tier 3", value: 160 },
 ];
 
 const OCEANSIDE_TIER = [
-  { name: "Tier 1", value: 13 },
-  { name: "Tier 2", value: 11 },
-  { name: "Tier 3", value: 8 },
+  { name: "Tier 1", value: 160 },
+  { name: "Tier 2", value: 140 },
+  { name: "Tier 3", value: 100 },
 ];
 
 export interface DemoStats {
@@ -68,10 +68,10 @@ const DEMO_DATA: Record<DemoDistrictId, DemoDashboardData> = {
   lawrence: {
     stats: {
       totalStudents: 8302,
-      totalRoutes: 47,
-      activeRoutes: 44,
+      totalRoutes: 600,
+      activeRoutes: 574,
       avgOnTime: 94.2,
-      totalMiles: 1840,
+      totalMiles: 18400,
       pendingRegistrations: 23,
       avgRideTime: 28,
       avgCostPerStudent: 1240,
@@ -83,16 +83,16 @@ const DEMO_DATA: Record<DemoDistrictId, DemoDashboardData> = {
     expiringCerts: 5,
     expiredCerts: 1,
     busPassesIssued: 7890,
-    activeDrivers: 38,
-    totalDrivers: 42,
+    activeDrivers: 380,
+    totalDrivers: 420,
   },
   oceanside: {
     stats: {
       totalStudents: 5124,
-      totalRoutes: 32,
-      activeRoutes: 30,
+      totalRoutes: 400,
+      activeRoutes: 384,
       avgOnTime: 96.1,
-      totalMiles: 1120,
+      totalMiles: 11200,
       pendingRegistrations: 11,
       avgRideTime: 24,
       avgCostPerStudent: 1180,
@@ -104,8 +104,8 @@ const DEMO_DATA: Record<DemoDistrictId, DemoDashboardData> = {
     expiringCerts: 3,
     expiredCerts: 0,
     busPassesIssued: 4820,
-    activeDrivers: 26,
-    totalDrivers: 28,
+    activeDrivers: 260,
+    totalDrivers: 280,
   },
 };
 
